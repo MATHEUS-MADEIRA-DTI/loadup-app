@@ -28,3 +28,7 @@ Thumbs.db
 .vercel
 coverage/
 my-project/
+
+# IDE / local config
+.vscode/
+.idea/

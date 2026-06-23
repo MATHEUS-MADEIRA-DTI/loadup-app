@@ -1,0 +1,207 @@
+openapi: '3.0.3'
+info:
+  title: LoadUp — Exercise Search API
+  version: '1.0.0'
+  description: |
+    Endpoint for searching exercises using the external API Ninjas Exercises service,
+    with MongoDB caching and graceful fallback handling.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /exercises/search:
+    get:
+      summary: Search exercises by name and/or muscle group
+      description: |
+        Returns a list of exercises matching the search criteria.
+        Results are cached in MongoDB for 7 days.
+        At least one of `name` or `muscle` must be provided.
+        Muscle group names are always returned in Portuguese.
+      operationId: searchExercises
+      tags:
+        - exercises-api
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: |
+            Exercise name to search for (partial match supported by API Ninjas).
+            At least one of `name` or `muscle` must be provided.
+          schema:
+            type: string
+            maxLength: 100
+            pattern: "^[a-zA-Z0-9\\s_-]+$"
+          example: 'bench press'
+        - name: muscle
+          in: query
+          required: false
+          description: |
+            Muscle group filter in **Portuguese** (as used in the LoadUp frontend).
+            The backend maps this value to English before forwarding to API Ninjas.
+            At least one of `name` or `muscle` must be provided.
+            Valid values: Peito, Bíceps, Tríceps, Costas, Ombros, Abdômen, Perna, Glúteo.
+          schema:
+            type: string
+            maxLength: 100
+          example: 'Peito'
+      responses:
+        '200':
+          description: |
+            Search completed. Results may come from cache (cached=true) or
+            from the external API (cached=false). If the external API is
+            unavailable, a warning is included.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchExercisesResponse'
+              examples:
+                fresh_results:
+                  summary: Fresh results from external API
+                  value:
+                    results:
+                      - name: 'Bench Press'
+                        muscleGroup: 'Peito'
+                        type: 'strength'
+                        equipment: 'barbell'
+                        instructions: 'Lie on a flat bench and grip the barbell...'
+                    cached: false
+                    warning: null
+                cached_results:
+                  summary: Results served from cache
+                  value:
+                    results:
+                      - name: 'Bench Press'
+                        muscleGroup: 'Peito'
+                        type: 'strength'
+                        equipment: 'barbell'
+                        instructions: 'Lie on a flat bench and grip the barbell...'
+                    cached: true
+                    warning: null
+                stale_cache_fallback:
+                  summary: Stale cache used because external API is unavailable
+                  value:
+                    results:
+                      - name: 'Bench Press'
+                        muscleGroup: 'Peito'
+                        type: 'strength'
+                        equipment: 'barbell'
+                        instructions: 'Lie on a flat bench and grip the barbell...'
+                    cached: true
+                    warning: 'Resultados em cache (API externa indisponível)'
+                no_cache_api_down:
+                  summary: External API unavailable and no cache exists
+                  value:
+                    results: []
+                    cached: false
+                    warning: 'Serviço de exercícios temporariamente indisponível'
+                no_results:
+                  summary: External API returned no matching exercises
+                  value:
+                    results: []
+                    cached: false
+                    warning: null
+        '400':
+          description: Neither `name` nor `muscle` was provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 400
+                message: "Pelo menos um dos parâmetros 'name' ou 'muscle' deve ser fornecido"
+                error: 'Bad Request'
+        '401':
+          description: Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: 'Unauthorized'
+                error: 'Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ExerciseResult:
+      type: object
+      required:
+        - name
+        - muscleGroup
+        - type
+        - equipment
+        - instructions
+      properties:
+        name:
+          type: string
+          description: Exercise name
+          example: 'Bench Press'
+        muscleGroup:
+          type: string
+          description: Primary muscle group targeted, in Portuguese
+          example: 'Peito'
+        type:
+          type: string
+          description: Exercise type (as returned by API Ninjas)
+          example: 'strength'
+        equipment:
+          type: string
+          description: Equipment required (as returned by API Ninjas)
+          example: 'barbell'
+        instructions:
+          type: string
+          description: Step-by-step exercise instructions
+          example: 'Lie on a flat bench and grip the barbell...'
+
+    SearchExercisesResponse:
+      type: object
+      required:
+        - results
+        - cached
+        - warning
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExerciseResult'
+          description: List of matching exercises (may be empty)
+        cached:
+          type: boolean
+          description: True if results were served from MongoDB cache
+        warning:
+          type: string
+          nullable: true
+          description: |
+            Present when the external API was unavailable.
+            null when results are fresh or from a valid cache hit.
+          example: 'Resultados em cache (API externa indisponível)'
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+        - error
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Pelo menos um dos parâmetros 'name' ou 'muscle' deve ser fornecido"
+        error:
+          type: string
+          example: 'Bad Request'

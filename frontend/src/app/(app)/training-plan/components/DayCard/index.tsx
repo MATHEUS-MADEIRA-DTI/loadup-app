@@ -1,0 +1,133 @@
+"use client";
+
+import MuscleChip from "@/components/MuscleChip";
+import { strings } from "@/constants/strings";
+import { DayOfWeek, DayType, MuscleGroup, TrainingDay } from "@/types";
+
+import { DAY_LABEL, DAY_SHORT } from "../../utils";
+
+import {
+  StyledAbbrCol,
+  StyledAbbrPill,
+  StyledCardRow,
+  StyledChevronBtn,
+  StyledChipsRow,
+  StyledContent,
+  StyledControls,
+  StyledDayCard,
+  StyledDayName,
+  StyledMeta,
+  StyledNameRow,
+  StyledToggle,
+  StyledToggleThumb,
+  StyledTodayBadge,
+  StyledTodayLabel,
+  StyledTypeBadge,
+} from "./styles";
+
+interface DayCardProps {
+  day: TrainingDay;
+  isToday: boolean;
+  onToggle: (day: DayOfWeek, next: DayType) => void;
+  onNavigate: (day: DayOfWeek) => void;
+  onAdd: (day: DayOfWeek) => void;
+  isUpdating: boolean;
+}
+
+export default function DayCard({
+  day,
+  isToday,
+  onToggle,
+  onNavigate,
+  isUpdating,
+}: DayCardProps) {
+  const isTraining = day.status === "training";
+  const count = day.exercises.length;
+  const totalSeries = day.exercises.reduce(
+    (acc, ex) => acc + ex.series.length,
+    0,
+  );
+  const uniqueMuscles = Array.from(
+    new Set(day.exercises.map((ex) => ex.muscleGroup)),
+  ) as MuscleGroup[];
+
+  return (
+    <StyledDayCard $isToday={isToday}>
+      <StyledCardRow>
+        <StyledAbbrCol>
+          <StyledAbbrPill $isToday={isToday}>
+            {DAY_SHORT[day.dayOfWeek]}
+          </StyledAbbrPill>
+          {isToday && (
+            <StyledTodayLabel>
+              {strings.trainingPlan.todayLabel}
+            </StyledTodayLabel>
+          )}
+        </StyledAbbrCol>
+
+        <StyledContent>
+          <StyledNameRow>
+            <StyledDayName>{DAY_LABEL[day.dayOfWeek]}</StyledDayName>
+            {isToday && (
+              <StyledTodayBadge>
+                {strings.trainingPlan.todayBadge}
+              </StyledTodayBadge>
+            )}
+          </StyledNameRow>
+          {isTraining && uniqueMuscles.length > 0 && (
+            <StyledChipsRow>
+              {uniqueMuscles.map((mg) => (
+                <MuscleChip key={mg} muscleGroup={mg} />
+              ))}
+            </StyledChipsRow>
+          )}
+          <StyledMeta>
+            {isTraining
+              ? count > 0
+                ? strings.trainingPlan.dayMetaCount(count, totalSeries)
+                : strings.trainingPlan.noExercisesDay
+              : strings.trainingPlan.dayRest}
+          </StyledMeta>
+        </StyledContent>
+
+        <StyledControls>
+          <StyledTypeBadge $training={isTraining}>
+            {isTraining
+              ? strings.trainingPlan.dayTraining
+              : strings.trainingPlan.dayRest}
+          </StyledTypeBadge>
+          <StyledToggle
+            role="switch"
+            aria-checked={isTraining}
+            aria-label={
+              isTraining
+                ? strings.trainingPlan.toggleToRest
+                : strings.trainingPlan.toggleToTraining
+            }
+            disabled={isUpdating}
+            onClick={() =>
+              onToggle(day.dayOfWeek, isTraining ? "rest" : "training")
+            }
+          >
+            <StyledToggleThumb $on={isTraining} />
+          </StyledToggle>
+          {isTraining && (
+            <StyledChevronBtn
+              onClick={() => onNavigate(day.dayOfWeek)}
+              aria-label={strings.common.ariaViewExercises}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+              </svg>
+            </StyledChevronBtn>
+          )}
+        </StyledControls>
+      </StyledCardRow>
+    </StyledDayCard>
+  );
+}

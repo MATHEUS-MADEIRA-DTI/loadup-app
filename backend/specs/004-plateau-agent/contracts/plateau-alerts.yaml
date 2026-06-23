@@ -1,0 +1,257 @@
+openapi: 3.0.3
+info:
+  title: LoadUp – Plateau Alerts API
+  version: '1.0.0'
+  description: |
+    Endpoints for reading plateau detection alerts.
+    Detection is triggered automatically on session completion (PATCH /training-sessions/:sessionId/complete)
+    and persisted asynchronously. No real-time calculation on read.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PlateauAlertItem:
+      type: object
+      required:
+        - exerciseName
+        - dayOfWeek
+        - alertType
+        - suggestion
+        - sessionCount
+        - detectedAt
+      properties:
+        exerciseName:
+          type: string
+          description: >
+            Exercise name (for alertType "exercise") or dayOfWeek value
+            (for alertType "day").
+          example: 'Supino Reto'
+        dayOfWeek:
+          type: string
+          description: Training day (from TrainingSession.dayOfWeek).
+          example: 'monday'
+        alertType:
+          type: string
+          enum: [exercise, day]
+          description: >
+            "exercise" = per-exercise plateau alert.
+            "day" = aggregate alert when ≥2 exercises on the same day are in plateau.
+          example: 'exercise'
+        suggestion:
+          type: string
+          nullable: true
+          description: Human-readable progression suggestion in Portuguese.
+          example: 'Tente aumentar 2.5kg no próximo treino'
+        sessionCount:
+          type: integer
+          description: Number of consecutive sessions that triggered the alert. 0 for day-level alerts.
+          example: 4
+        detectedAt:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of first detection (UTC-3 offset).
+          example: '2026-05-10T03:00:00.000-03:00'
+
+    ExercisePlateauStatus:
+      type: object
+      required:
+        - exerciseName
+        - plateau
+        - suggestion
+      properties:
+        exerciseName:
+          type: string
+          example: 'Agachamento'
+        dayOfWeek:
+          type: string
+          nullable: true
+          example: 'wednesday'
+        alertType:
+          type: string
+          enum: [exercise]
+          nullable: true
+        plateau:
+          type: boolean
+          description: true if the exercise is currently in plateau.
+          example: true
+        suggestion:
+          type: string
+          nullable: true
+          example: 'Tente fazer mais 1 repetição na próxima sessão'
+        sessionCount:
+          type: integer
+          nullable: true
+          example: 5
+        detectedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-05-08T03:00:00.000-03:00'
+
+    SuccessEnvelope:
+      type: object
+      required:
+        - data
+        - timestamp
+      properties:
+        data:
+          description: Response payload.
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-05-12T18:00:00.000-03:00'
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+        - timestamp
+      properties:
+        statusCode:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: 'Unauthorized'
+        error:
+          type: string
+          example: 'Unauthorized'
+        timestamp:
+          type: string
+          format: date-time
+
+paths:
+  /plateau/alerts:
+    get:
+      summary: Get all active plateau alerts for the authenticated user
+      description: |
+        Returns all active (unresolved) plateau alerts, including both exercise-level and
+        day-level aggregate alerts. Detection results are pre-computed and stored; this
+        endpoint only reads persisted data.
+      operationId: getPlateauAlerts
+      tags:
+        - Plateau
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of active alerts (empty array if none).
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PlateauAlertItem'
+              examples:
+                with_alerts:
+                  summary: User has 2 plateaued exercises on same day
+                  value:
+                    data:
+                      - exerciseName: 'Supino Reto'
+                        dayOfWeek: 'monday'
+                        alertType: 'exercise'
+                        suggestion: 'Tente aumentar 2.5kg no próximo treino'
+                        sessionCount: 4
+                        detectedAt: '2026-05-10T03:00:00.000-03:00'
+                      - exerciseName: 'Desenvolvimento'
+                        dayOfWeek: 'monday'
+                        alertType: 'exercise'
+                        suggestion: 'Tente fazer mais 1 repetição na próxima sessão'
+                        sessionCount: 4
+                        detectedAt: '2026-05-10T03:00:00.000-03:00'
+                      - exerciseName: 'monday'
+                        dayOfWeek: 'monday'
+                        alertType: 'day'
+                        suggestion: 'Seu treino de Segunda está estagnado — 2 exercícios sem evolução'
+                        sessionCount: 0
+                        detectedAt: '2026-05-10T03:00:00.000-03:00'
+                    timestamp: '2026-05-12T18:00:00.000-03:00'
+                empty:
+                  summary: No plateaus
+                  value:
+                    data: []
+                    timestamp: '2026-05-12T18:00:00.000-03:00'
+        '401':
+          description: Missing or invalid JWT.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /plateau/alerts/{exerciseName}:
+    get:
+      summary: Get plateau status for a specific exercise
+      description: |
+        Returns the plateau status for a single exercise identified by name.
+        Returns HTTP 200 with `plateau: false` when the exercise has no active alert
+        (including when the exercise name is not found in session history).
+      operationId: getExercisePlateauStatus
+      tags:
+        - Plateau
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exerciseName
+          in: path
+          required: true
+          description: Exercise name (URL-encoded). Case-sensitive, must match stored session record names.
+          schema:
+            type: string
+          example: 'Supino%20Reto'
+      responses:
+        '200':
+          description: Plateau status for the requested exercise.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ExercisePlateauStatus'
+              examples:
+                plateau_detected:
+                  summary: Exercise is in plateau
+                  value:
+                    data:
+                      exerciseName: 'Agachamento'
+                      dayOfWeek: 'wednesday'
+                      alertType: 'exercise'
+                      plateau: true
+                      suggestion: 'Tente fazer mais 1 repetição na próxima sessão'
+                      sessionCount: 5
+                      detectedAt: '2026-05-08T03:00:00.000-03:00'
+                    timestamp: '2026-05-12T18:00:00.000-03:00'
+                no_plateau:
+                  summary: Exercise is not in plateau (or not found)
+                  value:
+                    data:
+                      exerciseName: 'Rosca Direta'
+                      plateau: false
+                      suggestion: null
+                    timestamp: '2026-05-12T18:00:00.000-03:00'
+        '401':
+          description: Missing or invalid JWT.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
