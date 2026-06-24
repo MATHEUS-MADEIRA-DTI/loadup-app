@@ -28,37 +28,98 @@ export default function RestTimerButton({
   const [isRunning, setIsRunning] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [remaining, setRemaining] = useState(restTime);
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const deadlineRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = async () => {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+    } catch {
+      // Wake Lock não suportado ou negado — sem efeito
+    }
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  };
+
+  const clearTick = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const finish = () => {
+    clearTick();
+    releaseWakeLock();
+    deadlineRef.current = null;
+    setIsRunning(false);
+    setIsFinished(true);
+    setRemaining(0);
+    playAlertSound();
+    vibrateAlert();
+  };
+
+  const startTick = (deadline: number) => {
+    clearTick();
+    intervalRef.current = setInterval(() => {
+      const left = Math.round((deadline - Date.now()) / 1000);
+      if (left <= 0) {
+        finish();
+      } else {
+        setRemaining(left);
+      }
+    }, 500);
+  };
+
+  // Re-sync timer when page becomes visible again (background → foreground)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && deadlineRef.current) {
+        const left = Math.round((deadlineRef.current - Date.now()) / 1000);
+        if (left <= 0) {
+          finish();
+        } else {
+          setRemaining(left);
+          startTick(deadlineRef.current);
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      clearTick();
+      releaseWakeLock();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const start = () => {
+  const start = async () => {
+    const deadline = Date.now() + restTime * 1000;
+    deadlineRef.current = deadline;
     setRemaining(restTime);
     setIsFinished(false);
     setIsRunning(true);
-
-    intervalRef.current = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current!);
-          setIsRunning(false);
-          setIsFinished(true);
-          playAlertSound();
-          vibrateAlert();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    await acquireWakeLock();
+    startTick(deadline);
   };
 
   const cancel = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    clearTick();
+    releaseWakeLock();
+    deadlineRef.current = null;
     setIsRunning(false);
     setIsFinished(false);
     setRemaining(restTime);

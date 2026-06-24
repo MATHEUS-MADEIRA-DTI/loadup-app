@@ -16,7 +16,7 @@ export const StyledPage = styled.div`
 export const StyledHeader = styled.header`
   background: ${({ theme }) => theme.colors.primaryGradient};
   padding: 48px 20px 24px;
-  border-radius: 0 0 32px 32px;
+  border-radius: ${({ theme }) => theme.borderRadius.header};
 `;
 
 export const StyledSubtitle = styled.p`
@@ -74,8 +74,6 @@ export const StyledSectionTitle = styled.p`
   font-size: 13px;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   margin-bottom: 4px;
 `;
 
@@ -97,6 +95,10 @@ export const StyledDayCardSkeleton = styled.div`
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.outlineVariant};
+  }
 `;
 
 export const StyledCtaArea = styled.div`
@@ -135,7 +137,7 @@ export const StyledCtaTodayDone = styled.div<{ $skipped: boolean }>`
   padding: 16px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: ${({ $skipped, theme }) =>
-    $skipped ? "#FDECEA" : theme.colors.successContainer};
+    $skipped ? theme.colors.errorContainer : theme.colors.successContainer};
   color: ${({ $skipped, theme }) =>
     $skipped ? theme.colors.error : theme.colors.success};
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
@@ -171,7 +173,7 @@ export const StyledTodayStatusIcon = styled.div<{ $status: string }>`
     $status === "completed"
       ? theme.colors.successContainer
       : $status === "skipped"
-        ? "#FDECEA"
+        ? theme.colors.errorContainer
         : theme.colors.primaryContainer};
   color: ${({ $status, theme }) =>
     $status === "completed"
@@ -217,7 +219,7 @@ export const StyledTodayStatusBadge = styled.span<{ $status: string }>`
     $status === "completed"
       ? theme.colors.successContainer
       : $status === "skipped"
-        ? "#FDECEA"
+        ? theme.colors.errorContainer
         : theme.colors.primaryContainer};
   color: ${({ $status, theme }) =>
     $status === "completed"

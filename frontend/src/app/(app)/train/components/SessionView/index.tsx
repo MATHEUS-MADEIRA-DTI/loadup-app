@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, MinusCircle } from "lucide-react";
 
 import MuscleChip from "@/components/MuscleChip";
@@ -13,7 +13,6 @@ import {
 import { DayOfWeek, TrainingDay } from "@/types";
 
 import { DAY_FULL, todayIso } from "../../utils";
-import RestTimerButton from "../RestTimerButton";
 import SeriesInputRow from "../SeriesInputRow";
 
 import {
@@ -24,6 +23,7 @@ import {
   StyledDoneBannerSub,
   StyledDoneBannerText,
   StyledEmptyText,
+  StyledErrorToast,
   StyledExerciseHeader,
   StyledExerciseInfo,
   StyledExerciseName,
@@ -33,7 +33,6 @@ import {
   StyledProgressBarFill,
   StyledProgressBarTrack,
   StyledProgressCounter,
-  StyledReadOnlyNotice,
   StyledSeriesList,
   StyledSessionBody,
   StyledSessionBottomBar,
@@ -42,6 +41,12 @@ import {
   StyledSessionPage,
   StyledSessionStatusText,
   StyledSessionTopRow,
+  StyledSheet,
+  StyledSheetBackdrop,
+  StyledSheetCancelBtn,
+  StyledSheetConfirmBtn,
+  StyledSheetSub,
+  StyledSheetTitle,
   StyledSkipBtn,
 } from "./styles";
 
@@ -95,11 +100,34 @@ export default function SessionView({
     (session.isError && !createAttempted) ||
     createSession.isPending;
 
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+
+  const showError = (msg: string) => {
+    setErrorToast(msg);
+    setTimeout(() => setErrorToast(null), 3500);
+  };
+
+  const handleSkipConfirmed = () => {
+    setShowSkipConfirm(false);
+    completeSession.mutate(
+      { status: "skipped" },
+      { onError: () => showError("Erro ao pular treino. Tente novamente.") },
+    );
+  };
+
+  const handleConclude = () => {
+    completeSession.mutate(
+      { status: "completed" },
+      { onError: () => showError("Erro ao concluir treino. Tente novamente.") },
+    );
+  };
+
   return (
     <StyledSessionPage>
       <StyledSessionHeader>
         <StyledSessionTopRow>
-          <StyledBackBtn onClick={onBack}>
+          <StyledBackBtn onClick={onBack} aria-label="Voltar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
             </svg>
@@ -135,7 +163,7 @@ export default function SessionView({
         <>
           {isReadOnly && (
             <StyledDoneBanner $skipped={sessionData?.status === "skipped"}>
-              <StyledDoneBannerIcon>
+              <StyledDoneBannerIcon $skipped={sessionData?.status === "skipped"}>
                 {sessionData?.status === "completed" ? (
                   <CheckCircle2 size={24} strokeWidth={2} />
                 ) : (
@@ -170,44 +198,32 @@ export default function SessionView({
                         ls.seriesOrder === sIndex + 1,
                     );
                     return (
-                      <React.Fragment key={sIndex}>
-                        <SeriesInputRow
-                          exercise={exercise}
-                          series={s}
-                          seriesIndex={sIndex}
-                          sessionId={sessionData._id}
-                          loggedSet={loggedSet}
-                          isReadOnly={isReadOnly}
-                        />
-                        {!isReadOnly && s.restTime && s.restTime > 0 && (
-                          <RestTimerButton
-                            restTime={s.restTime}
-                            exerciseName={exercise.name}
-                          />
-                        )}
-                      </React.Fragment>
+                      <SeriesInputRow
+                        key={sIndex}
+                        exercise={exercise}
+                        series={s}
+                        seriesIndex={sIndex}
+                        sessionId={sessionData._id}
+                        loggedSet={loggedSet}
+                        isReadOnly={isReadOnly}
+                      />
                     );
                   })}
                 </StyledSeriesList>
               </StyledExerciseSection>
             ))}
-            {isReadOnly && (
-              <StyledReadOnlyNotice>
-                {strings.workout.readOnlyNotice}
-              </StyledReadOnlyNotice>
-            )}
           </StyledSessionBody>
 
           {!isReadOnly && (
             <StyledSessionBottomBar>
               <StyledSkipBtn
-                onClick={() => completeSession.mutate({ status: "skipped" })}
+                onClick={() => setShowSkipConfirm(true)}
                 disabled={completeSession.isPending}
               >
                 {strings.workout.skipBtn}
               </StyledSkipBtn>
               <StyledConcludeBtn
-                onClick={() => completeSession.mutate({ status: "completed" })}
+                onClick={handleConclude}
                 disabled={completeSession.isPending}
               >
                 <svg
@@ -222,6 +238,25 @@ export default function SessionView({
               </StyledConcludeBtn>
             </StyledSessionBottomBar>
           )}
+
+          {showSkipConfirm && (
+            <StyledSheetBackdrop onClick={() => setShowSkipConfirm(false)}>
+              <StyledSheet onClick={(e) => e.stopPropagation()}>
+                <StyledSheetTitle>Pular este treino?</StyledSheetTitle>
+                <StyledSheetSub>
+                  O progresso registrado será perdido.
+                </StyledSheetSub>
+                <StyledSheetConfirmBtn onClick={handleSkipConfirmed}>
+                  Pular mesmo assim
+                </StyledSheetConfirmBtn>
+                <StyledSheetCancelBtn onClick={() => setShowSkipConfirm(false)}>
+                  Continuar treinando
+                </StyledSheetCancelBtn>
+              </StyledSheet>
+            </StyledSheetBackdrop>
+          )}
+
+          {errorToast && <StyledErrorToast>{errorToast}</StyledErrorToast>}
         </>
       )}
     </StyledSessionPage>

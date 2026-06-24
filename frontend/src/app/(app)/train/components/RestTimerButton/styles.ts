@@ -15,7 +15,6 @@ export const StyledRestBtn = styled.button`
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  margin-top: ${({ theme }) => theme.spacing.sm};
   transition: all 150ms ease;
 
   &:hover {
@@ -28,7 +27,6 @@ export const StyledTimerWrap = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: ${({ theme }) => theme.spacing.sm};
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
   border: 1.5px solid ${({ theme }) => theme.colors.primary};
   border-radius: ${({ theme }) => theme.borderRadius.pill};
@@ -71,16 +69,14 @@ export const StyledFinishedWrap = styled.div`
   align-items: center;
   justify-content: center;
   gap: ${({ theme }) => theme.spacing.xs};
-  margin-top: ${({ theme }) => theme.spacing.sm};
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  border: 1.5px solid ${({ theme }) => theme.colors.primary};
   border-radius: ${({ theme }) => theme.borderRadius.pill};
-  background: ${({ theme }) => theme.colors.primaryContainer};
+  background: ${({ theme }) => theme.colors.successContainer};
   cursor: pointer;
 `;
 
 export const StyledFinishedMsg = styled.span`
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.success};
 `;
