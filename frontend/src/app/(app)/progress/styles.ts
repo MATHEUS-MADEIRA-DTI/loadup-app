@@ -150,23 +150,34 @@ export const StyledChipScroll = styled.div`
   padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export const StyledExerciseChip = styled.button<{ $selected: boolean }>`
   flex-shrink: 0;
   padding: 6px 14px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
-  border: 1.5px solid ${({ $selected, theme }) => $selected ? theme.colors.primary : theme.colors.outlineVariant};
-  background: ${({ $selected, theme }) => $selected ? theme.colors.primary : theme.colors.surface};
-  color: ${({ $selected, theme }) => $selected ? theme.colors.onPrimary : theme.colors.onSurface};
+  border: 1.5px solid
+    ${({ $selected, theme }) =>
+      $selected ? theme.colors.primary : theme.colors.outlineVariant};
+  background: ${({ $selected, theme }) =>
+    $selected ? theme.colors.primary : theme.colors.surface};
+  color: ${({ $selected, theme }) =>
+    $selected ? theme.colors.onPrimary : theme.colors.onSurface};
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
-  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
   white-space: nowrap;
-  &:active { opacity: 0.8; }
+  &:active {
+    opacity: 0.8;
+  }
 `;
 
 export const StyledPrBanner = styled.div`
@@ -203,7 +214,8 @@ export const StyledHint = styled.p`
   font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
-  padding: ${({ theme }) => theme.spacing.lg} 0 ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.lg} 0
+    ${({ theme }) => theme.spacing.sm};
 `;
 
 export const StyledMuscleList = styled.div`
