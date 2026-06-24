@@ -163,7 +163,9 @@ export default function SessionView({
         <>
           {isReadOnly && (
             <StyledDoneBanner $skipped={sessionData?.status === "skipped"}>
-              <StyledDoneBannerIcon $skipped={sessionData?.status === "skipped"}>
+              <StyledDoneBannerIcon
+                $skipped={sessionData?.status === "skipped"}
+              >
                 {sessionData?.status === "completed" ? (
                   <CheckCircle2 size={24} strokeWidth={2} />
                 ) : (

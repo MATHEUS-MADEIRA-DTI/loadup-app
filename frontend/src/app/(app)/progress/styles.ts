@@ -14,63 +14,80 @@ export const StyledPage = styled.div`
 `;
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.primaryGradient};
-  padding: 48px 20px 28px;
-  border-radius: 0 0 32px 32px;
+  background: ${({ theme }) => theme.colors.surface};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  padding: 52px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 export const StyledHeaderSkeleton = styled.div`
-  height: 180px;
-  border-radius: 0 0 32px 32px;
-  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primaryContainer} 25%, ${({ theme }) => theme.colors.outlineVariant} 50%, ${({ theme }) => theme.colors.primaryContainer} 75%);
+  height: 160px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.outlineVariant} 50%,
+    ${({ theme }) => theme.colors.surface} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.surface};
+  }
 `;
 
 export const StyledSubtitle = styled.p`
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
 `;
 
 export const StyledTitle = styled.h1`
-  font-size: ${({ theme }) => theme.typography.displayLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.displayLarge.fontWeight};
-  color: ${({ theme }) => theme.colors.onPrimary};
+  font-size: 26px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.onSurface};
   line-height: 1.1;
 `;
 
 export const StyledStatRow = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  gap: 0;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  padding-top: ${({ theme }) => theme.spacing.md};
+  border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
 `;
 
 export const StyledStatPill = styled.div`
   flex: 1;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(8px);
-  border-radius: ${({ theme }) => theme.borderRadius.inner};
-  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  padding: 0 ${({ theme }) => theme.spacing.xs};
+  &:not(:last-child) {
+    border-right: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  }
 `;
 
 export const StyledPillValue = styled.span`
-  font-size: ${({ theme }) => theme.typography.headlineMedium.fontSize};
-  font-weight: ${({ theme }) => theme.typography.headlineMedium.fontWeight};
-  color: ${({ theme }) => theme.colors.onPrimary};
+  font-size: 28px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.onSurface};
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 `;
 
 export const StyledPillLabel = styled.span`
-  font-size: ${({ theme }) => theme.typography.labelSmall.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelSmall.fontWeight};
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
+  line-height: 1.4;
+  margin-top: 2px;
 `;
 
 export const StyledBody = styled.main`
@@ -83,9 +100,18 @@ export const StyledBody = styled.main`
 export const StyledSkeletonCard = styled.div`
   height: 120px;
   border-radius: ${({ theme }) => theme.borderRadius.card};
-  background: linear-gradient(90deg, ${({ theme }) => theme.colors.primaryContainer} 25%, ${({ theme }) => theme.colors.outlineVariant} 50%, ${({ theme }) => theme.colors.primaryContainer} 75%);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.outlineVariant} 50%,
+    ${({ theme }) => theme.colors.surface} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.outlineVariant};
+  }
 `;
 
 export const StyledCard = styled.section`

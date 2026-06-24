@@ -203,7 +203,6 @@ export const StyledEmptyText = styled.p`
   padding: ${({ theme }) => theme.spacing.xl} 0;
 `;
 
-
 export const StyledSessionBottomBar = styled.div`
   position: fixed;
   bottom: 80px;
@@ -292,7 +291,8 @@ export const StyledSheet = styled.div`
   width: 100%;
   max-width: 430px;
   background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => `${theme.borderRadius.inner} ${theme.borderRadius.inner} 0 0`};
+  border-radius: ${({ theme }) =>
+    `${theme.borderRadius.inner} ${theme.borderRadius.inner} 0 0`};
   padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;

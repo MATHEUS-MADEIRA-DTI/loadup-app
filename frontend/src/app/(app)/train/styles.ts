@@ -14,21 +14,22 @@ export const StyledPage = styled.div`
 `;
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.primaryGradient};
-  padding: 48px 20px 24px;
-  border-radius: ${({ theme }) => theme.borderRadius.header};
+  background: ${({ theme }) => theme.colors.surface};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  padding: 52px 20px 20px;
 `;
 
 export const StyledSubtitle = styled.p`
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 4px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin-bottom: 2px;
 `;
 
 export const StyledTitle = styled.h1`
   font-size: 26px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.onPrimary};
+  color: ${({ theme }) => theme.colors.onSurface};
 `;
 
 export const StyledTabBar = styled.div`

@@ -91,8 +91,8 @@ export const lightTheme: AppTheme = {
     primaryContainer: "#EDE7F6",
     primaryGradient:
       "linear-gradient(153deg, rgba(103,80,164,1) 0%, rgba(74,20,140,1) 100%)",
-    surface: "#FFFBFE",
-    background: "#F6F0FA",
+    surface: "#FFFFFF",
+    background: "#F5F5F7",
     onPrimary: "#FFFFFF",
     onSurface: "#1C1B1F",
     onSurfaceMuted: "#49454F",
@@ -126,16 +126,16 @@ export const lightTheme: AppTheme = {
     xxl: "48px",
   },
   borderRadius: {
-    card: "48px",
-    inner: "36px",
-    header: "0 0 36px 36px",
-    chip: "20px",
+    card: "24px",
+    inner: "20px",
+    header: "0 0 28px 28px",
+    chip: "12px",
     pill: "1200px",
     avatar: "50%",
   },
   shadows: {
-    card: "0px 2px 8px 0px rgba(103,80,164,0.15)",
-    primary: "0px 4px 16px 0px rgba(103,80,164,0.30)",
+    card: "0 0 0 1px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05)",
+    primary: "0px 4px 12px 0px rgba(103,80,164,0.25)",
   },
 };
 
@@ -146,8 +146,8 @@ export const darkTheme: AppTheme = {
     primaryContainer: "#4F378B",
     primaryGradient:
       "linear-gradient(153deg, rgba(80,60,130,1) 0%, rgba(40,20,80,1) 100%)",
-    surface: "#2B2930",
-    background: "#1C1B1F",
+    surface: "#1A1820",
+    background: "#0E0D11",
     onPrimary: "#FFFFFF",
     onSurface: "#E6E1E5",
     onSurfaceMuted: "#CAC4D0",
@@ -181,15 +181,15 @@ export const darkTheme: AppTheme = {
     xxl: "48px",
   },
   borderRadius: {
-    card: "48px",
-    inner: "36px",
-    header: "0 0 36px 36px",
-    chip: "20px",
+    card: "24px",
+    inner: "20px",
+    header: "0 0 28px 28px",
+    chip: "12px",
     pill: "1200px",
     avatar: "50%",
   },
   shadows: {
-    card: "0px 2px 8px 0px rgba(0,0,0,0.40)",
+    card: "0 0 0 1px rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.5)",
     primary: "0px 4px 16px 0px rgba(208,188,255,0.20)",
   },
 };

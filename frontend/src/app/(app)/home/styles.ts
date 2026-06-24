@@ -23,11 +23,20 @@ export const StyledBody = styled.main`
 `;
 
 export const StyledHeaderSkeleton = styled.div`
-  height: 200px;
-  border-radius: 0 0 28px 28px;
-  background: linear-gradient(90deg, #c4b8e8 25%, #b8ace0 50%, #c4b8e8 75%);
+  height: 160px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.outlineVariant} 50%,
+    ${({ theme }) => theme.colors.surface} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.outlineVariant};
+  }
 `;
 
 export const StyledSkeletonCard = styled.div`
@@ -35,12 +44,16 @@ export const StyledSkeletonCard = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.card};
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.primaryContainer} 25%,
+    ${({ theme }) => theme.colors.surface} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.primaryContainer} 75%
+    ${({ theme }) => theme.colors.surface} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.outlineVariant};
+  }
 `;
 
 export const StyledCard = styled.section`

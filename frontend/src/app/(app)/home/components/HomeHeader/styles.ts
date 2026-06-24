@@ -6,9 +6,9 @@ const shimmer = keyframes`
 `;
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.primaryGradient};
-  border-radius: 0 0 28px 28px;
-  padding: 48px 20px 24px;
+  background: ${({ theme }) => theme.colors.surface};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  padding: 52px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
@@ -30,15 +30,15 @@ export const StyledAvatar = styled.div`
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(8px);
+  background: ${({ theme }) => theme.colors.primaryContainer};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.onPrimary};
+  color: ${({ theme }) => theme.colors.primary};
   flex-shrink: 0;
+  border: 1.5px solid ${({ theme }) => theme.colors.outlineVariant};
 `;
 
 export const StyledGreetingCol = styled.div`
@@ -47,16 +47,16 @@ export const StyledGreetingCol = styled.div`
 `;
 
 export const StyledGreetingSmall = styled.span`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.75);
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   line-height: 1.2;
 `;
 
 export const StyledGreetingName = styled.span`
   font-size: ${({ theme }) => theme.typography.titleLarge.fontSize};
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.onPrimary};
+  color: ${({ theme }) => theme.colors.onSurface};
   line-height: 1.2;
 `;
 
@@ -67,19 +67,23 @@ export const StyledHeaderActions = styled.div`
 `;
 
 export const StyledIconButton = styled.button`
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
+  background: transparent;
+  border: 1.5px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: 50%;
   width: 38px;
   height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.9);
+  color: ${({ theme }) => theme.colors.onSurface};
   cursor: pointer;
   font-family: inherit;
+  transition: background 150ms ease;
+  &:hover {
+    background: ${({ theme }) => theme.colors.background};
+  }
   &:active {
-    background: rgba(255, 255, 255, 0.25);
+    opacity: 0.7;
   }
 `;
 
@@ -89,9 +93,17 @@ export const StyledStatRow = styled.div`
 `;
 
 export const StyledHeaderSkeleton = styled.div`
-  height: 200px;
-  border-radius: 0 0 28px 28px;
-  background: linear-gradient(90deg, #c4b8e8 25%, #b8ace0 50%, #c4b8e8 75%);
+  height: 180px;
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.outlineVariant} 50%,
+    ${({ theme }) => theme.colors.surface} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.outlineVariant};
+  }
 `;
