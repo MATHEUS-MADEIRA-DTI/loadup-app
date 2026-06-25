@@ -7,6 +7,8 @@ import EmptyState from "@/components/EmptyState";
 import PageTransition from "@/components/PageTransition";
 import { strings } from "@/constants/strings";
 import { useExercises } from "@/hooks/useExercises";
+import { useTodaySession } from "@/hooks/useSession";
+
 import { DayOfWeek, Exercise, MuscleGroup } from "@/types";
 
 import AddExerciseModal from "./components/AddExerciseModal";
@@ -18,12 +20,15 @@ import {
   StyledBody,
   StyledFab,
   StyledPage,
+  StyledSectionHeading,
   StyledSkeletonCard,
   StyledStartBtn,
-  StyledStatBox,
-  StyledStatLabel,
+  StyledStatCard,
   StyledStatNum,
+  StyledStatRing,
+  StyledStatRingInner,
   StyledStatsRow,
+  StyledStatTitle,
 } from "./styles";
 import { DAY_LABEL, isValidDay } from "./utils";
 
@@ -36,7 +41,32 @@ export default function DayExercisesPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editExercise, setEditExercise] = useState<Exercise | null>(null);
   const [deleteExercise, setDeleteExercise] = useState<Exercise | null>(null);
+  const session = useTodaySession();
 
+  const todayDayOfWeek = (() => {
+    const days = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ];
+    return days[new Date().getDay()];
+  })();
+
+  const isToday = dayOfWeek === todayDayOfWeek;
+  const isSessionDone =
+    session.data?.status === "completed" || session.data?.status === "skipped";
+
+  const handleStartWorkout = () => {
+    if (isToday && isSessionDone) {
+      router.push("/session/completed");
+    } else {
+      router.push("/train");
+    }
+  };
   if (!isValidDay(dayOfWeek)) {
     router.replace("/training-plan");
     return null;
@@ -104,20 +134,33 @@ export default function DayExercisesPage() {
           />
 
           {list.length > 0 && (
-            <StyledStatsRow>
-              <StyledStatBox>
-                <StyledStatNum>{list.length}</StyledStatNum>
-                <StyledStatLabel>
-                  {strings.trainingPlan.statExercises}
-                </StyledStatLabel>
-              </StyledStatBox>
-              <StyledStatBox>
-                <StyledStatNum>{totalSeries}</StyledStatNum>
-                <StyledStatLabel>
-                  {strings.trainingPlan.statSeries}
-                </StyledStatLabel>
-              </StyledStatBox>
-            </StyledStatsRow>
+            <>
+              <StyledSectionHeading>
+                {strings.exercises.title}
+              </StyledSectionHeading>
+              <StyledStatsRow>
+                <StyledStatCard>
+                  <StyledStatRing>
+                    <StyledStatRingInner>
+                      <StyledStatNum>{list.length}</StyledStatNum>
+                    </StyledStatRingInner>
+                  </StyledStatRing>
+                  <StyledStatTitle>
+                    {strings.trainingPlan.statExercises}
+                  </StyledStatTitle>
+                </StyledStatCard>
+                <StyledStatCard>
+                  <StyledStatRing>
+                    <StyledStatRingInner>
+                      <StyledStatNum>{totalSeries}</StyledStatNum>
+                    </StyledStatRingInner>
+                  </StyledStatRing>
+                  <StyledStatTitle>
+                    {strings.trainingPlan.statSeries}
+                  </StyledStatTitle>
+                </StyledStatCard>
+              </StyledStatsRow>
+            </>
           )}
 
           <StyledBody>
@@ -156,9 +199,7 @@ export default function DayExercisesPage() {
                   <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
               </StyledFab>
-              <StyledStartBtn
-                onClick={() => router.push(`/workout/${dayOfWeek}`)}
-              >
+              <StyledStartBtn onClick={handleStartWorkout}>
                 <svg
                   width="18"
                   height="18"

@@ -43,14 +43,7 @@ export default function HomeHeader({
           <StyledAvatar>{userName[0]?.toUpperCase() ?? "A"}</StyledAvatar>
           <StyledGreetingCol>
             <StyledGreetingSmall>Olá,</StyledGreetingSmall>
-            <StyledGreetingName>
-              {userName}{" "}
-              <Hand
-                size={16}
-                strokeWidth={1.8}
-                style={{ display: "inline", verticalAlign: "middle" }}
-              />
-            </StyledGreetingName>
+            <StyledGreetingName>{userName} </StyledGreetingName>
           </StyledGreetingCol>
         </StyledAvatarRow>
 

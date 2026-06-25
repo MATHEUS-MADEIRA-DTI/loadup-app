@@ -49,13 +49,15 @@ export default function ExerciseCard({
 }
 
 const StyledCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.glassOverlay};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
   box-shadow: ${({ theme }) => theme.shadows.card};
+  backdrop-filter: blur(14px);
 `;
 
 const StyledHeader = styled.div`
@@ -66,8 +68,9 @@ const StyledHeader = styled.div`
 `;
 
 const StyledName = styled.h3`
+  font-family: "Barlow Condensed", Inter, sans-serif;
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: ${({ theme }) => theme.typography.titleMedium.fontWeight};
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
   flex: 1;
 `;
@@ -88,14 +91,24 @@ const StyledActions = styled.div`
 
 const StyledActionButton = styled.button`
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelLarge.fontWeight};
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.primary};
-  background: none;
-  border: none;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
   cursor: pointer;
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+  }
 `;
 
 const StyledDeleteButton = styled(StyledActionButton)`
   color: ${({ theme }) => theme.colors.error};
+  border-color: ${({ theme }) => theme.colors.errorContainer};
 `;

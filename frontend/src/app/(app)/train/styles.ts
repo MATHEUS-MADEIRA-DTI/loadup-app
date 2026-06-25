@@ -14,29 +14,33 @@ export const StyledPage = styled.div`
 `;
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  padding: 52px 20px 20px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 24px 0 12px;
 `;
 
 export const StyledSubtitle = styled.p`
   font-size: 13px;
   font-weight: 400;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  margin-bottom: 2px;
+  margin-bottom: 6px;
 `;
 
 export const StyledTitle = styled.h1`
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
   color: ${({ theme }) => theme.colors.onSurface};
+  margin: 0;
 `;
 
 export const StyledTabBar = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   position: relative;
-  background: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: 999px;
+  padding: 6px;
+  margin: 20px 16px 0;
+  box-shadow: ${({ theme }) => theme.shadows.card};
 `;
 
 export const StyledTabBtn = styled.button<{ $active: boolean }>`
@@ -45,7 +49,7 @@ export const StyledTabBtn = styled.button<{ $active: boolean }>`
   background: none;
   border: none;
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
   color: ${({ $active, theme }) =>
     $active ? theme.colors.primary : theme.colors.onSurfaceMuted};
   cursor: pointer;
@@ -55,13 +59,13 @@ export const StyledTabBtn = styled.button<{ $active: boolean }>`
 
 export const StyledTabIndicator = styled.div<{ $right: boolean }>`
   position: absolute;
-  bottom: 0;
-  left: ${({ $right }) => ($right ? "50%" : "0")};
-  width: 50%;
-  height: 2px;
+  bottom: 6px;
+  left: ${({ $right }) => ($right ? "50%" : "2%")};
+  width: 45%;
+  height: 4px;
   background: ${({ theme }) => theme.colors.primary};
   transition: left 200ms ease;
-  border-radius: 2px 2px 0 0;
+  border-radius: 999px;
 `;
 
 export const StyledTabContent = styled.div`
@@ -75,6 +79,8 @@ export const StyledSectionTitle = styled.p`
   font-size: 13px;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   margin-bottom: 4px;
 `;
 
@@ -90,9 +96,9 @@ export const StyledDayCardSkeleton = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s ease-in-out infinite;
@@ -107,7 +113,7 @@ export const StyledCtaArea = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-top: ${({ theme }) => theme.spacing.md};
+  margin-top: ${({ theme }) => theme.spacing.lg};
 `;
 
 export const StyledCtaBtn = styled.button<{ $disabled?: boolean }>`
@@ -116,7 +122,7 @@ export const StyledCtaBtn = styled.button<{ $disabled?: boolean }>`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px;
+  padding: 18px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   border: none;
   background: ${({ $disabled, theme }) =>
@@ -126,7 +132,14 @@ export const StyledCtaBtn = styled.button<{ $disabled?: boolean }>`
   font-weight: 700;
   cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
   font-family: inherit;
-  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
+  opacity: ${({ $disabled }) => ($disabled ? 0.65 : 1)};
+  transition:
+    transform 200ms ease,
+    background 200ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
 `;
 
 export const StyledCtaTodayDone = styled.div<{ $skipped: boolean }>`
@@ -149,11 +162,11 @@ export const StyledTodayStatusCard = styled.div<{ $status: string }>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.card};
-  border: 1.5px solid
+  border: 1px solid
     ${({ $status, theme }) =>
       $status === "completed"
         ? theme.colors.success

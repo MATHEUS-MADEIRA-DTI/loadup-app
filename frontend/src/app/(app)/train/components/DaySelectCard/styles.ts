@@ -1,19 +1,30 @@
 import styled from "styled-components";
 
-export const StyledDayCard = styled.div<{ $selected: boolean }>`
+export const StyledDayCard = styled.button<{ $selected: boolean }>`
+  width: 100%;
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.card};
-  border: 1.5px solid
+  border: 1px solid
     ${({ $selected, theme }) =>
-      $selected ? theme.colors.primary : "transparent"};
+      $selected ? theme.colors.primary : theme.colors.outlineVariant};
   cursor: pointer;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
+
   &:active {
-    opacity: 0.85;
+    opacity: 0.95;
   }
 `;
 
@@ -40,16 +51,17 @@ export const StyledDayInfo = styled.div`
 
 export const StyledDayName = styled.p`
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: 600;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
+  margin: 0;
 `;
 
 export const StyledDayMeta = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 2px;
+  margin-top: 4px;
 `;
 
 export const StyledDayMuscleText = styled.span`
@@ -78,5 +90,8 @@ export const StyledDaySelectIndicator = styled.div<{ $selected: boolean }>`
   justify-content: center;
   transition:
     background 200ms ease,
-    border-color 200ms ease;
+    border-color 200ms ease,
+    transform 200ms ease;
+
+  ${({ $selected }) => $selected && "transform: scale(1.02);"}
 `;

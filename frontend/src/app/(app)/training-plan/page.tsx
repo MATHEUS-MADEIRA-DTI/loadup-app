@@ -1,18 +1,30 @@
 ﻿"use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import EmptyState from "@/components/EmptyState";
 import MuscleChip from "@/components/MuscleChip";
 import PageTransition from "@/components/PageTransition";
 import { strings } from "@/constants/strings";
-import { useCreateTrainingSheet, useTrainingSheet, useUpdateDay } from "@/hooks/useTrainingSheet";
-import { DayType, MuscleGroup } from "@/types";
+import {
+  useCreateTrainingSheet,
+  useTrainingSheet,
+  useUpdateDay,
+} from "@/hooks/useTrainingSheet";
+import { DayOfWeek, MuscleGroup } from "@/types";
 
 import DayCard from "./components/DayCard";
 import PlanHeader from "./components/PlanHeader";
-import { StyledBody, StyledErrorText, StyledMuscleRow, StyledPage, StyledSection, StyledSectionTitle, StyledSkeletonCard } from "./styles";
+import {
+  StyledBody,
+  StyledErrorText,
+  StyledMuscleRow,
+  StyledPage,
+  StyledSection,
+  StyledSectionTitle,
+  StyledSkeletonCard,
+} from "./styles";
 import { DAYS, JS_TO_DOW } from "./utils";
 
 export default function TrainingPlanPage() {
@@ -20,16 +32,46 @@ export default function TrainingPlanPage() {
   const sheet = useTrainingSheet();
   const createSheet = useCreateTrainingSheet();
   const updateDay = useUpdateDay();
+  const [activeToggleDay, setActiveToggleDay] = useState<DayOfWeek | null>(
+    null,
+  );
   const todayDow = JS_TO_DOW[new Date().getDay()];
 
+  const handleToggleDay = (
+    day: DayOfWeek,
+    currentStatus: "training" | "rest",
+  ) => {
+    const nextStatus = currentStatus === "training" ? "rest" : "training";
+    setActiveToggleDay(day);
+    updateDay.mutate(
+      { day, status: nextStatus },
+      { onSettled: () => setActiveToggleDay(null) },
+    );
+  };
+
   const days = useMemo(
-    () => DAYS.map((d) => sheet.data?.days.find((sd) => sd.dayOfWeek === d) ?? { dayOfWeek: d, status: "rest" as DayType, exercises: [] }),
+    () =>
+      DAYS.map(
+        (d) =>
+          sheet.data?.days.find((sd) => sd.dayOfWeek === d) ?? {
+            dayOfWeek: d,
+            status: "rest",
+            exercises: [],
+          },
+      ),
     [sheet.data],
   );
   const trainingCount = days.filter((d) => d.status === "training").length;
   const restCount = days.length - trainingCount;
   const allMuscles = useMemo(
-    () => Array.from(new Set(days.filter((d) => d.status === "training").flatMap((d) => d.exercises.map((ex) => ex.muscleGroup)))) as MuscleGroup[],
+    () =>
+      Array.from(
+        new Set(
+          days
+            .filter((d) => d.status === "training")
+            .flatMap((d) => d.exercises.map((ex) => ex.muscleGroup)),
+        ),
+      ) as MuscleGroup[],
     [days],
   );
 
@@ -38,7 +80,11 @@ export default function TrainingPlanPage() {
       <PageTransition>
         <StyledPage>
           <PlanHeader trainingCount={0} restCount={0} />
-          <StyledBody>{Array.from({ length: 7 }).map((_, i) => <StyledSkeletonCard key={i} />)}</StyledBody>
+          <StyledBody>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <StyledSkeletonCard key={i} />
+            ))}
+          </StyledBody>
         </StyledPage>
       </PageTransition>
     );
@@ -53,10 +99,16 @@ export default function TrainingPlanPage() {
             <EmptyState
               title={strings.trainingPlan.noSheetTitle}
               description={strings.trainingPlan.noSheetSubtitle}
-              ctaLabel={createSheet.isPending ? strings.common.loading : strings.trainingPlan.createSheet}
+              ctaLabel={
+                createSheet.isPending
+                  ? strings.common.loading
+                  : strings.trainingPlan.createSheet
+              }
               onCta={() => createSheet.mutate()}
             />
-            {createSheet.isError && <StyledErrorText>{strings.common.error}</StyledErrorText>}
+            {createSheet.isError && (
+              <StyledErrorText>{strings.common.error}</StyledErrorText>
+            )}
           </StyledBody>
         </StyledPage>
       </PageTransition>
@@ -68,23 +120,20 @@ export default function TrainingPlanPage() {
       <StyledPage>
         <PlanHeader trainingCount={trainingCount} restCount={restCount} />
         <StyledBody>
-          {allMuscles.length > 0 && (
-            <StyledSection>
-              <StyledSectionTitle>{strings.trainingPlan.sectionMuscles}</StyledSectionTitle>
-              <StyledMuscleRow>{allMuscles.map((mg) => <MuscleChip key={mg} muscleGroup={mg} />)}</StyledMuscleRow>
-            </StyledSection>
-          )}
           <StyledSection>
-            <StyledSectionTitle>{strings.trainingPlan.sectionDays}</StyledSectionTitle>
+            <StyledSectionTitle>
+              {strings.trainingPlan.sectionDays}
+            </StyledSectionTitle>
             {days.map((day) => (
               <DayCard
                 key={day.dayOfWeek}
                 day={day}
                 isToday={day.dayOfWeek === todayDow}
-                onToggle={(d, next) => updateDay.mutate({ day: d, status: next })}
                 onNavigate={(d) => router.push(`/training-plan/${d}`)}
-                onAdd={(d) => router.push(`/training-plan/${d}`)}
-                isUpdating={updateDay.isPending}
+                onToggle={handleToggleDay}
+                isUpdating={
+                  activeToggleDay === day.dayOfWeek && updateDay.isLoading
+                }
               />
             ))}
           </StyledSection>

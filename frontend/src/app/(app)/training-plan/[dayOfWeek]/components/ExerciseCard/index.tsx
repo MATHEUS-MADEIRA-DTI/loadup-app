@@ -1,10 +1,8 @@
 "use client";
 
-import MuscleChip from "@/components/MuscleChip";
 import { strings } from "@/constants/strings";
 import { Exercise } from "@/types";
 
-import { SERIES_COLOR, SERIES_LABEL } from "../../utils";
 import { VideoTipsSection } from "./VideoTipsSection";
 
 import {
@@ -19,7 +17,6 @@ import {
   StyledSeriesList,
   StyledSeriesReps,
   StyledSeriesRow,
-  StyledSeriesType,
   StyledTrashBtn,
 } from "./styles";
 
@@ -37,23 +34,8 @@ export default function ExerciseCard({
   onDelete,
 }: ExerciseCardProps) {
   const total = exercise.series.length;
-  const warmCount = exercise.series.filter((s) => s.type === "warm-up").length;
-  const workingCount = exercise.series.filter(
-    (s) => s.type === "working",
-  ).length;
-  const adjustCount = exercise.series.filter(
-    (s) => s.type === "adjustment",
-  ).length;
-
-  const footerParts: string[] = [
-    strings.trainingPlan.seriesFooter.total(total),
-  ];
-  if (warmCount > 0)
-    footerParts.push(strings.trainingPlan.seriesFooter.warmUp(warmCount));
-  if (adjustCount > 0)
-    footerParts.push(strings.trainingPlan.seriesFooter.adjustment(adjustCount));
-  if (workingCount > 0)
-    footerParts.push(strings.trainingPlan.seriesFooter.working(workingCount));
+  const uniqueMuscles = exercise.muscleGroup;
+  const footerText = strings.trainingPlan.seriesFooter.total(total);
 
   return (
     <StyledExCard>
@@ -78,25 +60,18 @@ export default function ExerciseCard({
         </StyledTrashBtn>
       </StyledExHeader>
 
-      <StyledExMuscle>
-        <MuscleChip muscleGroup={exercise.muscleGroup} />
-      </StyledExMuscle>
+      <StyledExMuscle>{uniqueMuscles}</StyledExMuscle>
 
       <StyledSeriesList>
         {exercise.series.map((s, i) => (
-          <StyledSeriesRow key={i} $bg={SERIES_COLOR[s.type].bg}>
-            <StyledSeriesCircle $color={SERIES_COLOR[s.type].text}>
-              {i + 1}
-            </StyledSeriesCircle>
-            <StyledSeriesType $color={SERIES_COLOR[s.type].text}>
-              {SERIES_LABEL[s.type]}
-            </StyledSeriesType>
+          <StyledSeriesRow key={i}>
+            <StyledSeriesCircle>{i + 1}</StyledSeriesCircle>
             <StyledSeriesReps>{s.reps} reps</StyledSeriesReps>
           </StyledSeriesRow>
         ))}
       </StyledSeriesList>
 
-      <StyledExFooter>{footerParts.join(" · ")}</StyledExFooter>
+      <StyledExFooter>{footerText}</StyledExFooter>
 
       <VideoTipsSection
         videoUrl={exercise.videoUrl}

@@ -2,13 +2,32 @@ import { MuscleGroup } from "../types/trainingSheet";
 
 export type { MuscleGroup };
 
+export type ThemeMode = "light" | "dark";
+export type ColorTheme =
+  | "electricBlue"
+  | "deepViolet"
+  | "obsidianGreen"
+  | "sunsetOrange"
+  | "roseGold";
+
+interface ColorThemeDefinition {
+  id: ColorTheme;
+  name: string;
+  primary: string;
+  primaryDark: string;
+}
+
 export interface AppTheme {
+  mode: ThemeMode;
+  colorTheme: ColorTheme;
   colors: {
     primary: string;
+    primaryDark: string;
     primaryStrong: string;
     primaryContainer: string;
     primaryGradient: string;
     surface: string;
+    surfaceElevated: string;
     background: string;
     onPrimary: string;
     onSurface: string;
@@ -19,10 +38,14 @@ export interface AppTheme {
     glassOverlay: string;
     outline: string;
     outlineVariant: string;
+    border: string;
+    borderAlpha: string;
     error: string;
     errorContainer: string;
     success: string;
     successContainer: string;
+    warning: string;
+    destructive: string;
     muscleGroups: Record<MuscleGroup, { bg: string; text: string }>;
   };
   typography: {
@@ -56,6 +79,39 @@ export interface AppTheme {
   };
 }
 
+const colorThemes: Record<ColorTheme, ColorThemeDefinition> = {
+  electricBlue: {
+    id: "electricBlue",
+    name: "Electric Blue",
+    primary: "#3B82F6",
+    primaryDark: "#1D4ED8",
+  },
+  deepViolet: {
+    id: "deepViolet",
+    name: "Deep Violet",
+    primary: "#7C3AED",
+    primaryDark: "#5B21B6",
+  },
+  obsidianGreen: {
+    id: "obsidianGreen",
+    name: "Obsidian Green",
+    primary: "#059669",
+    primaryDark: "#047857",
+  },
+  sunsetOrange: {
+    id: "sunsetOrange",
+    name: "Sunset Orange",
+    primary: "#EA580C",
+    primaryDark: "#C2410C",
+  },
+  roseGold: {
+    id: "roseGold",
+    name: "Rose Gold",
+    primary: "#E11D48",
+    primaryDark: "#BE123C",
+  },
+};
+
 const muscleGroupsLight: Record<MuscleGroup, { bg: string; text: string }> = {
   Peito: { bg: "#EDE7F6", text: "#4A148C" },
   Tríceps: { bg: "#E8EAF6", text: "#1A237E" },
@@ -84,112 +140,105 @@ const muscleGroupsDark: Record<MuscleGroup, { bg: string; text: string }> = {
   Panturrilha: { bg: "#2A2A0A", text: "#E6EE9C" },
 };
 
-export const lightTheme: AppTheme = {
-  colors: {
-    primary: "#6750A4",
-    primaryStrong: "#6750A4",
-    primaryContainer: "#EDE7F6",
-    primaryGradient:
-      "linear-gradient(153deg, rgba(103,80,164,1) 0%, rgba(74,20,140,1) 100%)",
-    surface: "#FFFFFF",
-    background: "#F5F5F7",
-    onPrimary: "#FFFFFF",
-    onSurface: "#1C1B1F",
-    onSurfaceMuted: "#49454F",
-    onBackground: "#1C1B1F",
-    onBackgroundMuted: "#49454F",
-    onBackgroundSubtle: "#79747E",
-    glassOverlay: "rgba(255,255,255,0.15)",
-    outline: "#79747E",
-    outlineVariant: "#CAC4D0",
-    error: "#B3261E",
-    errorContainer: "#F9DEDC",
-    success: "#386A20",
-    successContainer: "#D3E8D0",
-    muscleGroups: muscleGroupsLight,
-  },
-  typography: {
-    displayLarge: { fontSize: "22px", fontWeight: 700 },
-    headlineMedium: { fontSize: "17px", fontWeight: 700 },
-    titleLarge: { fontSize: "16px", fontWeight: 600 },
-    titleMedium: { fontSize: "15px", fontWeight: 600 },
-    bodyMedium: { fontSize: "13px", fontWeight: 400 },
-    labelLarge: { fontSize: "12px", fontWeight: 500 },
-    labelSmall: { fontSize: "10px", fontWeight: 400 },
-  },
-  spacing: {
-    xs: "4px",
-    sm: "8px",
-    md: "16px",
-    lg: "24px",
-    xl: "32px",
-    xxl: "48px",
-  },
-  borderRadius: {
-    card: "24px",
-    inner: "20px",
-    header: "0 0 28px 28px",
-    chip: "12px",
-    pill: "1200px",
-    avatar: "50%",
-  },
-  shadows: {
-    card: "0 0 0 1px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05)",
-    primary: "0px 4px 12px 0px rgba(103,80,164,0.25)",
-  },
-};
+function hexToRgb(hex: string) {
+  const normalized = hex.replace("#", "");
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return `${r} ${g} ${b}`;
+}
 
-export const darkTheme: AppTheme = {
-  colors: {
-    primary: "#D0BCFF",
-    primaryStrong: "#4F378B",
-    primaryContainer: "#4F378B",
-    primaryGradient:
-      "linear-gradient(153deg, rgba(80,60,130,1) 0%, rgba(40,20,80,1) 100%)",
-    surface: "#1A1820",
-    background: "#0E0D11",
-    onPrimary: "#FFFFFF",
-    onSurface: "#E6E1E5",
-    onSurfaceMuted: "#CAC4D0",
-    onBackground: "#E6E1E5",
-    onBackgroundMuted: "#CAC4D0",
-    onBackgroundSubtle: "#938F99",
-    glassOverlay: "rgba(255,255,255,0.08)",
-    outline: "#938F99",
-    outlineVariant: "#49454F",
-    error: "#F2B8B5",
-    errorContainer: "#8C1D18",
-    success: "#A5D6A7",
-    successContainer: "#1B5E20",
-    muscleGroups: muscleGroupsDark,
-  },
-  typography: {
-    displayLarge: { fontSize: "22px", fontWeight: 700 },
-    headlineMedium: { fontSize: "17px", fontWeight: 700 },
-    titleLarge: { fontSize: "16px", fontWeight: 600 },
-    titleMedium: { fontSize: "15px", fontWeight: 600 },
-    bodyMedium: { fontSize: "13px", fontWeight: 400 },
-    labelLarge: { fontSize: "12px", fontWeight: 500 },
-    labelSmall: { fontSize: "10px", fontWeight: 400 },
-  },
-  spacing: {
-    xs: "4px",
-    sm: "8px",
-    md: "16px",
-    lg: "24px",
-    xl: "32px",
-    xxl: "48px",
-  },
-  borderRadius: {
-    card: "24px",
-    inner: "20px",
-    header: "0 0 28px 28px",
-    chip: "12px",
-    pill: "1200px",
-    avatar: "50%",
-  },
-  shadows: {
-    card: "0 0 0 1px rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.5)",
-    primary: "0px 4px 16px 0px rgba(208,188,255,0.20)",
-  },
-};
+function hexToRgba(hex: string, alpha: number) {
+  return `rgba(${hexToRgb(hex)}, ${alpha})`;
+}
+
+function createAppTheme(mode: ThemeMode, colorTheme: ColorTheme): AppTheme {
+  const theme = colorThemes[colorTheme];
+  const isLight = mode === "light";
+
+  const surface = isLight ? "#F8FAFC" : "#0F172A";
+  const surfaceElevated = isLight ? "#FFFFFF" : "#1E293B";
+  const background = isLight ? "#F1F5F9" : "#020617";
+  const text = isLight ? "#0F172A" : "#F8FAFC";
+  const muted = isLight ? "#64748B" : "#CBD5E1";
+  const subtle = isLight ? "#94A3B8" : "#94A3B8";
+  const outline = isLight ? "#0F172A" : "#FFFFFF";
+  const outlineVariant = isLight ? "#CBD5E1" : "#475569";
+  const glassOverlay = isLight ? "rgba(255,255,255,0.65)" : "rgba(15,23,42,0.7)";
+
+  return {
+    mode,
+    colorTheme,
+    colors: {
+      primary: theme.primary,
+      primaryDark: theme.primaryDark,
+      primaryStrong: isLight ? theme.primary : theme.primaryDark,
+      primaryContainer: isLight
+        ? hexToRgba(theme.primary, 0.12)
+        : hexToRgba(theme.primaryDark, 0.18),
+      primaryGradient: `linear-gradient(153deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
+      surface,
+      surfaceElevated,
+      background,
+      onPrimary: "#FFFFFF",
+      onSurface: text,
+      onSurfaceMuted: muted,
+      onBackground: text,
+      onBackgroundMuted: muted,
+      onBackgroundSubtle: subtle,
+      glassOverlay,
+      outline,
+      outlineVariant,
+      border: outline,
+      borderAlpha: "0.08",
+      error: "#EF4444",
+      errorContainer: isLight ? "#FBCACA" : "#7F1D1D",
+      success: "#22C55E",
+      successContainer: isLight ? "#DCFCE7" : "#064E3B",
+      warning: "#F59E0B",
+      destructive: "#EF4444",
+      muscleGroups: isLight ? muscleGroupsLight : muscleGroupsDark,
+    },
+    typography: {
+      displayLarge: { fontSize: "22px", fontWeight: 700 },
+      headlineMedium: { fontSize: "17px", fontWeight: 700 },
+      titleLarge: { fontSize: "16px", fontWeight: 600 },
+      titleMedium: { fontSize: "15px", fontWeight: 600 },
+      bodyMedium: { fontSize: "13px", fontWeight: 400 },
+      labelLarge: { fontSize: "12px", fontWeight: 500 },
+      labelSmall: { fontSize: "10px", fontWeight: 400 },
+    },
+    spacing: {
+      xs: "4px",
+      sm: "8px",
+      md: "16px",
+      lg: "24px",
+      xl: "32px",
+      xxl: "48px",
+    },
+    borderRadius: {
+      card: "24px",
+      inner: "20px",
+      header: "0 0 28px 28px",
+      chip: "12px",
+      pill: "1200px",
+      avatar: "50%",
+    },
+    shadows: {
+      card: isLight
+        ? "0 6px 18px rgba(15, 23, 42, 0.08)"
+        : "0 6px 24px rgba(0, 0, 0, 0.45)",
+      primary: isLight
+        ? `0px 4px 16px rgba(${hexToRgb(theme.primary)}, 0.24)`
+        : `0px 4px 16px rgba(${hexToRgb(theme.primaryDark)}, 0.28)`,
+    },
+  };
+}
+
+export const lightTheme = createAppTheme("light", "electricBlue");
+export const darkTheme = createAppTheme("dark", "electricBlue");
+export const defaultColorTheme: ColorTheme = "electricBlue";
+export const colorThemeDefinitions = colorThemes;
+export const availableColorThemes = Object.values(colorThemes);
+export const buildTheme = createAppTheme;
+export const createTheme = createAppTheme;

@@ -50,11 +50,14 @@ export default function WeekStrip({
       {weekly.days.map((day) => {
         const today = isToday(day.date);
         const selected = day.dayOfWeek === selectedDow;
+        const isCompleted = day.sessionStatus === "recorded";
+        const isRest = day.plannedStatus === "rest";
         return (
           <StyledDayPill
             key={day.date}
             $today={today}
             $selected={selected}
+            $rest={isRest}
             onClick={() => onDayClick(day.dayOfWeek as DayOfWeek)}
           >
             <StyledDayLabel $today={today} $selected={selected}>
@@ -64,9 +67,32 @@ export default function WeekStrip({
               {formatDayNumber(day.date)}
             </StyledDayNumber>
             <StyledDayDot
-              $plannedStatus={day.plannedStatus}
-              $sessionStatus={day.sessionStatus}
-            />
+              aria-label={
+                isCompleted ? "Concluído" : isRest ? "Descanso" : "Pendente"
+              }
+            >
+              {isCompleted ? (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M9 16.17L4.83 12 3.41 13.41 9 19 21 7 19.59 5.59z" />
+                </svg>
+              ) : isRest ? (
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M5 12h14v2H5z" />
+                </svg>
+              ) : (
+                <span />
+              )}
+            </StyledDayDot>
           </StyledDayPill>
         );
       })}

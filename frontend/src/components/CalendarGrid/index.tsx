@@ -92,9 +92,12 @@ export default function CalendarGrid({
 }
 
 const StyledWrapper = styled.div`
-  background-color: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.glassOverlay};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  backdrop-filter: blur(14px);
 `;
 
 const StyledHeader = styled.div`
@@ -105,36 +108,47 @@ const StyledHeader = styled.div`
 `;
 
 const StyledTitle = styled.h3`
-  font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: ${({ theme }) => theme.typography.titleMedium.fontWeight};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.headlineMedium.fontSize};
+  font-weight: 900;
   color: ${({ theme }) => theme.colors.onSurface};
 `;
 
 const StyledNavButton = styled.button`
-  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.primary};
-  background: none;
-  border: none;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+  }
 `;
 
 const StyledGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 8px;
 `;
 
 const StyledWeekday = styled.span`
+  font-family: "Barlow Condensed", Inter, sans-serif;
   font-size: ${({ theme }) => theme.typography.labelSmall.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelSmall.fontWeight};
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
   padding: ${({ theme }) => theme.spacing.xs} 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 `;
 
 const StyledDayCell = styled.div<{ $isToday: boolean }>`
@@ -142,11 +156,14 @@ const StyledDayCell = styled.div<{ $isToday: boolean }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-height: 40px;
+  gap: 4px;
+  min-height: 48px;
   border-radius: ${({ theme }) => theme.borderRadius.chip};
   background-color: ${({ theme, $isToday }) =>
-    $isToday ? theme.colors.primaryContainer : "transparent"};
+    $isToday ? theme.colors.primaryContainer : theme.colors.surface};
+  border: 1px solid
+    ${({ theme, $isToday }) =>
+      $isToday ? theme.colors.primary : theme.colors.outlineVariant};
 `;
 
 const StyledDayNumber = styled.span<{ $isToday: boolean }>`

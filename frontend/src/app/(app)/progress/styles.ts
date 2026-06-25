@@ -10,32 +10,32 @@ export const StyledPage = styled.div`
   flex-direction: column;
   min-height: 100%;
   background: ${({ theme }) => theme.colors.background};
-  padding-bottom: 100px;
+  padding: 24px 0 140px;
 `;
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  padding: 52px 20px 24px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 0 24px 16px;
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
+  margin: 0;
 `;
 
 export const StyledHeaderSkeleton = styled.div`
   height: 160px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
-    background: ${({ theme }) => theme.colors.surface};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
   }
 `;
 
@@ -54,10 +54,8 @@ export const StyledTitle = styled.h1`
 
 export const StyledStatRow = styled.div`
   display: flex;
-  gap: 0;
+  gap: ${({ theme }) => theme.spacing.sm};
   margin-top: ${({ theme }) => theme.spacing.md};
-  padding-top: ${({ theme }) => theme.spacing.md};
-  border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
 `;
 
 export const StyledStatPill = styled.div`
@@ -65,11 +63,12 @@ export const StyledStatPill = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 0 ${({ theme }) => theme.spacing.xs};
-  &:not(:last-child) {
-    border-right: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  }
+  justify-content: center;
+  gap: 6px;
+  min-height: 100px;
+  padding: ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
 `;
 
 export const StyledPillValue = styled.span`
@@ -94,28 +93,339 @@ export const StyledBody = styled.main`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
+  padding: 0 16px ${({ theme }) => theme.spacing.lg};
+  margin: 0;
 `;
 
-export const StyledSkeletonCard = styled.div`
-  height: 120px;
+export const StyledTabBar = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: 999px;
+  padding: 6px;
+  margin-top: ${({ theme }) => theme.spacing.md};
+`;
+
+export const StyledTabButton = styled.button<{ $active: boolean }>`
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.surface};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.onPrimary : theme.colors.onSurfaceMuted};
+  border: none;
+  border-radius: 999px;
+  padding: 14px 12px;
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+`;
+
+export const StyledProfileRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const StyledAvatarWrap = styled.div`
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primary};
+  display: grid;
+  place-items: center;
+  color: ${({ theme }) => theme.colors.onPrimary};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+`;
+
+export const StyledAvatarEdit = styled.button`
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.onSurface};
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+`;
+
+export const StyledProfileInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+export const StyledProfileName = styled.button`
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font-family: Inter, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.onSurface};
+  cursor: pointer;
+`;
+
+export const StyledProfileEmail = styled.span`
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+`;
+
+export const StyledNameInput = styled.input`
+  width: 100%;
+  max-width: 240px;
+  font-family: Inter, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.onSurface};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  padding: 10px 12px;
+  outline: none;
+  color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledSectionHeading = styled.p`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin: 0 0 ${({ theme }) => theme.spacing.sm};
+`;
+
+export const StyledColorSwatchRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+export const StyledColorSwatch = styled.button<{
+  $selected: boolean;
+  $color: string;
+}>`
+  border: none;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  min-width: 64px;
+`;
+
+export const StyledSwatchCircle = styled.div<{
+  $selected: boolean;
+  $color: string;
+}>`
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  display: grid;
+  place-items: center;
+  position: relative;
+  box-shadow: ${({ $selected, $color }) =>
+    $selected ? `0 0 0 3px ${$color}` : "none"};
+`;
+
+export const StyledSwatchCheck = styled.span`
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.onPrimary};
+  color: ${({ theme }) => theme.colors.primary};
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+`;
+
+export const StyledSwatchLabel = styled.span`
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  text-align: center;
+`;
+
+export const StyledAppearanceRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const StyledSectionLabel = styled.span`
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledToggleGroup = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+`;
+
+export const StyledToggleOption = styled.button<{ $active: boolean }>`
+  border: none;
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.surface};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.onPrimary : theme.colors.onSurfaceMuted};
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+export const StyledPreferenceRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const StyledPreferenceInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const StyledPreferenceLabel = styled.span`
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledPreferenceControl = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const StyledControlButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.onSurface};
+  font-size: 1.1rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+`;
+
+export const StyledControlValue = styled.span`
+  min-width: 40px;
+  text-align: center;
+  font-family: Inter, sans-serif;
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledLanguageRow = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  padding: 14px 16px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.onSurface};
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+`;
+
+export const StyledLanguageValue = styled.span`
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+`;
+
+export const StyledSignOutButton = styled.button`
+  width: 100%;
+  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors.destructive};
+  color: ${({ theme }) => theme.colors.destructive};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  padding: 16px;
+  font-family: Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-weight: 700;
+  cursor: pointer;
+`;
+
+export const StyledCard = styled.section`
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.card};
+  padding: ${({ theme }) => theme.spacing.lg};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const StyledSkeletonCard = styled.section`
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: ${({ theme }) => theme.borderRadius.card};
+  padding: ${({ theme }) => theme.spacing.lg};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  min-height: 180px;
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
-    background: ${({ theme }) => theme.colors.outlineVariant};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
   }
 `;
 
-export const StyledCard = styled.section`
-  background: ${({ theme }) => theme.colors.surface};
+export const StyledSectionCard = styled.section`
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.card};
   padding: ${({ theme }) => theme.spacing.lg};
   box-shadow: ${({ theme }) => theme.shadows.card};
@@ -185,9 +495,10 @@ export const StyledPrBanner = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: ${({ theme }) => theme.spacing.sm};
-  background: ${({ theme }) => theme.colors.primaryContainer};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
-  padding: 10px 14px;
+  padding: 14px 16px;
 `;
 
 export const StyledPrText = styled.span`

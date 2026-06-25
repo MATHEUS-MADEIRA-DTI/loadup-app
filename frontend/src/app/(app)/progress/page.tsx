@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, KeyboardEvent } from "react";
 import {
   BarChart,
   Bar,
@@ -21,7 +21,8 @@ import {
   useProgressionSummary,
 } from "@/hooks/useProgression";
 import { useTrainingSheet } from "@/hooks/useTrainingSheet";
-import { useTheme } from "@/styles/ThemeProvider";
+import { useAppTheme } from "@/styles/ThemeProvider";
+import { ColorTheme, colorThemeDefinitions } from "@/styles/theme";
 import { MuscleGroup } from "@/types";
 
 import ProgressionChart from "./components/ProgressionChart";
@@ -45,20 +46,87 @@ import {
   StyledPillValue,
   StyledPrBanner,
   StyledPrText,
+  StyledSectionCard,
+  StyledSectionHeading,
   StyledSectionHeader,
   StyledSectionIcon,
+  StyledSectionLabel,
   StyledSectionTitle,
   StyledSkeletonCard,
-  StyledStatPill,
-  StyledStatRow,
-  StyledSubtitle,
+  StyledTabBar,
+  StyledTabButton,
   StyledTitle,
+  StyledSubtitle,
+  StyledProfileEmail,
+  StyledProfileInfo,
+  StyledProfileName,
+  StyledProfileRow,
+  StyledNameInput,
+  StyledAvatarEdit,
+  StyledAvatarWrap,
+  StyledColorSwatch,
+  StyledColorSwatchRow,
+  StyledLanguageRow,
+  StyledLanguageValue,
+  StyledPreferenceControl,
+  StyledPreferenceInfo,
+  StyledPreferenceLabel,
+  StyledPreferenceRow,
+  StyledSignOutButton,
+  StyledSwatchCheck,
+  StyledSwatchCircle,
+  StyledSwatchLabel,
+  StyledToggleGroup,
+  StyledToggleOption,
+  StyledAppearanceRow,
+  StyledControlButton,
+  StyledControlValue,
 } from "./styles";
 import { formatShortDate, getISOWeekKey } from "./utils";
 
 export default function ProgressPage() {
-  const { theme } = useTheme();
+  const { theme, mode, colorKey, setColorTheme, toggleMode } = useAppTheme();
+  const [activeTab, setActiveTab] = useState<"progress" | "settings">(
+    "progress",
+  );
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
+  const [userName, setUserName] = useState(strings.common.defaultUserName);
+  const [editingName, setEditingName] = useState(false);
+  const [restSeconds, setRestSeconds] = useState(60);
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");
+  const [language, setLanguage] = useState("Português");
+
+  const themeOptions = Object.values(colorThemeDefinitions) as Array<{
+    id: ColorTheme;
+    name: string;
+    primary: string;
+    primaryDark: string;
+  }>;
+
+  const initials = userName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleNameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      setEditingName(false);
+    }
+  };
+
+  const handleRestChange = (value: number) => {
+    setRestSeconds((current) => Math.max(10, current + value));
+  };
+
+  const handleWeightToggle = (unit: "kg" | "lb") => {
+    setWeightUnit(unit);
+  };
+
+  const handleLanguageClick = () => {
+    setLanguage((prev) => (prev === "Português" ? "English" : "Português"));
+  };
 
   const now = new Date();
   const summary = useProgressionSummary();
@@ -170,189 +238,333 @@ export default function ProgressPage() {
         <StyledHeader>
           <StyledSubtitle>LoadUp</StyledSubtitle>
           <StyledTitle>{strings.progression.titleMain}</StyledTitle>
-          <StyledStatRow>
-            <StyledStatPill>
-              <StyledPillValue>
-                {summary.data?.totalSessionsRecorded ?? 0}
-              </StyledPillValue>
-              <StyledPillLabel>
-                {strings.progression.statWorkouts}
-              </StyledPillLabel>
-            </StyledStatPill>
-            <StyledStatPill>
-              <StyledPillValue>
-                {summary.data?.totalExercisesLogged ?? 0}
-              </StyledPillValue>
-              <StyledPillLabel>
-                {strings.progression.statSeries}
-              </StyledPillLabel>
-            </StyledStatPill>
-            <StyledStatPill>
-              <StyledPillValue>
-                {summary.data?.workoutStreak.currentDays ?? 0}
-              </StyledPillValue>
-              <StyledPillLabel>
-                {strings.progression.statStreakDays}
-              </StyledPillLabel>
-            </StyledStatPill>
-          </StyledStatRow>
+          <StyledTabBar>
+            <StyledTabButton
+              $active={activeTab === "progress"}
+              onClick={() => setActiveTab("progress")}
+            >
+              Progresso
+            </StyledTabButton>
+            <StyledTabButton
+              $active={activeTab === "settings"}
+              onClick={() => setActiveTab("settings")}
+            >
+              Configurações
+            </StyledTabButton>
+          </StyledTabBar>
         </StyledHeader>
 
         <StyledBody>
-          {hasNoData && (
-            <EmptyState
-              title={strings.progression.noDataTitle}
-              description={strings.progression.noDataSubtitle}
-            />
-          )}
+          {activeTab === "progress" ? (
+            <>
+              {hasNoData && (
+                <EmptyState
+                  title={strings.progression.noDataTitle}
+                  description={strings.progression.noDataSubtitle}
+                />
+              )}
 
-          {weeklyActivity.length > 0 && (
-            <StyledCard>
-              <StyledSectionHeader>
-                <StyledSectionIcon>
-                  <Flame size={16} />
-                </StyledSectionIcon>
-                <StyledSectionTitle>
-                  {strings.progression.weeklyActivityTitle}
-                </StyledSectionTitle>
-              </StyledSectionHeader>
-              <ResponsiveContainer width="100%" height={120}>
-                <BarChart
-                  data={weeklyActivity}
-                  margin={{ top: 4, right: 4, bottom: 0, left: -28 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={theme.colors.outlineVariant}
-                    opacity={0.5}
-                  />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 10, fill: theme.colors.onSurfaceMuted }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: theme.colors.onSurfaceMuted }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      border: `1px solid ${theme.colors.outlineVariant}`,
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.20)",
-                      backgroundColor: theme.colors.surface,
-                      color: theme.colors.onSurface,
-                    }}
-                    labelStyle={{ color: theme.colors.onSurfaceMuted }}
-                    itemStyle={{ color: theme.colors.onSurface }}
-                    cursor={{ fill: theme.colors.outlineVariant, opacity: 0.4 }}
-                    formatter={(v: number) => [v, "Treinos"]}
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill={theme.colors.primary}
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={28}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </StyledCard>
-          )}
-
-          <StyledCard>
-            <StyledSectionHeader>
-              <StyledSectionIcon>
-                <TrendingUp size={16} />
-              </StyledSectionIcon>
-              <StyledSectionTitle>
-                {strings.progression.chargeProgressionTitle}
-              </StyledSectionTitle>
-            </StyledSectionHeader>
-            {exerciseNames.length === 0 ? (
-              <StyledHint>{strings.progression.noExercisesWithData}</StyledHint>
-            ) : (
-              <StyledChipScroll>
-                {exerciseNames.map((name) => (
-                  <StyledExerciseChip
-                    key={name}
-                    $selected={selectedExercise === name}
-                    onClick={() => setSelectedExercise(name)}
-                  >
-                    {name}
-                  </StyledExerciseChip>
-                ))}
-              </StyledChipScroll>
-            )}
-            {prData && (
-              <StyledPrBanner>
-                <StyledPrText>
-                  <Trophy size={14} style={{ flexShrink: 0 }} />{" "}
-                  {strings.progression.prLabel(
-                    prData.weight,
-                    prData.reps,
-                    prData.date,
-                  )}
-                </StyledPrText>
-                {prData.improvement > 0 && (
-                  <StyledImprovementBadge>
-                    {strings.progression.improvement(prData.improvement)}
-                  </StyledImprovementBadge>
-                )}
-              </StyledPrBanner>
-            )}
-            {selectedExercise === null ? (
-              <StyledHint>{strings.progression.selectExerciseHint}</StyledHint>
-            ) : chart.isLoading ? (
-              <StyledSkeletonCard style={{ height: 180, margin: 0 }} />
-            ) : chart.error ? (
-              <StyledHint>{strings.progression.noDataSubtitle}</StyledHint>
-            ) : chart.data ? (
-              <ProgressionChart
-                data={chart.data}
-                primaryColor={theme.colors.primary}
-                primaryContainerColor={theme.colors.primaryContainer}
-                onSurfaceMuted={theme.colors.onSurfaceMuted}
-                surfaceColor={theme.colors.surface}
-                onSurfaceColor={theme.colors.onSurface}
-                outlineVariant={theme.colors.outlineVariant}
-              />
-            ) : null}
-          </StyledCard>
-
-          {muscleSeries.length > 0 && (
-            <StyledCard>
-              <StyledSectionHeader>
-                <StyledSectionIcon>
-                  <Dumbbell size={16} />
-                </StyledSectionIcon>
-                <StyledSectionTitle>
-                  {strings.progression.muscleFocusTitle}
-                </StyledSectionTitle>
-              </StyledSectionHeader>
-              <StyledMuscleList>
-                {muscleSeries.map(({ group, count, pct }) => (
-                  <StyledMuscleRow key={group}>
-                    <StyledMuscleName>{group}</StyledMuscleName>
-                    <StyledMuscleBarWrap>
-                      <StyledMuscleBar
-                        $pct={pct}
-                        $bg={
-                          theme.colors.muscleGroups[group]?.text ??
-                          theme.colors.primary
-                        }
+              {weeklyActivity.length > 0 && (
+                <StyledCard>
+                  <StyledSectionHeader>
+                    <StyledSectionIcon>
+                      <Flame size={16} />
+                    </StyledSectionIcon>
+                    <StyledSectionTitle>
+                      {strings.progression.weeklyActivityTitle}
+                    </StyledSectionTitle>
+                  </StyledSectionHeader>
+                  <ResponsiveContainer width="100%" height={120}>
+                    <BarChart
+                      data={weeklyActivity}
+                      margin={{ top: 4, right: 4, bottom: 0, left: -28 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={theme.colors.outlineVariant}
+                        opacity={0.5}
                       />
-                    </StyledMuscleBarWrap>
-                    <StyledMuscleCount>
-                      {strings.progression.seriesUnit(count)}
-                    </StyledMuscleCount>
-                  </StyledMuscleRow>
-                ))}
-              </StyledMuscleList>
-            </StyledCard>
+                      <XAxis
+                        dataKey="label"
+                        tick={{
+                          fontSize: 10,
+                          fill: theme.colors.onSurfaceMuted,
+                        }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        tick={{
+                          fontSize: 10,
+                          fill: theme.colors.onSurfaceMuted,
+                        }}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          border: `1px solid ${theme.colors.outlineVariant}`,
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.20)",
+                          backgroundColor: theme.colors.surface,
+                          color: theme.colors.onSurface,
+                        }}
+                        labelStyle={{ color: theme.colors.onSurfaceMuted }}
+                        itemStyle={{ color: theme.colors.onSurface }}
+                        cursor={{
+                          fill: theme.colors.outlineVariant,
+                          opacity: 0.4,
+                        }}
+                        formatter={(v: number) => [v, "Treinos"]}
+                      />
+                      <Bar
+                        dataKey="count"
+                        fill={theme.colors.primary}
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={28}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </StyledCard>
+              )}
+
+              <StyledCard>
+                <StyledSectionHeader>
+                  <StyledSectionIcon>
+                    <TrendingUp size={16} />
+                  </StyledSectionIcon>
+                  <StyledSectionTitle>
+                    {strings.progression.chargeProgressionTitle}
+                  </StyledSectionTitle>
+                </StyledSectionHeader>
+                {exerciseNames.length === 0 ? (
+                  <StyledHint>
+                    {strings.progression.noExercisesWithData}
+                  </StyledHint>
+                ) : (
+                  <StyledChipScroll>
+                    {exerciseNames.map((name) => (
+                      <StyledExerciseChip
+                        key={name}
+                        $selected={selectedExercise === name}
+                        onClick={() => setSelectedExercise(name)}
+                      >
+                        {name}
+                      </StyledExerciseChip>
+                    ))}
+                  </StyledChipScroll>
+                )}
+                {prData && (
+                  <StyledPrBanner>
+                    <StyledPrText>
+                      <Trophy size={14} style={{ flexShrink: 0 }} />{" "}
+                      {strings.progression.prLabel(
+                        prData.weight,
+                        prData.reps,
+                        prData.date,
+                      )}
+                    </StyledPrText>
+                    {prData.improvement > 0 && (
+                      <StyledImprovementBadge>
+                        {strings.progression.improvement(prData.improvement)}
+                      </StyledImprovementBadge>
+                    )}
+                  </StyledPrBanner>
+                )}
+                {selectedExercise === null ? (
+                  <StyledHint>
+                    {strings.progression.selectExerciseHint}
+                  </StyledHint>
+                ) : chart.isLoading ? (
+                  <StyledSkeletonCard style={{ height: 180, margin: 0 }} />
+                ) : chart.error ? (
+                  <StyledHint>{strings.progression.noDataSubtitle}</StyledHint>
+                ) : chart.data ? (
+                  <ProgressionChart
+                    data={chart.data}
+                    primaryColor={theme.colors.primary}
+                    primaryContainerColor={theme.colors.primaryContainer}
+                    onSurfaceMuted={theme.colors.onSurfaceMuted}
+                    surfaceColor={theme.colors.surface}
+                    onSurfaceColor={theme.colors.onSurface}
+                    outlineVariant={theme.colors.outlineVariant}
+                  />
+                ) : null}
+              </StyledCard>
+
+              {muscleSeries.length > 0 && (
+                <StyledCard>
+                  <StyledSectionHeader>
+                    <StyledSectionIcon>
+                      <Dumbbell size={16} />
+                    </StyledSectionIcon>
+                    <StyledSectionTitle>
+                      {strings.progression.muscleFocusTitle}
+                    </StyledSectionTitle>
+                  </StyledSectionHeader>
+                  <StyledMuscleList>
+                    {muscleSeries.map(({ group, count, pct }) => (
+                      <StyledMuscleRow key={group}>
+                        <StyledMuscleName>{group}</StyledMuscleName>
+                        <StyledMuscleBarWrap>
+                          <StyledMuscleBar
+                            $pct={pct}
+                            $bg={
+                              theme.colors.muscleGroups[group]?.text ??
+                              theme.colors.primary
+                            }
+                          />
+                        </StyledMuscleBarWrap>
+                        <StyledMuscleCount>
+                          {strings.progression.seriesUnit(count)}
+                        </StyledMuscleCount>
+                      </StyledMuscleRow>
+                    ))}
+                  </StyledMuscleList>
+                </StyledCard>
+              )}
+            </>
+          ) : (
+            <>
+              <StyledSectionCard>
+                <StyledSectionHeading>PERFIL</StyledSectionHeading>
+                <StyledProfileRow>
+                  <StyledAvatarWrap>
+                    {initials}
+                    <StyledAvatarEdit
+                      type="button"
+                      onClick={() => setEditingName(true)}
+                      aria-label="Editar nome"
+                    >
+                      ✎
+                    </StyledAvatarEdit>
+                  </StyledAvatarWrap>
+                  <StyledProfileInfo>
+                    {editingName ? (
+                      <StyledNameInput
+                        value={userName}
+                        onChange={(event) => setUserName(event.target.value)}
+                        onBlur={() => setEditingName(false)}
+                        onKeyDown={handleNameKeyDown}
+                        autoFocus
+                      />
+                    ) : (
+                      <StyledProfileName onClick={() => setEditingName(true)}>
+                        {userName}
+                      </StyledProfileName>
+                    )}
+                    <StyledProfileEmail>atleta@loadup.app</StyledProfileEmail>
+                  </StyledProfileInfo>
+                </StyledProfileRow>
+              </StyledSectionCard>
+
+              <StyledSectionCard>
+                <StyledSectionHeading>APARÊNCIA</StyledSectionHeading>
+                <StyledSectionLabel>Tema de Cor</StyledSectionLabel>
+                <StyledColorSwatchRow>
+                  {themeOptions.map((option) => (
+                    <StyledColorSwatch
+                      key={option.id}
+                      $selected={colorKey === option.id}
+                      $color={option.primary}
+                      onClick={() => setColorTheme(option.id)}
+                    >
+                      <StyledSwatchCircle
+                        $selected={colorKey === option.id}
+                        $color={option.primary}
+                      >
+                        {colorKey === option.id && (
+                          <StyledSwatchCheck>✓</StyledSwatchCheck>
+                        )}
+                      </StyledSwatchCircle>
+                      <StyledSwatchLabel>{option.name}</StyledSwatchLabel>
+                    </StyledColorSwatch>
+                  ))}
+                </StyledColorSwatchRow>
+
+                <StyledAppearanceRow>
+                  <StyledSectionLabel>Aparência</StyledSectionLabel>
+                  <StyledToggleGroup>
+                    <StyledToggleOption
+                      type="button"
+                      $active={mode === "dark"}
+                      onClick={() => mode !== "dark" && toggleMode()}
+                    >
+                      Escuro
+                    </StyledToggleOption>
+                    <StyledToggleOption
+                      type="button"
+                      $active={mode === "light"}
+                      onClick={() => mode !== "light" && toggleMode()}
+                    >
+                      Claro
+                    </StyledToggleOption>
+                  </StyledToggleGroup>
+                </StyledAppearanceRow>
+              </StyledSectionCard>
+
+              <StyledSectionCard>
+                <StyledSectionHeading>PREFERÊNCIAS</StyledSectionHeading>
+                <StyledPreferenceRow>
+                  <StyledPreferenceInfo>
+                    <StyledPreferenceLabel>
+                      Tempo de descanso padrão
+                    </StyledPreferenceLabel>
+                  </StyledPreferenceInfo>
+                  <StyledPreferenceControl>
+                    <StyledControlButton
+                      type="button"
+                      onClick={() => handleRestChange(-5)}
+                    >
+                      −
+                    </StyledControlButton>
+                    <StyledControlValue>{restSeconds}s</StyledControlValue>
+                    <StyledControlButton
+                      type="button"
+                      onClick={() => handleRestChange(5)}
+                    >
+                      +
+                    </StyledControlButton>
+                  </StyledPreferenceControl>
+                </StyledPreferenceRow>
+
+                <StyledPreferenceRow>
+                  <StyledPreferenceInfo>
+                    <StyledPreferenceLabel>
+                      Unidade de peso
+                    </StyledPreferenceLabel>
+                  </StyledPreferenceInfo>
+                  <StyledToggleGroup>
+                    <StyledToggleOption
+                      type="button"
+                      $active={weightUnit === "kg"}
+                      onClick={() => handleWeightToggle("kg")}
+                    >
+                      kg
+                    </StyledToggleOption>
+                    <StyledToggleOption
+                      type="button"
+                      $active={weightUnit === "lb"}
+                      onClick={() => handleWeightToggle("lb")}
+                    >
+                      lb
+                    </StyledToggleOption>
+                  </StyledToggleGroup>
+                </StyledPreferenceRow>
+
+                <StyledLanguageRow type="button" onClick={handleLanguageClick}>
+                  <StyledSectionLabel>Idioma</StyledSectionLabel>
+                  <StyledLanguageValue>{language} ›</StyledLanguageValue>
+                </StyledLanguageRow>
+              </StyledSectionCard>
+
+              <StyledSectionCard>
+                <StyledSectionHeading>CONTA</StyledSectionHeading>
+                <StyledSignOutButton type="button">Sair</StyledSignOutButton>
+              </StyledSectionCard>
+            </>
           )}
         </StyledBody>
       </StyledPage>

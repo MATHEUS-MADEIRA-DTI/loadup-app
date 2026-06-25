@@ -10,39 +10,75 @@ import React, {
 } from "react";
 import { ThemeProvider as StyledThemeProvider } from "styled-components";
 
-import { AppTheme, darkTheme, lightTheme } from "./theme";
+import {
+  AppTheme,
+  ColorTheme,
+  ThemeMode,
+  buildTheme,
+  defaultColorTheme,
+} from "./theme";
 
-const THEME_KEY = "loadup_theme";
+const THEME_MODE_KEY = "loadup_theme_mode";
+const COLOR_THEME_KEY = "loadup_color_theme";
 
 interface ThemeContextValue {
   theme: AppTheme;
-  isDark: boolean;
-  toggleTheme: () => void;
+  mode: ThemeMode;
+  colorKey: ColorTheme;
+  setMode: (mode: ThemeMode) => void;
+  setColorTheme: (theme: ColorTheme) => void;
+  toggleMode: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function getInitialMode(): ThemeMode {
+  if (typeof window === "undefined") return "dark";
+  const stored = window.localStorage.getItem(THEME_MODE_KEY);
+  return stored === "light" ? "light" : "dark";
+}
+
+function getInitialColorTheme(): ColorTheme {
+  if (typeof window === "undefined") return defaultColorTheme;
+  const stored = window.localStorage.getItem(
+    COLOR_THEME_KEY,
+  ) as ColorTheme | null;
+  const allowed: ColorTheme[] = [
+    "electricBlue",
+    "deepViolet",
+    "obsidianGreen",
+    "sunsetOrange",
+    "roseGold",
+  ];
+  return stored && allowed.includes(stored) ? stored : defaultColorTheme;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(false);
+  const [mode, setMode] = useState<ThemeMode>(getInitialMode);
+  const [colorKey, setColorKey] = useState<ColorTheme>(getInitialColorTheme);
 
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored === "dark") setIsDark(true);
+    window.localStorage.setItem(THEME_MODE_KEY, mode);
+    document.documentElement.classList.toggle("light", mode === "light");
+  }, [mode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(COLOR_THEME_KEY, colorKey);
+  }, [colorKey]);
+
+  const theme = useMemo(() => buildTheme(mode, colorKey), [mode, colorKey]);
+
+  const toggleMode = useCallback(() => {
+    setMode((prev) => (prev === "dark" ? "light" : "dark"));
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    setIsDark((prev) => {
-      const next = !prev;
-      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
-      return next;
-    });
+  const setColorTheme = useCallback((theme: ColorTheme) => {
+    setColorKey(theme);
   }, []);
-
-  const theme = isDark ? darkTheme : lightTheme;
 
   const value = useMemo<ThemeContextValue>(
-    () => ({ theme, isDark, toggleTheme }),
-    [theme, isDark, toggleTheme],
+    () => ({ theme, mode, colorKey, setMode, setColorTheme, toggleMode }),
+    [theme, mode, colorKey, setMode, setColorTheme, toggleMode],
   );
 
   return (
@@ -56,4 +92,8 @@ export function useTheme(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error("useTheme must be used inside ThemeProvider");
   return ctx;
+}
+
+export function useAppTheme(): ThemeContextValue {
+  return useTheme();
 }

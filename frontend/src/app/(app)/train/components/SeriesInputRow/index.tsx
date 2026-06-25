@@ -1,22 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 
 import { strings } from "@/constants/strings";
 import { useAddRecord, useUpdateRecord } from "@/hooks/useSession";
 import { Exercise, LoggedSet, Series } from "@/types";
 
 import { SERIES_ABBR, SERIES_COLOR } from "../../utils";
-import RestTimerButton from "../RestTimerButton";
 
 import {
+  StyledActionRow,
+  StyledCardControls,
+  StyledCardLabel,
+  StyledCardValue,
   StyledCheckBtn,
+  StyledControlBtn,
+  StyledCounterCard,
   StyledEditPencilBtn,
   StyledFieldLabel,
   StyledInput,
   StyledInputField,
-  StyledLoggedField,
+  StyledLoggedLabel,
+  StyledLoggedSummary,
   StyledLoggedValue,
+  StyledSeriesDot,
+  StyledSeriesDots,
   StyledSeriesError,
   StyledSeriesGoal,
   StyledSeriesInputsRow,
@@ -26,6 +34,11 @@ import {
   StyledSeriesTypeBadge,
 } from "./styles";
 
+export interface SeriesInputRowHandle {
+  check: () => Promise<boolean>;
+  getRestTime: () => number;
+}
+
 interface SeriesInputRowProps {
   exercise: Exercise;
   series: Series;
@@ -33,62 +46,117 @@ interface SeriesInputRowProps {
   sessionId: string;
   loggedSet: LoggedSet | undefined;
   isReadOnly: boolean;
+  inputsOnly?: boolean;
 }
 
-export default function SeriesInputRow({
-  exercise,
-  series,
-  seriesIndex,
-  sessionId,
-  loggedSet,
-  isReadOnly,
-}: SeriesInputRowProps) {
+function formatNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
+  function SeriesInputRow(
+    {
+      exercise,
+      series,
+      seriesIndex,
+      sessionId,
+      loggedSet,
+      isReadOnly,
+      inputsOnly = false,
+    },
+    ref,
+  ) {
   const addRecord = useAddRecord(sessionId);
   const updateRecord = useUpdateRecord(sessionId);
   const [isEditing, setIsEditing] = useState(false);
   const [weight, setWeight] = useState<string>("0.5");
   const [reps, setReps] = useState<string>(String(series.reps));
-  const [rest, setRest] = useState<string>(String(series.restTime ?? ""));
+  const [rest, setRest] = useState<string>(String(series.restTime ?? "0"));
   const [logError, setLogError] = useState<string | null>(null);
 
   const showInputs = !loggedSet || isEditing;
   const color = SERIES_COLOR[series.type];
   const isBusy = addRecord.isPending || updateRecord.isPending;
 
-  const handleCheck = () => {
-    if (isBusy || isReadOnly) return;
+  const adjustValue = (value: string, delta: number, min = 0) => {
+    const parsed = parseFloat(value) || 0;
+    const nextValue = Math.max(min, parsed + delta);
+    return String(nextValue);
+  };
+
+  const handleCheck = useCallback((): Promise<boolean> => {
+    if (isBusy || isReadOnly) return Promise.resolve(false);
+    if (loggedSet && !isEditing) return Promise.resolve(true);
+
     setLogError(null);
     const parsedWeight = parseFloat(weight);
     const safeWeight = parsedWeight >= 0.5 ? parsedWeight : 0.5;
+    const safeReps = Math.max(0, parseInt(reps, 10) || 0);
+    const safeRest = Math.max(0, parseInt(rest, 10) || 0);
+
+    const payload = {
+      exerciseName: exercise.name,
+      seriesType: series.type,
+      seriesOrder: seriesIndex + 1,
+      weight: safeWeight,
+      repsCompleted: safeReps,
+      restTime: safeRest,
+    };
+
     if (isEditing && loggedSet) {
-      updateRecord.mutate(
-        {
-          recordId: loggedSet._id,
-          payload: {
-            weight: safeWeight,
-            repsCompleted: parseInt(reps) || 0,
-            restTime: parseInt(rest) || 0,
+      return new Promise((resolve) => {
+        updateRecord.mutate(
+          {
+            recordId: loggedSet._id,
+            payload,
           },
-        },
-        {
-          onSuccess: () => setIsEditing(false),
-          onError: () => setLogError("Erro ao salvar. Tente novamente."),
-        },
-      );
-    } else {
-      addRecord.mutate(
-        {
-          exerciseName: exercise.name,
-          seriesType: series.type,
-          seriesOrder: seriesIndex + 1,
-          weight: safeWeight,
-          repsCompleted: parseInt(reps) || 0,
-          restTime: parseInt(rest) || 0,
-        },
-        { onError: () => setLogError("Erro ao registrar. Tente novamente.") },
-      );
+          {
+            onSuccess: () => {
+              setIsEditing(false);
+              resolve(true);
+            },
+            onError: () => {
+              setLogError("Erro ao salvar. Tente novamente.");
+              resolve(false);
+            },
+          },
+        );
+      });
     }
-  };
+
+    return new Promise((resolve) => {
+      addRecord.mutate(payload, {
+        onSuccess: () => resolve(true),
+        onError: () => {
+          setLogError("Erro ao registrar. Tente novamente.");
+          resolve(false);
+        },
+      });
+    });
+  }, [
+    isBusy,
+    isReadOnly,
+    loggedSet,
+    isEditing,
+    weight,
+    reps,
+    rest,
+    exercise.name,
+    series.type,
+    seriesIndex,
+    updateRecord,
+    addRecord,
+  ]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      check: handleCheck,
+      getRestTime: () =>
+        Math.max(0, parseInt(rest, 10) || series.restTime || 0),
+    }),
+    [handleCheck, rest, series.restTime],
+  );
 
   const handleEditClick = () => {
     if (!loggedSet) return;
@@ -99,126 +167,167 @@ export default function SeriesInputRow({
   };
 
   return (
-    <StyledSeriesRow $logged={!!loggedSet && !isEditing}>
-      <StyledSeriesTopRow>
-        <StyledSeriesTypeBadge $bg={color.bg} $text={color.text}>
-          {SERIES_ABBR[series.type]}
-        </StyledSeriesTypeBadge>
-        <StyledSeriesName>
-          {strings.workout.seriesLabel(seriesIndex + 1)}
-        </StyledSeriesName>
-        <StyledSeriesGoal>
-          {strings.workout.goalLabel(series.reps)}
-        </StyledSeriesGoal>
-      </StyledSeriesTopRow>
+    <StyledSeriesRow $logged={!!loggedSet && !isEditing} $inputsOnly={inputsOnly}>
+      {!inputsOnly && (
+        <StyledSeriesTopRow>
+          <StyledSeriesTypeBadge $bg={color.bg} $text={color.text}>
+            {SERIES_ABBR[series.type]}
+          </StyledSeriesTypeBadge>
+          <StyledSeriesName>
+            {strings.workout.seriesLabel(seriesIndex + 1)}
+          </StyledSeriesName>
+          <StyledSeriesGoal>
+            {strings.workout.goalLabel(series.reps)}
+          </StyledSeriesGoal>
+        </StyledSeriesTopRow>
+      )}
 
-      <StyledSeriesInputsRow>
-        {showInputs ? (
-          <>
-            <StyledInputField>
-              <StyledFieldLabel>{strings.workout.weightShort}</StyledFieldLabel>
-              <StyledInput
-                type="number"
-                inputMode="decimal"
-                min="0.5"
-                step="0.5"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
+      {showInputs ? (
+        <StyledSeriesInputsRow>
+          <StyledCounterCard>
+            <StyledCardLabel>{strings.workout.weightShort}</StyledCardLabel>
+            <StyledCardValue>
+              {formatNumber(parseFloat(weight) || 0.5)}
+            </StyledCardValue>
+            <StyledCardControls>
+              <StyledControlBtn
+                type="button"
+                onClick={() => setWeight(adjustValue(weight, -0.5, 0.5))}
                 disabled={isReadOnly}
-              />
-            </StyledInputField>
-            <StyledInputField>
-              <StyledFieldLabel>{strings.workout.repsShort}</StyledFieldLabel>
-              <StyledInput
-                type="number"
-                inputMode="numeric"
-                min="0"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
+              >
+                -
+              </StyledControlBtn>
+              <StyledControlBtn
+                type="button"
+                $filled
+                onClick={() => setWeight(adjustValue(weight, 0.5, 0.5))}
                 disabled={isReadOnly}
-              />
-            </StyledInputField>
-            <StyledInputField>
-              <StyledFieldLabel>{strings.workout.restShort}</StyledFieldLabel>
-              <StyledInput
-                type="number"
-                inputMode="numeric"
-                min="0"
-                value={rest}
-                onChange={(e) => setRest(e.target.value)}
+              >
+                +
+              </StyledControlBtn>
+            </StyledCardControls>
+          </StyledCounterCard>
+
+          <StyledCounterCard>
+            <StyledCardLabel>{strings.workout.repsShort}</StyledCardLabel>
+            <StyledCardValue>
+              {formatNumber(parseFloat(reps) || series.reps)}
+            </StyledCardValue>
+            <StyledCardControls>
+              <StyledControlBtn
+                type="button"
+                onClick={() => setReps(adjustValue(reps, -1, 0))}
                 disabled={isReadOnly}
-              />
-            </StyledInputField>
-            {!isReadOnly && (
-              <StyledCheckBtn
-                $logged={false}
-                onClick={handleCheck}
-                disabled={isBusy}
               >
-                {isBusy ? (
-                  <span style={{ fontSize: 11 }}>...</span>
-                ) : (
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                  </svg>
-                )}
-              </StyledCheckBtn>
-            )}
-          </>
-        ) : (
-          <>
-            <StyledLoggedField>
-              <StyledFieldLabel>{strings.workout.weightShort}</StyledFieldLabel>
-              <StyledLoggedValue>{loggedSet!.weight}</StyledLoggedValue>
-            </StyledLoggedField>
-            <StyledLoggedField>
-              <StyledFieldLabel>{strings.workout.repsShort}</StyledFieldLabel>
-              <StyledLoggedValue>{loggedSet!.repsCompleted}</StyledLoggedValue>
-            </StyledLoggedField>
-            <StyledLoggedField>
-              <StyledFieldLabel>{strings.workout.restShort}</StyledFieldLabel>
-              <StyledLoggedValue>{loggedSet!.restTime}</StyledLoggedValue>
-            </StyledLoggedField>
-            <StyledCheckBtn $logged={true} disabled>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+                -
+              </StyledControlBtn>
+              <StyledControlBtn
+                type="button"
+                $filled
+                onClick={() => setReps(adjustValue(reps, 1, 0))}
+                disabled={isReadOnly}
               >
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-              </svg>
-            </StyledCheckBtn>
-            {!isReadOnly && (
-              <StyledEditPencilBtn
-                onClick={handleEditClick}
-                aria-label={strings.common.ariaEditSet}
+                +
+              </StyledControlBtn>
+            </StyledCardControls>
+          </StyledCounterCard>
+
+          <StyledCounterCard>
+            <StyledCardLabel>{strings.workout.restShort}</StyledCardLabel>
+            <StyledCardValue>
+              {formatNumber(parseFloat(rest) || series.restTime || 0)}
+            </StyledCardValue>
+            <StyledCardControls>
+              <StyledControlBtn
+                type="button"
+                onClick={() => setRest(adjustValue(rest, -5, 0))}
+                disabled={isReadOnly}
               >
+                -
+              </StyledControlBtn>
+              <StyledControlBtn
+                type="button"
+                $filled
+                onClick={() => setRest(adjustValue(rest, 5, 0))}
+                disabled={isReadOnly}
+              >
+                +
+              </StyledControlBtn>
+            </StyledCardControls>
+          </StyledCounterCard>
+        </StyledSeriesInputsRow>
+      ) : (
+        <StyledLoggedSummary>
+          <div>
+            <StyledLoggedLabel>{strings.workout.weightShort}</StyledLoggedLabel>
+            <StyledLoggedValue>{loggedSet!.weight}</StyledLoggedValue>
+          </div>
+          <div>
+            <StyledLoggedLabel>{strings.workout.repsShort}</StyledLoggedLabel>
+            <StyledLoggedValue>{loggedSet!.repsCompleted}</StyledLoggedValue>
+          </div>
+          <div>
+            <StyledLoggedLabel>{strings.workout.restShort}</StyledLoggedLabel>
+            <StyledLoggedValue>{loggedSet!.restTime}</StyledLoggedValue>
+          </div>
+        </StyledLoggedSummary>
+      )}
+
+      {!inputsOnly && (
+        <StyledActionRow>
+          {!isReadOnly && (
+            <StyledCheckBtn
+              $logged={!!loggedSet && !isEditing}
+              onClick={() => {
+                void handleCheck();
+              }}
+              disabled={isBusy}
+            >
+              {isBusy ? (
+                <span style={{ fontSize: 11 }}>...</span>
+              ) : (
                 <svg
-                  width="14"
-                  height="14"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                 >
-                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                 </svg>
-              </StyledEditPencilBtn>
-            )}
-          </>
-        )}
-      </StyledSeriesInputsRow>
-      {logError && <StyledSeriesError>{logError}</StyledSeriesError>}
-      {!isReadOnly && series.restTime && series.restTime > 0 && (
-        <RestTimerButton
-          restTime={series.restTime}
-          exerciseName={exercise.name}
-        />
+              )}
+            </StyledCheckBtn>
+          )}
+
+          {!isReadOnly && loggedSet && !isEditing && (
+            <StyledEditPencilBtn
+              type="button"
+              onClick={handleEditClick}
+              aria-label={strings.common.ariaEditSet}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+              </svg>
+            </StyledEditPencilBtn>
+          )}
+        </StyledActionRow>
       )}
+
+      {!inputsOnly && (
+        <StyledSeriesDots>
+          {Array.from({ length: exercise.series.length }).map((_, index) => (
+            <StyledSeriesDot key={index} $active={index === seriesIndex} />
+          ))}
+        </StyledSeriesDots>
+      )}
+
+      {logError && <StyledSeriesError>{logError}</StyledSeriesError>}
     </StyledSeriesRow>
   );
-}
+});
+
+export default SeriesInputRow;

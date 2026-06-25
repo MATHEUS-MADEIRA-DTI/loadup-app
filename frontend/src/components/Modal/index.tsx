@@ -57,7 +57,7 @@ export default function Modal({
 const StyledOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -69,15 +69,16 @@ const StyledOverlay = styled.div`
 
 const StyledCard = styled.div`
   position: relative;
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.lg};
-  width: 90vw;
-  max-width: 480px;
+  width: min(100%, 520px);
   max-height: 90dvh;
   overflow-y: auto;
   animation: ${modalEnter} ${MODAL_TRANSITION.duration}
     ${MODAL_TRANSITION.easing} both;
+  box-shadow: ${({ theme }) => theme.shadows.card};
 `;
 
 const StyledCloseButton = styled.button`
@@ -87,7 +88,7 @@ const StyledCloseButton = styled.button`
   width: 36px;
   height: 36px;
   border: none;
-  background: transparent;
+  background: ${({ theme }) => theme.colors.surface};
   font-size: 22px;
   line-height: 1;
   color: ${({ theme }) => theme.colors.onSurface};
@@ -96,15 +97,17 @@ const StyledCloseButton = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
+  transition: background 0.2s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.background};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
   }
 `;
 
 const StyledTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: 600;
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.titleLarge.fontSize};
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
   margin-bottom: ${({ theme }) => theme.spacing.md};
   padding-right: ${({ theme }) => theme.spacing.lg};

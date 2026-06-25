@@ -15,11 +15,7 @@ import {
   StyledPreviewItem,
   StyledPreviewList,
   StyledPreviewOverflow,
-  StyledPreviewStat,
   StyledPreviewStartBtn,
-  StyledPreviewStatDivider,
-  StyledPreviewStatLabel,
-  StyledPreviewStatNum,
   StyledPreviewTitle,
   StyledPreviewWrapper,
 } from "./styles";
@@ -82,19 +78,6 @@ export default function TodayPreview({
       </StyledPreviewList>
 
       <StyledPreviewFooter>
-        <StyledPreviewStat>
-          <StyledPreviewStatNum>{exercises.length}</StyledPreviewStatNum>
-          <StyledPreviewStatLabel>
-            {strings.trainingPlan.statExercises}
-          </StyledPreviewStatLabel>
-        </StyledPreviewStat>
-        <StyledPreviewStatDivider />
-        <StyledPreviewStat>
-          <StyledPreviewStatNum>{totalSeries}</StyledPreviewStatNum>
-          <StyledPreviewStatLabel>
-            {strings.trainingPlan.statSeries}
-          </StyledPreviewStatLabel>
-        </StyledPreviewStat>
         {!isDone && (
           <StyledPreviewStartBtn onClick={onStart}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">

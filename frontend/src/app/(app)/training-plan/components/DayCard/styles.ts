@@ -1,13 +1,18 @@
 import styled from "styled-components";
 
-export const StyledDayCard = styled.div<{ $isToday: boolean }>`
-  background: ${({ theme }) => theme.colors.surface};
+export const StyledDayCard = styled.div<{
+  $isToday: boolean;
+  $isRest: boolean;
+}>`
+  background: ${({ theme, $isToday }) =>
+    $isToday ? theme.colors.primaryContainer : theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.card};
   border: 2px solid
     ${({ theme, $isToday }) =>
       $isToday ? theme.colors.primary : "transparent"};
+  opacity: ${({ $isRest }) => ($isRest ? 0.62 : 1)};
 `;
 
 export const StyledCardRow = styled.div`
@@ -66,8 +71,9 @@ export const StyledNameRow = styled.div`
 `;
 
 export const StyledDayName = styled.span`
-  font-size: 14px;
-  font-weight: 600;
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
 `;
 
@@ -99,12 +105,13 @@ export const StyledControls = styled.div`
 `;
 
 export const StyledTypeBadge = styled.span<{ $training: boolean }>`
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: ${({ theme }) => theme.borderRadius.chip};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: ${({ theme, $training }) =>
-    $training ? theme.colors.primaryContainer : theme.colors.background};
+    $training ? theme.colors.primaryContainer : theme.colors.surface};
   color: ${({ theme, $training }) =>
     $training ? theme.colors.primary : theme.colors.onSurfaceMuted};
   white-space: nowrap;
@@ -136,15 +143,23 @@ export const StyledToggleThumb = styled.div<{ $on: boolean }>`
 `;
 
 export const StyledChevronBtn = styled.button`
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: none;
-  background: ${({ theme }) => theme.colors.primaryStrong};
-  color: ${({ theme }) => theme.colors.onPrimary};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+  }
 `;

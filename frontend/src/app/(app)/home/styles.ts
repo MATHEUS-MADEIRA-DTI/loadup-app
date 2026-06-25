@@ -27,15 +27,15 @@ export const StyledHeaderSkeleton = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
-    background: ${({ theme }) => theme.colors.outlineVariant};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
   }
 `;
 
@@ -44,9 +44,9 @@ export const StyledSkeletonCard = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.card};
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
@@ -57,7 +57,8 @@ export const StyledSkeletonCard = styled.div`
 `;
 
 export const StyledCard = styled.section`
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.card};
   padding: ${({ theme }) => theme.spacing.lg};
   box-shadow: ${({ theme }) => theme.shadows.card};
@@ -73,22 +74,22 @@ export const StyledCardHeader = styled.div`
 `;
 
 export const StyledCardTitle = styled.h2`
+  font-family: var(--font-barlow), sans-serif;
   font-size: ${({ theme }) => theme.typography.headlineMedium.fontSize};
-  font-weight: ${({ theme }) => theme.typography.headlineMedium.fontWeight};
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
   color: ${({ theme }) => theme.colors.onSurface};
 `;
 
 export const StyledBadge = styled.span<{ $status: string }>`
+  font-family: var(--font-barlow), sans-serif;
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelLarge.fontWeight};
-  color: ${({ theme, $status }) =>
-    $status === "completed"
-      ? theme.colors.success
-      : theme.colors.onSurfaceMuted};
-  background-color: ${({ theme, $status }) =>
-    $status === "completed"
-      ? theme.colors.successContainer
-      : theme.colors.background};
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme }) => theme.colors.primaryContainer};
   border-radius: ${({ theme }) => theme.borderRadius.chip};
   padding: 4px 10px;
 `;
@@ -101,8 +102,9 @@ export const StyledCalendarHeader = styled.div`
 `;
 
 export const StyledMonthLabel = styled.span`
+  font-family: var(--font-inter), sans-serif;
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: ${({ theme }) => theme.typography.titleMedium.fontWeight};
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurface};
 `;
 
@@ -127,6 +129,7 @@ export const StyledRestIndicator = styled.div`
 `;
 
 export const StyledRestText = styled.p`
+  font-family: var(--font-inter), sans-serif;
   font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
@@ -139,8 +142,11 @@ export const StyledRecentHeader = styled.div`
 `;
 
 export const StyledSectionTitle = styled.h3`
+  font-family: var(--font-barlow), sans-serif;
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: ${({ theme }) => theme.typography.titleMedium.fontWeight};
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: ${({ theme }) => theme.colors.onSurface};
 `;
 
@@ -212,6 +218,7 @@ export const StyledSessionNameRow = styled.div`
 `;
 
 export const StyledSessionName = styled.span`
+  font-family: var(--font-inter), sans-serif;
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
   font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurface};
@@ -237,6 +244,7 @@ export const StyledSessionBadge = styled.span<{
 `;
 
 export const StyledSessionMeta = styled.span`
+  font-family: var(--font-inter), sans-serif;
   font-size: 12px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   white-space: nowrap;
@@ -245,6 +253,7 @@ export const StyledSessionMeta = styled.span`
 `;
 
 export const StyledSessionDate = styled.span`
+  font-family: var(--font-inter), sans-serif;
   font-size: 12px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   flex-shrink: 0;

@@ -235,7 +235,7 @@ export const strings = {
 
   nav: {
     home: "Início",
-    trainingPlan: "Treinos",
+    trainingPlan: "Plano",
     workout: "Treinar",
     progression: "Progresso",
   },

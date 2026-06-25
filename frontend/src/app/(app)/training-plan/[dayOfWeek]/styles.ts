@@ -9,39 +9,80 @@ export const StyledPage = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background-color: ${({ theme }) => theme.colors.background};
-  padding-bottom: 140px;
+  background: ${({ theme }) => theme.colors.background};
+  padding-bottom: 180px;
 `;
 
 export const StyledStatsRow = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => theme.spacing.md};
-  padding-bottom: 0;
+  padding: 0 ${({ theme }) => theme.spacing.md}
+    ${({ theme }) => theme.spacing.md};
 `;
 
-export const StyledStatBox = styled.div`
-  flex: 1;
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.inner};
+export const StyledSectionHeading = styled.h2`
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   padding: ${({ theme }) => theme.spacing.md};
+  margin: 0;
+`;
+
+export const StyledStatCard = styled.div`
+  flex: 1;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  padding: ${({ theme }) => theme.spacing.lg};
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: ${({ theme }) => theme.spacing.sm};
   box-shadow: ${({ theme }) => theme.shadows.card};
 `;
 
+export const StyledStatRing = styled.div`
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(
+      circle at top left,
+      ${({ theme }) => theme.colors.primaryContainer} 0%,
+      transparent 40%
+    ),
+    conic-gradient(
+      ${({ theme }) => theme.colors.primary},
+      ${({ theme }) => theme.colors.primaryContainer} 55%,
+      ${({ theme }) => theme.colors.primaryContainer} 100%
+    );
+`;
+
+export const StyledStatRingInner = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  display: grid;
+  place-items: center;
+`;
+
 export const StyledStatNum = styled.span`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
+  font-size: 26px;
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.onSurface};
   line-height: 1;
 `;
 
-export const StyledStatLabel = styled.span`
+export const StyledStatTitle = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 `;
 
 export const StyledBody = styled.main`
@@ -54,14 +95,19 @@ export const StyledBody = styled.main`
 export const StyledSkeletonCard = styled.div`
   height: 120px;
   border-radius: ${({ theme }) => theme.borderRadius.inner};
-  background: linear-gradient(90deg, #e8e0f0 25%, #ddd5ec 50%, #e8e0f0 75%);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
+    ${({ theme }) => theme.colors.outlineVariant} 50%,
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
 `;
 
 export const StyledFab = styled.button`
   position: fixed;
-  bottom: 5px;
+  bottom: 22px;
   right: 20px;
   width: 52px;
   height: 52px;
@@ -75,14 +121,22 @@ export const StyledFab = styled.button`
   justify-content: center;
   box-shadow: ${({ theme }) => theme.shadows.primary};
   z-index: 10;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
 `;
 
 export const StyledStartBtn = styled.button`
   position: fixed;
-  bottom: 80px;
+  bottom: 94px;
   left: 16px;
   right: 16px;
-  height: 52px;
+  height: 56px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: ${({ theme }) => theme.colors.primary};
   color: #ffffff;
@@ -97,4 +151,12 @@ export const StyledStartBtn = styled.button`
   gap: ${({ theme }) => theme.spacing.sm};
   box-shadow: ${({ theme }) => theme.shadows.primary};
   z-index: 10;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+  }
 `;

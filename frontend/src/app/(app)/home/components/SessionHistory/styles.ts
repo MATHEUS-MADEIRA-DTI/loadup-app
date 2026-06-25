@@ -32,16 +32,8 @@ export const StyledSessionIcon = styled.div<{ $status: CalendarSessionStatus }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${({ $status, theme }) => {
-    if ($status === "recorded") return theme.colors.successContainer;
-    if ($status === "skipped") return theme.colors.errorContainer;
-    return theme.colors.primaryContainer;
-  }};
-  color: ${({ $status, theme }) => {
-    if ($status === "recorded") return theme.colors.success;
-    if ($status === "skipped") return theme.colors.error;
-    return theme.colors.primary;
-  }};
+  background-color: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 export const StyledSessionContent = styled.div`
@@ -71,16 +63,8 @@ export const StyledSessionBadge = styled.span<{
   font-weight: 700;
   padding: 2px 8px;
   border-radius: ${({ theme }) => theme.borderRadius.chip};
-  background-color: ${({ $status, theme }) => {
-    if ($status === "recorded") return theme.colors.successContainer;
-    if ($status === "skipped") return theme.colors.errorContainer;
-    return theme.colors.primaryContainer;
-  }};
-  color: ${({ $status, theme }) => {
-    if ($status === "recorded") return theme.colors.success;
-    if ($status === "skipped") return theme.colors.error;
-    return theme.colors.primary;
-  }};
+  background-color: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 export const StyledSessionMeta = styled.span`

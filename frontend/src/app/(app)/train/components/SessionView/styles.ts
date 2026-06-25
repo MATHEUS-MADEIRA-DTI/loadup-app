@@ -6,168 +6,163 @@ const shimmer = keyframes`
 `;
 
 export const StyledSessionPage = styled.div`
-  display: flex;
-  flex-direction: column;
+  position: relative;
   min-height: 100%;
   background: ${({ theme }) => theme.colors.background};
-  padding-bottom: 90px;
+  padding-bottom: 180px;
+  color: ${({ theme }) => theme.colors.onSurface};
 `;
 
 export const StyledSessionHeader = styled.header`
-  background: ${({ theme }) => theme.colors.primaryGradient};
-  padding: 48px 20px 0;
-  border-radius: ${({ theme }) => theme.borderRadius.header};
+  padding: 24px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 export const StyledSessionTopRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 12px;
 `;
 
 export const StyledBackBtn = styled.button`
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: 50%;
   width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.colors.onPrimary};
+  color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 150ms ease;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+
   &:hover {
-    background: rgba(255, 255, 255, 0.32);
+    background: ${({ theme }) => theme.colors.primaryContainer};
+    transform: translateY(-1px);
   }
-  &:active {
-    background: rgba(255, 255, 255, 0.4);
-  }
+
   &:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
     outline-offset: 2px;
   }
 `;
 
-export const StyledSessionStatusText = styled.p`
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  flex: 1;
-`;
-
-export const StyledProgressCounter = styled.p`
-  font-size: 15px;
-  font-weight: 700;
+export const StyledProgressBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.onPrimary};
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 10px;
-  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 `;
 
 export const StyledSessionDayName = styled.h1`
-  font-size: 26px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.onPrimary};
-  padding-bottom: 20px;
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1.05;
+  margin: 0;
+  color: ${({ theme }) => theme.colors.onSurface};
 `;
 
-export const StyledProgressBarTrack = styled.div`
-  height: 4px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 2px;
-  margin: 0 -20px;
-  overflow: hidden;
+export const StyledSessionMuscleRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
-export const StyledProgressBarFill = styled.div<{ $pct: number }>`
-  height: 100%;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 2px;
-  transform: scaleX(${({ $pct }) => $pct / 100});
-  transform-origin: left;
-  transition: transform 400ms ease;
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
+export const StyledSessionMuscle = styled.span`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 `;
 
 export const StyledSessionBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
-`;
-
-export const StyledExerciseSkeleton = styled.div`
-  height: 200px;
-  border-radius: ${({ theme }) => theme.borderRadius.inner};
-  background: linear-gradient(
-    90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
-    ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
-  );
-  background-size: 800px 100%;
-  animation: ${shimmer} 1.4s ease-in-out infinite;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-    background: ${({ theme }) => theme.colors.outlineVariant};
-  }
+  gap: ${({ theme }) => theme.spacing.lg};
+  padding: 0 16px 120px;
+  margin-top: 8px;
 `;
 
 export const StyledExerciseSection = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.card};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
 export const StyledExerciseHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 export const StyledExerciseNum = styled.div`
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: ${({ theme }) => theme.colors.primaryContainer};
   color: ${({ theme }) => theme.colors.primary};
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
 `;
 
 export const StyledExerciseInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
+  min-width: 0;
 `;
 
-export const StyledExerciseName = styled.p`
-  font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: 600;
+export const StyledExerciseName = styled.h2`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.02;
+  margin: 0;
   color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledExerciseMuscle = styled.span`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 `;
 
 export const StyledSeriesList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 export const StyledDoneBanner = styled.div<{ $skipped: boolean }>`
-  margin: ${({ theme }) => theme.spacing.md};
+  margin: ${({ theme }) => theme.spacing.md} 0;
   padding: ${({ theme }) => theme.spacing.md};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   background: ${({ $skipped, theme }) =>
@@ -175,7 +170,8 @@ export const StyledDoneBanner = styled.div<{ $skipped: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  text-align: center;
 `;
 
 export const StyledDoneBannerIcon = styled.span<{ $skipped?: boolean }>`
@@ -189,11 +185,13 @@ export const StyledDoneBannerText = styled.p`
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
   font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
+  margin: 0;
 `;
 
 export const StyledDoneBannerSub = styled.p`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin: 0;
 `;
 
 export const StyledEmptyText = styled.p`
@@ -201,6 +199,7 @@ export const StyledEmptyText = styled.p`
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
   padding: ${({ theme }) => theme.spacing.xl} 0;
+  margin: 0;
 `;
 
 export const StyledSessionBottomBar = styled.div`
@@ -211,26 +210,30 @@ export const StyledSessionBottomBar = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
   padding: 12px ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.background};
   border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  max-width: 430px;
-  margin: 0 auto;
+  margin: 15px auto;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.05);
+  z-index: 100;
 `;
 
 export const StyledSkipBtn = styled.button`
-  flex: 0 0 auto;
+  flex: 1;
   padding: 14px 20px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
-  border: 1.5px solid ${({ theme }) => theme.colors.error};
+  border: 1.5px solid ${({ theme }) => theme.colors.onSurfaceMuted};
   background: transparent;
-  color: ${({ theme }) => theme.colors.error};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background 150ms ease;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.colors.errorContainer};
+    background: ${({ theme }) => theme.colors.surface};
+    transform: translateY(-1px);
   }
   &:active:not(:disabled) {
     opacity: 0.9;
@@ -249,13 +252,18 @@ export const StyledConcludeBtn = styled.button`
   padding: 14px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   border: none;
-  background: ${({ theme }) => theme.colors.success};
-  color: #fff;
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.onPrimary};
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
-  transition: opacity 150ms ease;
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
   &:active:not(:disabled) {
     opacity: 0.85;
   }
@@ -263,8 +271,6 @@ export const StyledConcludeBtn = styled.button`
     opacity: 0.5;
   }
 `;
-
-// ── Skip Confirmation Bottom Sheet ─────────────────────────────────────────
 
 export const StyledSheetBackdrop = styled.div`
   position: fixed;
@@ -329,7 +335,7 @@ export const StyledSheetConfirmBtn = styled.button`
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   border: none;
   background: ${({ theme }) => theme.colors.error};
-  color: #fff;
+  color: ${({ theme }) => theme.colors.onPrimary};
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -371,8 +377,6 @@ export const StyledSheetCancelBtn = styled.button`
   }
 `;
 
-// ── Error Toast ─────────────────────────────────────────────────────────────
-
 export const StyledErrorToast = styled.div`
   position: fixed;
   bottom: 96px;
@@ -399,5 +403,163 @@ export const StyledErrorToast = styled.div`
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+  }
+`;
+export const StyledSessionStatusText = styled.p`
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: "Barlow Condensed", sans-serif;
+`;
+
+export const StyledExerciseSkeleton = styled.div`
+  height: 120px;
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 50%,
+    ${({ theme }) => theme.colors.surface} 75%
+  );
+  background-size: 800px 100%;
+  animation: ${shimmer} 1.5s infinite linear;
+`;
+
+export const StyledExerciseFocus = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 16px;
+  flex: 1;
+`;
+
+export const StyledSeriesTypeBadgeFocus = styled.span`
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.onPrimary};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+`;
+
+export const StyledExerciseNameFocus = styled.h2`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: clamp(2.5rem, 8vw, 3rem);
+  font-weight: 900;
+  line-height: 1.02;
+  margin: 0;
+  color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledExerciseMuscleFocus = styled.span`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.primary};
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+`;
+
+export const StyledSeriesProgressDots = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 24px;
+`;
+
+export const StyledSeriesProgressDot = styled.span<{
+  $completed: boolean;
+  $current: boolean;
+}>`
+  width: ${({ $current }) => ($current ? "10px" : "8px")};
+  height: ${({ $current }) => ($current ? "10px" : "8px")};
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition:
+    width 150ms ease,
+    height 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease;
+  background: ${({ theme, $completed, $current }) =>
+    $completed || $current ? theme.colors.primary : "transparent"};
+  border: ${({ theme, $completed, $current }) =>
+    $completed || $current
+      ? "none"
+      : `1.5px solid ${theme.colors.outlineVariant}`};
+`;
+
+export const StyledActiveSessionLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 160px);
+`;
+
+export const StyledRestOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: ${({ theme }) => theme.colors.background};
+  opacity: 0.97;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+`;
+
+export const StyledClockWrapper = styled.div`
+  width: 240px;
+  height: 240px;
+  position: relative;
+  display: grid;
+  place-items: center;
+`;
+
+export const StyledDigitalTime = styled.p`
+  font-family: "Bebas Neue", Inter, sans-serif;
+  font-size: 4rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.onSurface};
+  letter-spacing: 0.05em;
+  margin: 0;
+`;
+
+export const StyledRestLabel = styled.p`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  letter-spacing: 0.15em;
+  margin: 0;
+`;
+
+export const StyledSkipRestBtn = styled.button`
+  padding: 12px 32px;
+  border-radius: 999px;
+  border: 1px solid ${({ theme }) => theme.colors.onSurfaceMuted};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surface};
+    transform: translateY(-1px);
   }
 `;

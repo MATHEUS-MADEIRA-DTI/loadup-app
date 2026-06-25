@@ -96,10 +96,21 @@ export default function EditExerciseModal({
     e.preventDefault();
     if (!name.trim()) return;
 
+    const cleanSeries = seriesList.map((s) => {
+      const clean: { type: SeriesType; reps: number; restTime?: number } = {
+        type: s.type,
+        reps: s.reps,
+      };
+      if (s.restTime !== undefined && s.restTime !== null) {
+        clean.restTime = s.restTime;
+      }
+      return clean;
+    });
+
     const payload: UpdateExercisePayload = {
       name: name.trim(),
       muscleGroup,
-      series: seriesList,
+      series: cleanSeries,
     };
 
     updateExercise.mutate(

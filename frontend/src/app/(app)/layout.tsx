@@ -27,7 +27,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <StyledWrapper>
       <StyledContent>{children}</StyledContent>
       <StyledThemeToggleWrap>
-        <ThemeToggle />
       </StyledThemeToggleWrap>
       <BottomNavBar />
     </StyledWrapper>

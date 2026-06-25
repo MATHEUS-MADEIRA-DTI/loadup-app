@@ -28,11 +28,14 @@ export default function BottomNavBar() {
           pathname === tab.href || pathname.startsWith(tab.href + "/");
         return (
           <StyledTab key={tab.href} href={tab.href} $active={isActive}>
-            <tab.Icon
-              size={22}
-              color="currentColor"
-              strokeWidth={isActive ? 2.5 : 1.8}
-            />
+            <IconWrapper $active={isActive}>
+              <tab.Icon
+                size={22}
+                color="currentColor"
+                strokeWidth={isActive ? 2.5 : 1.8}
+              />
+            </IconWrapper>
+            <StyledLabel $active={isActive}>{tab.label}</StyledLabel>
           </StyledTab>
         );
       })}
@@ -48,11 +51,11 @@ const StyledNav = styled.nav`
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: ${({ theme }) => theme.colors.surface};
+  background-color: ${({ theme }) => theme.colors.glassOverlay};
   border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  height: 80px;
-  padding: 0 ${({ theme }) => theme.spacing.sm};
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  backdrop-filter: blur(16px);
+  padding: 8px ${({ theme }) => theme.spacing.sm};
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
   z-index: 100;
 `;
 
@@ -62,19 +65,39 @@ const StyledTab = styled(Link)<{ $active: boolean }>`
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
-  border-radius: ${({ theme }) => theme.borderRadius.chip};
-  background-color: ${({ theme, $active }) =>
-    $active ? theme.colors.primaryContainer : "transparent"};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.primary : theme.colors.outline};
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-  text-decoration: none;
-  min-width: 64px;
   flex: 1;
-  max-width: 88px;
+  min-width: 64px;
+  max-width: 96px;
+  padding: ${({ theme }) => theme.spacing.sm} 0;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  background-color: ${({ theme, $active }) =>
+    $active ? "transparent" : "transparent"};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.primary : theme.colors.onSurfaceMuted};
+  text-decoration: none;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`;
+
+const IconWrapper = styled.div<{ $active: boolean }>`
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: ${({ theme, $active }) =>
+    $active ? theme.colors.primaryContainer : theme.colors.surface};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.primary : theme.colors.onSurfaceMuted};
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 `;
 
 const StyledLabel = styled.span<{ $active: boolean }>`

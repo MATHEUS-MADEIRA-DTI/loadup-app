@@ -27,20 +27,40 @@ const StyledWrapper = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
   padding: ${({ theme }) => theme.spacing.xxl};
   text-align: center;
+  background: ${({ theme }) => theme.colors.glassOverlay};
+  border: 1px solid ${({ theme }) => theme.colors.errorContainer};
+  border-radius: ${({ theme }) => theme.borderRadius.card};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  backdrop-filter: blur(16px);
 `;
 
 const StyledMessage = styled.p`
-  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.error};
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 `;
 
 const StyledButton = styled.button`
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
-  background-color: ${({ theme }) => theme.colors.primaryContainer};
-  color: ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.onPrimary};
   border-radius: ${({ theme }) => theme.borderRadius.pill};
+  font-family: "Barlow Condensed", Inter, sans-serif;
   font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelLarge.fontWeight};
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   border: none;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
 `;

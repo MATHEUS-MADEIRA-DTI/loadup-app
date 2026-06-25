@@ -27,17 +27,20 @@ const StyledCard = styled.div`
   flex-direction: column;
   align-items: stretch;
   flex: 1;
-  padding: 14px;
-  border-radius: ${({ theme }) => theme.borderRadius.inner};
-  background: ${({ theme }) => theme.colors.background};
+  padding: 18px;
+  border-radius: ${({ theme }) => theme.borderRadius.card};
+  background: ${({ theme }) => theme.colors.glassOverlay};
   border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 `;
 
 const StyledTopRow = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const StyledIcon = styled.span`
@@ -48,24 +51,27 @@ const StyledIcon = styled.span`
 `;
 
 const StyledLabel = styled.span`
-  font-size: 11px;
-  font-weight: 500;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
+  font-weight: 400;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   line-height: 1.5;
 `;
 
 const StyledValue = styled.span`
-  font-size: 22px;
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 28px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
-  line-height: 1.3;
-  margin-top: 4px;
+  line-height: 1.1;
+  margin-top: ${({ theme }) => theme.spacing.sm};
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
 `;
 
 const StyledUnit = styled.span`
-  font-size: 10px;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: ${({ theme }) => theme.typography.labelSmall.fontSize};
   font-weight: 400;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   line-height: 1.5;

@@ -1,17 +1,30 @@
 import styled from "styled-components";
 import { CalendarSessionStatus } from "@/types";
 
-export const StyledHistoryCard = styled.div`
+export const StyledHistoryCard = styled.button`
+  width: 100%;
   display: flex;
   gap: ${({ theme }) => theme.spacing.md};
-  background: ${({ theme }) => theme.colors.surface};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
   box-shadow: ${({ theme }) => theme.shadows.card};
   cursor: pointer;
   align-items: flex-start;
+  border: 1px solid transparent;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.focus};
+    border-color: ${({ theme }) => theme.colors.outlineVariant};
+  }
+
   &:active {
-    opacity: 0.85;
+    opacity: 0.95;
   }
 `;
 
@@ -27,9 +40,9 @@ export const StyledHistoryIcon = styled.div<{ $status: CalendarSessionStatus }>`
     $status === "recorded"
       ? theme.colors.successContainer
       : $status === "skipped"
-        ? "#FDECEA"
+        ? theme.colors.errorContainer
         : $status === "pending"
-          ? "#FFF8E1"
+          ? theme.colors.primaryContainer
           : theme.colors.outlineVariant};
   color: ${({ $status, theme }) =>
     $status === "recorded"
@@ -37,7 +50,7 @@ export const StyledHistoryIcon = styled.div<{ $status: CalendarSessionStatus }>`
       : $status === "skipped"
         ? theme.colors.error
         : $status === "pending"
-          ? "#F57F17"
+          ? theme.colors.primary
           : theme.colors.onSurfaceMuted};
 `;
 
@@ -46,7 +59,7 @@ export const StyledHistoryInfo = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 `;
 
 export const StyledHistoryTopRow = styled.div`
@@ -58,8 +71,9 @@ export const StyledHistoryTopRow = styled.div`
 
 export const StyledHistoryDayName = styled.p`
   font-size: ${({ theme }) => theme.typography.titleMedium.fontSize};
-  font-weight: 600;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
+  margin: 0;
 `;
 
 export const StyledHistoryBadge = styled.span<{
@@ -67,29 +81,26 @@ export const StyledHistoryBadge = styled.span<{
 }>`
   font-size: 11px;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: ${({ $status, theme }) =>
     $status === "recorded"
       ? theme.colors.successContainer
       : $status === "skipped"
-        ? "#FDECEA"
-        : $status === "pending"
-          ? "#FFF8E1"
-          : theme.colors.outlineVariant};
+        ? theme.colors.errorContainer
+        : theme.colors.primaryContainer};
   color: ${({ $status, theme }) =>
     $status === "recorded"
       ? theme.colors.success
       : $status === "skipped"
         ? theme.colors.error
-        : $status === "pending"
-          ? "#F57F17"
-          : theme.colors.onSurfaceMuted};
+        : theme.colors.primary};
 `;
 
 export const StyledHistoryDate = styled.p`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin: 0;
 `;
 
 export const StyledHistoryMuscles = styled.div`
@@ -101,4 +112,5 @@ export const StyledHistoryMuscles = styled.div`
 export const StyledHistoryExCount = styled.p`
   font-size: 12px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin: 0;
 `;

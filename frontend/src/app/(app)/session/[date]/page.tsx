@@ -220,33 +220,36 @@ const StyledPage = styled.div`
   flex-direction: column;
   min-height: 100%;
   background-color: ${({ theme }) => theme.colors.background};
+  padding: 24px 0 120px;
 `;
 
 const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.primaryGradient};
-  border-radius: 0 0 28px 28px;
-  padding: 48px 20px 24px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 20px 16px 12px;
   display: flex;
   align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
 const StyledBackBtn = styled.button`
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: 50%;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.9);
+  color: ${({ theme }) => theme.colors.onSurface};
   cursor: pointer;
   font-family: inherit;
   flex-shrink: 0;
-  margin-top: 2px;
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
   &:active {
-    background: rgba(255, 255, 255, 0.25);
+    background: ${({ theme }) => theme.colors.surfaceVariant};
+    transform: scale(0.98);
   }
 `;
 
@@ -254,54 +257,67 @@ const StyledHeaderInfo = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 `;
 
 const StyledHeaderSub = styled.span`
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
-  font-weight: 400;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 `;
 
 const StyledHeaderTitle = styled.h1`
-  font-size: 22px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.onPrimary};
-  line-height: 1.2;
+  font-size: ${({ theme }) => theme.typography.displayLarge.fontSize};
+  font-weight: ${({ theme }) => theme.typography.displayLarge.fontWeight};
+  color: ${({ theme }) => theme.colors.onSurface};
+  line-height: 1.15;
 `;
 
 const StyledHeaderDate = styled.span`
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 2px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-transform: capitalize;
 `;
 
 const StyledStatusBadge = styled.span<{ $good: boolean }>`
   flex-shrink: 0;
-  padding: 5px 12px;
+  padding: 7px 14px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   font-size: 12px;
   font-weight: 700;
-  background: ${({ $good }) =>
-    $good ? "rgba(76, 175, 80, 0.2)" : "rgba(255,255,255,0.15)"};
-  color: ${({ $good }) => ($good ? "#a5d6a7" : "rgba(255,255,255,0.85)")};
-  margin-top: 6px;
+  background: ${({ theme, $good }) =>
+    $good ? theme.colors.successContainer : theme.colors.surface};
+  color: ${({ theme, $good }) =>
+    $good ? theme.colors.success : theme.colors.onSurfaceMuted};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  margin-top: 4px;
 `;
 
 const StyledBody = styled.main`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
-  padding-bottom: 96px;
+  padding: 0 16px 96px;
+  margin-top: ${({ theme }) => theme.spacing.md};
 `;
 
 const StyledSkeletonCard = styled.div`
+  height: 88px;
   border-radius: ${({ theme }) => theme.borderRadius.card};
-  background: linear-gradient(90deg, #e8e0f0 25%, #ddd5ec 50%, #e8e0f0 75%);
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
+    ${({ theme }) => theme.colors.outlineVariant} 50%,
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
+  );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+  }
 `;
 
 const StyledErrorText = styled.p`
@@ -318,11 +334,11 @@ const StyledSection = styled.section`
 `;
 
 const StyledSectionTitle = styled.h2`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
 `;
 
 const StyledExCard = styled.div`
@@ -339,11 +355,12 @@ const StyledExHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const StyledExName = styled.span`
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
 `;
 
@@ -360,11 +377,11 @@ const StyledSeriesRow = styled.div`
 
 const StyledSeriesChip = styled.span`
   font-size: 12px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: ${({ theme }) => theme.borderRadius.chip};
   background: ${({ theme }) => theme.colors.primaryContainer};
   color: ${({ theme }) => theme.colors.primary};
-  font-weight: 500;
+  font-weight: 600;
 `;
 
 const StyledEmptyText = styled.p`
@@ -380,22 +397,27 @@ const StyledSetList = styled.ul`
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 `;
 
 const StyledSetRow = styled.li`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
+  padding: 14px 0;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 
 const StyledSetIndex = styled.span`
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: ${({ theme }) => theme.colors.primaryContainer};
   color: ${({ theme }) => theme.colors.primary};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -406,7 +428,7 @@ const StyledSetIndex = styled.span`
 const StyledSetType = styled.span`
   font-size: 13px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  min-width: 80px;
+  min-width: 90px;
 `;
 
 const StyledSetValue = styled.span`

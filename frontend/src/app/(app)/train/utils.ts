@@ -1,7 +1,7 @@
 import { strings } from "@/constants/strings";
 import { DayOfWeek, SeriesType } from "@/types";
 
-export type AppView = "tabs" | "session";
+export type AppView = "tabs" | "intro" | "session";
 export type ActiveTab = "iniciar" | "historico";
 
 export const DAY_FULL: Record<DayOfWeek, string> = {

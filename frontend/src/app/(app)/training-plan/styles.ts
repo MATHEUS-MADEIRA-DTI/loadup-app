@@ -43,9 +43,9 @@ export const StyledSkeletonCard = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   background: linear-gradient(
     90deg,
-    ${({ theme }) => theme.colors.surface} 25%,
+    ${({ theme }) => theme.colors.surfaceElevated} 25%,
     ${({ theme }) => theme.colors.outlineVariant} 50%,
-    ${({ theme }) => theme.colors.surface} 75%
+    ${({ theme }) => theme.colors.surfaceElevated} 75%
   );
   background-size: 800px 100%;
   animation: ${shimmer} 1.4s infinite;

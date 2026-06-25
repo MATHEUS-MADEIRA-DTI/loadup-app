@@ -6,11 +6,12 @@ import styled from "styled-components";
 import { useTheme } from "@/styles/ThemeProvider";
 
 export default function ThemeToggle() {
-  const { isDark, toggleTheme } = useTheme();
+  const { mode, toggleMode } = useTheme();
+  const isDark = mode === "dark";
 
   return (
     <StyledButton
-      onClick={toggleTheme}
+      onClick={toggleMode}
       aria-label={isDark ? "Mudar para tema claro" : "Mudar para tema escuro"}
     >
       {isDark ? (

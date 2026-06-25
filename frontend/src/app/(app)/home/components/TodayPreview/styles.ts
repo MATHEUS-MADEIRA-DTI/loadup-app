@@ -77,37 +77,11 @@ export const StyledPreviewFooter = styled.div`
   border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
 `;
 
-export const StyledPreviewStat = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 36px;
-`;
-
-export const StyledPreviewStatNum = styled.span`
-  font-size: 18px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.onSurface};
-  line-height: 1;
-`;
-
-export const StyledPreviewStatLabel = styled.span`
-  font-size: 10px;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  margin-top: 2px;
-`;
-
-export const StyledPreviewStatDivider = styled.div`
-  width: 1px;
-  height: 28px;
-  background: ${({ theme }) => theme.colors.outlineVariant};
-  margin: 0 4px;
-`;
-
 export const StyledPreviewStartBtn = styled.button`
-  margin-left: auto;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   gap: 6px;
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.onPrimary};

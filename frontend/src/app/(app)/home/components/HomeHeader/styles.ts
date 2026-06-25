@@ -6,9 +6,8 @@ const shimmer = keyframes`
 `;
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  padding: 52px 20px 20px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.spacing.lg};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
@@ -18,6 +17,7 @@ export const StyledHeaderTopRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 export const StyledAvatarRow = styled.div`
@@ -27,14 +27,14 @@ export const StyledAvatarRow = styled.div`
 `;
 
 export const StyledAvatar = styled.div`
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: ${({ theme }) => theme.colors.primaryContainer};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.primary};
   flex-shrink: 0;
@@ -54,10 +54,11 @@ export const StyledGreetingSmall = styled.span`
 `;
 
 export const StyledGreetingName = styled.span`
-  font-size: ${({ theme }) => theme.typography.titleLarge.fontSize};
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 24px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
-  line-height: 1.2;
+  line-height: 1.1;
 `;
 
 export const StyledHeaderActions = styled.div`

@@ -13,30 +13,40 @@ export const StyledWeekRow = styled.div`
   justify-content: space-between;
 `;
 
-export const StyledDayPill = styled.div<{
+export const StyledDayPill = styled.button<{
   $today: boolean;
   $selected: boolean;
+  $rest: boolean;
 }>`
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 4px;
+  gap: 6px;
+  padding: 12px 6px;
+  min-height: 98px;
   border-radius: ${({ theme }) => theme.borderRadius.inner};
-  background: ${({ $today, $selected, theme }) =>
-    $today
-      ? theme.colors.primary
-      : $selected
-        ? theme.colors.primaryContainer
-        : "transparent"};
+  background: ${({ $selected, $today, theme }) =>
+    $selected
+      ? theme.colors.primaryContainer
+      : $today
+        ? theme.colors.surfaceElevated
+        : theme.colors.surface};
   border: 1px solid
-    ${({ $today, $selected, theme }) =>
-      $today || $selected ? "transparent" : theme.colors.outlineVariant};
+    ${({ $selected, theme }) =>
+      $selected ? theme.colors.primary : theme.colors.outlineVariant};
+  color: ${({ $selected, $today, theme }) =>
+    $selected || $today ? theme.colors.primary : theme.colors.onSurface};
+  opacity: ${({ $rest }) => ($rest ? 0.55 : 1)};
   cursor: pointer;
   user-select: none;
-  &:active {
-    opacity: 0.75;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.card};
   }
 `;
 
@@ -44,43 +54,36 @@ export const StyledDayLabel = styled.span<{
   $today: boolean;
   $selected: boolean;
 }>`
-  font-size: 10px;
-  font-weight: 500;
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: ${({ $today, $selected, theme }) =>
-    $today
-      ? theme.colors.background
-      : $selected
-        ? theme.colors.primary
-        : theme.colors.onSurfaceMuted};
+    $selected ? theme.colors.primary : theme.colors.onSurfaceMuted};
 `;
 
 export const StyledDayNumber = styled.span<{
   $today: boolean;
   $selected: boolean;
 }>`
-  font-size: 15px;
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 24px;
   font-weight: 700;
   color: ${({ $today, $selected, theme }) =>
-    $today
-      ? theme.colors.background
-      : $selected
-        ? theme.colors.primary
-        : theme.colors.onSurface};
+    $selected ? theme.colors.primary : theme.colors.onSurface};
+  line-height: 1;
 `;
 
-export const StyledDayDot = styled.div<{
-  $plannedStatus: string;
-  $sessionStatus: CalendarSessionStatus;
-}>`
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  background-color: ${({ $plannedStatus, $sessionStatus, theme }) => {
-    if ($plannedStatus === "rest") return "transparent";
-    if ($sessionStatus === "recorded") return theme.colors.success;
-    if ($sessionStatus === "skipped") return theme.colors.error;
-    return theme.colors.outlineVariant;
-  }};
+export const StyledDayDot = styled.div`
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 12px;
 `;
 
 export const StyledDayPillSkeleton = styled.div`

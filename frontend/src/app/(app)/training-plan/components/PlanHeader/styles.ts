@@ -1,24 +1,25 @@
 import styled from "styled-components";
 
 export const StyledHeader = styled.header`
-  background: ${({ theme }) => theme.colors.primaryGradient};
-  border-radius: 0 0 32px 32px;
-  padding: 48px 20px 24px;
+  background: ${({ theme }) => theme.colors.background};
+  padding: 24px 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 `;
 
 export const StyledHeaderSub = styled.span`
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
-  font-weight: 400;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 `;
 
 export const StyledTitle = styled.h1`
   font-size: 22px;
   font-weight: 700;
-  color: ${({ theme }) => theme.colors.onPrimary};
+  color: ${({ theme }) => theme.colors.onSurface};
   line-height: 1.2;
 `;
 
@@ -37,6 +38,7 @@ export const StyledSummaryBadge = styled.span`
   font-weight: 600;
   padding: 4px 12px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
-  background: rgba(255, 255, 255, 0.18);
-  color: ${({ theme }) => theme.colors.onPrimary};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.onSurface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
 `;

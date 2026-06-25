@@ -28,17 +28,16 @@ import {
 interface DayCardProps {
   day: TrainingDay;
   isToday: boolean;
-  onToggle: (day: DayOfWeek, next: DayType) => void;
   onNavigate: (day: DayOfWeek) => void;
-  onAdd: (day: DayOfWeek) => void;
+  onToggle: (day: DayOfWeek, currentStatus: DayType) => void;
   isUpdating: boolean;
 }
 
 export default function DayCard({
   day,
   isToday,
-  onToggle,
   onNavigate,
+  onToggle,
   isUpdating,
 }: DayCardProps) {
   const isTraining = day.status === "training";
@@ -52,7 +51,7 @@ export default function DayCard({
   ) as MuscleGroup[];
 
   return (
-    <StyledDayCard $isToday={isToday}>
+    <StyledDayCard $isToday={isToday} $isRest={!isTraining}>
       <StyledCardRow>
         <StyledAbbrCol>
           <StyledAbbrPill $isToday={isToday}>
@@ -91,30 +90,34 @@ export default function DayCard({
         </StyledContent>
 
         <StyledControls>
-          <StyledTypeBadge $training={isTraining}>
-            {isTraining
-              ? strings.trainingPlan.dayTraining
-              : strings.trainingPlan.dayRest}
-          </StyledTypeBadge>
           <StyledToggle
-            role="switch"
+            type="button"
+            onClick={() => onToggle(day.dayOfWeek, day.status)}
+            disabled={isUpdating}
             aria-checked={isTraining}
             aria-label={
               isTraining
                 ? strings.trainingPlan.toggleToRest
                 : strings.trainingPlan.toggleToTraining
             }
-            disabled={isUpdating}
-            onClick={() =>
-              onToggle(day.dayOfWeek, isTraining ? "rest" : "training")
+            title={
+              isTraining
+                ? strings.trainingPlan.toggleToRest
+                : strings.trainingPlan.toggleToTraining
             }
           >
             <StyledToggleThumb $on={isTraining} />
           </StyledToggle>
-          {isTraining && (
+          <StyledTypeBadge $training={isTraining}>
+            {isTraining
+              ? strings.trainingPlan.dayTraining
+              : strings.trainingPlan.dayRest}
+          </StyledTypeBadge>
+          {isTraining ? (
             <StyledChevronBtn
               onClick={() => onNavigate(day.dayOfWeek)}
               aria-label={strings.common.ariaViewExercises}
+              disabled={isUpdating}
             >
               <svg
                 width="18"
@@ -125,7 +128,7 @@ export default function DayCard({
                 <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
               </svg>
             </StyledChevronBtn>
-          )}
+          ) : null}
         </StyledControls>
       </StyledCardRow>
     </StyledDayCard>
