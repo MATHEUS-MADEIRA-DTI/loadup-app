@@ -107,56 +107,52 @@ export const StyledSkeletonCard = styled.div`
 
 export const StyledFab = styled.button`
   position: fixed;
-  bottom: 22px;
+  bottom: 88px;
   right: 20px;
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #ffffff;
-  border: none;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: ${({ theme }) => theme.shadows.primary};
+  box-shadow: ${({ theme }) => theme.shadows.card};
   z-index: 10;
-  transition:
-    transform 200ms ease,
-    box-shadow 200ms ease;
+  transition: transform 200ms ease;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.card};
+    transform: translateY(-2px);
   }
 `;
 
 export const StyledStartBtn = styled.button`
   position: fixed;
-  bottom: 94px;
+  bottom: 80px;
   left: 16px;
-  right: 16px;
-  height: 56px;
+  right: 80px;
+  height: 52px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: ${({ theme }) => theme.colors.primary};
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.onPrimary};
   border: none;
   cursor: pointer;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 16px;
-  font-weight: 700;
-  font-family: inherit;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: ${({ theme }) => theme.spacing.sm};
   box-shadow: ${({ theme }) => theme.shadows.primary};
   z-index: 10;
-  transition:
-    transform 200ms ease,
-    box-shadow 200ms ease;
+  transition: transform 200ms ease;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.card};
   }
 `;

@@ -49,22 +49,33 @@ export const StyledFieldGroup = styled.div`
 `;
 
 export const StyledLabel = styled.label`
-  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 11px;
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.onSurface};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
 `;
 
 export const StyledInput = styled.input`
-  height: 48px;
+  height: 52px;
   padding: 0 ${({ theme }) => theme.spacing.md};
   border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.chip};
-  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-family: var(--font-inter), sans-serif;
+  font-size: 15px;
   color: ${({ theme }) => theme.colors.onSurface};
-  background: ${({ theme }) => theme.colors.background};
-  font-family: inherit;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
   width: 100%;
   box-sizing: border-box;
+  transition: border-color 150ms ease;
+
+  &::placeholder {
+    font-family: inherit;
+    font-size: inherit;
+    color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  }
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
@@ -79,7 +90,7 @@ export const StyledMuscleGrid = styled.div`
 
 export const StyledMuscleChip = styled.button<{ $selected: boolean }>`
   padding: 6px 14px;
-  border-radius: ${({ theme }) => theme.borderRadius.chip};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
   border: 1.5px solid
     ${({ theme, $selected }) =>
       $selected ? theme.colors.primary : theme.colors.outlineVariant};
@@ -87,21 +98,23 @@ export const StyledMuscleChip = styled.button<{ $selected: boolean }>`
     $selected ? theme.colors.primaryContainer : "transparent"};
   color: ${({ theme, $selected }) =>
     $selected ? theme.colors.primary : theme.colors.onSurfaceMuted};
-  font-size: 13px;
-  font-weight: ${({ $selected }) => ($selected ? 600 : 400)};
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  font-family: inherit;
   transition: all 150ms ease;
 `;
 
 export const StyledSeriesRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
-  padding: ${({ theme }) => theme.spacing.sm};
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.md};
   border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  border-radius: ${({ theme }) => theme.borderRadius.chip};
-  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
 `;
 
 export const StyledSeriesTopRow = styled.div`
@@ -114,7 +127,7 @@ export const StyledSeriesBottomRow = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  padding-left: 22px;
+  padding-left: 4px;
 `;
 
 export const StyledSeriesInputGroup = styled.div<{ $primary?: boolean }>`
@@ -126,7 +139,11 @@ export const StyledSeriesInputGroup = styled.div<{ $primary?: boolean }>`
 `;
 
 export const StyledSeriesInputLabel = styled.span`
-  font-size: 12px;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   white-space: nowrap;
 `;
@@ -149,31 +166,40 @@ export const StyledSegmented = styled.div`
 
 export const StyledSegmentBtn = styled.button<{ $active: boolean }>`
   flex: 1;
-  padding: 6px 4px;
+  padding: 8px 4px;
   border: none;
   background: ${({ theme, $active }) =>
     $active ? theme.colors.primary : "transparent"};
   color: ${({ theme, $active }) =>
     $active ? theme.colors.onPrimary : theme.colors.onSurfaceMuted};
+  font-family: var(--font-barlow), sans-serif;
   font-size: 11px;
-  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  font-family: inherit;
   transition: all 150ms ease;
 `;
 
 export const StyledRepsInput = styled.input`
-  width: 52px;
-  height: 32px;
+  width: 60px;
+  height: 40px;
   text-align: center;
   border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.chip};
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 20px;
   color: ${({ theme }) => theme.colors.onSurface};
   background: ${({ theme }) => theme.colors.background};
-  font-family: inherit;
   flex-shrink: 0;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
@@ -181,47 +207,58 @@ export const StyledRepsInput = styled.input`
 `;
 
 export const StyledSeriesRestInput = styled.input`
-  width: 52px;
-  height: 32px;
+  width: 60px;
+  height: 40px;
   text-align: center;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.colors.primary};
   border-radius: ${({ theme }) => theme.borderRadius.chip};
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 20px;
   color: ${({ theme }) => theme.colors.primary};
   background: ${({ theme }) => theme.colors.primaryContainer};
-  font-family: inherit;
   flex-shrink: 0;
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 1.5px ${({ theme }) => theme.colors.primary};
-  }
-  &::placeholder {
-    font-size: 12px;
-    font-weight: 400;
-    color: ${({ theme }) => theme.colors.primary};
-    opacity: 0.5;
-  }
+  appearance: textfield;
+
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
-    opacity: 1;
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary}40;
+  }
+
+  &::placeholder {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.primary};
+    opacity: 0.4;
   }
 `;
 
 export const StyledRemoveBtn = styled.button`
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: transparent;
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.error};
-  font-size: 20px;
-  line-height: 1;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   flex-shrink: 0;
+  transition: all 150ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ theme }) => theme.colors.error};
+    color: ${({ theme }) => theme.colors.error};
+    background: ${({ theme }) => theme.colors.errorContainer};
+  }
+
   &:disabled {
     opacity: 0.3;
     cursor: not-allowed;
@@ -233,12 +270,19 @@ export const StyledAddSeriesBtn = styled.button`
   border: 1.5px dashed ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.chip};
   color: ${({ theme }) => theme.colors.primary};
+  font-family: var(--font-barlow), sans-serif;
   font-size: 13px;
   font-weight: 600;
-  padding: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px;
   cursor: pointer;
   width: 100%;
-  font-family: inherit;
+  transition: border-color 150ms ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 export const StyledError = styled.p`
@@ -249,38 +293,52 @@ export const StyledError = styled.p`
 export const StyledActions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.sm};
-  margin-top: ${({ theme }) => theme.spacing.xs};
+  margin-top: ${({ theme }) => theme.spacing.sm};
 `;
 
 export const StyledCancelBtn = styled.button`
-  flex: 1;
-  height: 48px;
+  height: 52px;
+  padding: 0 20px;
   border: 1.5px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: transparent;
-  color: ${({ theme }) => theme.colors.onSurface};
-  font-size: 15px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 14px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  font-family: inherit;
+  white-space: nowrap;
 `;
 
 export const StyledSubmitBtn = styled.button`
-  flex: 2;
-  height: 48px;
+  flex: 1;
+  height: 52px;
   border: none;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.onPrimary};
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  font-family: inherit;
   box-shadow: ${({ theme }) => theme.shadows.primary};
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
+    transform: none;
   }
 `;
 

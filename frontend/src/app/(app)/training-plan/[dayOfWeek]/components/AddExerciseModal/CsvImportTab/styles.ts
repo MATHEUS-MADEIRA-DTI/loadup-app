@@ -2,9 +2,11 @@ import styled from "styled-components";
 
 export const CsvContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
-  padding: ${({ theme }) => theme.spacing.md};
+  gap: 4px;
+  padding: 4px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
 
 export const ButtonGroup = styled.div`
@@ -14,18 +16,22 @@ export const ButtonGroup = styled.div`
 `;
 
 export const DownloadButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  background-color: ${({ theme }) => theme.colors.primary};
+  padding: 12px ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.onPrimary};
   border: none;
-  border-radius: ${({ theme }) => theme.borderRadius.card};
-  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelLarge.fontWeight};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background-color 200ms ease;
+  transition: all 200ms ease;
+  box-shadow: ${({ theme }) => theme.shadows.primary};
 
   &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors.primaryStrong};
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -51,18 +57,21 @@ export const FileInput = styled.input`
 `;
 
 export const UploadButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  background-color: ${({ theme }) => theme.colors.success};
-  color: ${({ theme }) => theme.colors.onPrimary};
+  padding: 12px ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.success};
+  color: #ffffff;
   border: none;
-  border-radius: ${({ theme }) => theme.borderRadius.card};
-  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.labelLarge.fontWeight};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background-color 200ms ease;
+  transition: all 200ms ease;
 
   &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors.successContainer};
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -120,7 +129,8 @@ export const ErrorMessage = styled.div`
 
 export const InstructionText = styled.p`
   margin: 0;
-  font-size: ${({ theme }) => theme.typography.labelSmall.fontSize};
+  font-family: var(--font-inter), sans-serif;
+  font-size: 12px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
 `;

@@ -19,6 +19,7 @@ const hexToRgb = (value: string) => {
 export const GlobalStyles = createGlobalStyle`
   *,
   *::before,
+  
   *::after {
     box-sizing: border-box;
     margin: 0;

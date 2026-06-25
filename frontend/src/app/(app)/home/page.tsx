@@ -19,6 +19,7 @@ import { useProgressionSummary } from "@/hooks/useProgression";
 import { useTrainingSheet } from "@/hooks/useTrainingSheet";
 import { authService } from "@/services/authService";
 import { DayOfWeek, Exercise } from "@/types";
+import WrongDayModal from "../training-plan/[dayOfWeek]/components/WrongDayModal";
 
 import HomeHeader from "./components/HomeHeader";
 import SessionHistory from "./components/SessionHistory";
@@ -57,7 +58,15 @@ export default function HomePage() {
   const progression = useProgressionSummary();
   const sheet = useTrainingSheet();
   const [selectedDow, setSelectedDow] = useState<DayOfWeek | null>(null);
+  const [showWrongDayModal, setShowWrongDayModal] = useState(false);
 
+  const handleStart = () => {
+    if (!isViewingToday) {
+      setShowWrongDayModal(true);
+    } else {
+      router.push("/train");
+    }
+  };
   const todayData = today.data;
   const weeklyData = weekly.data;
   const todayDow =
@@ -217,7 +226,7 @@ export default function HomePage() {
                     dayOfWeek={viewDow!}
                     exercises={cardExercises}
                     isDone={isDone}
-                    onStart={() => router.push("/train")}
+                    onStart={handleStart}
                   />
                 )}
               </>
@@ -248,6 +257,11 @@ export default function HomePage() {
           dismissAll();
           setModalOpen(false);
         }}
+      />
+      <WrongDayModal
+        isOpen={showWrongDayModal}
+        onClose={() => setShowWrongDayModal(false)}
+        todayLabel={todayDow ? DAY_FULL_LABELS[todayDow] : "hoje"}
       />
     </PageTransition>
   );

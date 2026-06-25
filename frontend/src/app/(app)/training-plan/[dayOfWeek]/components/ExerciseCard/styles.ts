@@ -15,74 +15,120 @@ export const StyledExHeader = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
 `;
-
 export const StyledExNumCircle = styled.div`
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #ffffff;
+  background: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 16px;
   flex-shrink: 0;
 `;
 
 export const StyledExName = styled.h3`
-  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 18px;
   font-weight: 900;
+  text-transform: uppercase;
   color: ${({ theme }) => theme.colors.onSurface};
   flex: 1;
   min-width: 0;
 `;
 
+export const StyledExMuscle = styled.div`
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
 export const StyledEditBtn = styled.button`
-  background: none;
-  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: transparent;
   cursor: pointer;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   display: flex;
   align-items: center;
-  padding: 8px;
+  justify-content: center;
   flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.borderRadius.avatar};
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: all 180ms ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surface};
+    border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primaryContainer};
   }
 `;
 
 export const StyledTrashBtn = styled.button`
-  background: none;
-  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: transparent;
   cursor: pointer;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   display: flex;
   align-items: center;
-  padding: 8px;
+  justify-content: center;
   flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.borderRadius.avatar};
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: all 180ms ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surface};
+    border-color: ${({ theme }) => theme.colors.error};
     color: ${({ theme }) => theme.colors.error};
+    background: ${({ theme }) => theme.colors.errorContainer};
   }
 `;
 
-export const StyledExMuscle = styled.div`
+export const StyledSeriesRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.borderRadius.chip};
+  padding: 10px 14px;
+`;
+
+export const StyledSeriesCircle = styled.div`
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 13px;
+  flex-shrink: 0;
+`;
+
+export const StyledSeriesReps = styled.span`
+  font-family: var(--font-inter), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.onSurface};
+`;
+
+export const StyledExFooter = styled.div`
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  letter-spacing: 0.01em;
+  border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  padding-top: ${({ theme }) => theme.spacing.xs};
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 `;
 
 export const StyledSeriesList = styled.div`
@@ -91,40 +137,6 @@ export const StyledSeriesList = styled.div`
   gap: 8px;
 `;
 
-export const StyledSeriesRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.sm};
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: 14px;
-  padding: 12px 14px;
-`;
 
-export const StyledSeriesCircle = styled.div`
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.primaryContainer};
-  color: ${({ theme }) => theme.colors.primary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-`;
 
-export const StyledSeriesReps = styled.span`
-  font-size: 14px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.onSurface};
-`;
 
-export const StyledExFooter = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-  padding-top: ${({ theme }) => theme.spacing.xs};
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-`;

@@ -8,7 +8,7 @@ import PageTransition from "@/components/PageTransition";
 import { strings } from "@/constants/strings";
 import { useExercises } from "@/hooks/useExercises";
 import { useTodaySession } from "@/hooks/useSession";
-
+import WrongDayModal from "./components/WrongDayModal";
 import { DayOfWeek, Exercise, MuscleGroup } from "@/types";
 
 import AddExerciseModal from "./components/AddExerciseModal";
@@ -37,7 +37,7 @@ export default function DayExercisesPage() {
   const params = useParams();
   const dayOfWeek = params.dayOfWeek as string;
   const exercises = useExercises(dayOfWeek as DayOfWeek);
-
+  const [showWrongDayModal, setShowWrongDayModal] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [editExercise, setEditExercise] = useState<Exercise | null>(null);
   const [deleteExercise, setDeleteExercise] = useState<Exercise | null>(null);
@@ -61,12 +61,20 @@ export default function DayExercisesPage() {
     session.data?.status === "completed" || session.data?.status === "skipped";
 
   const handleStartWorkout = () => {
+    console.log("dayOfWeek:", dayOfWeek);
+    console.log("todayDayOfWeek:", todayDayOfWeek);
+    console.log("isToday:", isToday);
+    console.log("isSessionDone:", isSessionDone);
+
     if (isToday && isSessionDone) {
       router.push("/session/completed");
+    } else if (!isToday) {
+      setShowWrongDayModal(true);
     } else {
       router.push("/train");
     }
   };
+
   if (!isValidDay(dayOfWeek)) {
     router.replace("/training-plan");
     return null;
@@ -214,8 +222,6 @@ export default function DayExercisesPage() {
           )}
         </StyledPage>
       </PageTransition>
-
-      {/* Modals moved outside PageTransition to avoid transform stacking context */}
       <AddExerciseModal
         isOpen={addOpen}
         onClose={() => setAddOpen(false)}
@@ -237,6 +243,12 @@ export default function DayExercisesPage() {
           exercise={deleteExercise}
         />
       )}
+      <WrongDayModal
+        isOpen={showWrongDayModal}
+        onClose={() => setShowWrongDayModal(false)}
+        todayLabel={DAY_LABEL[todayDayOfWeek as DayOfWeek] ?? "hoje"}
+        onNavigate={() => router.back()}
+      />
     </>
   );
 }

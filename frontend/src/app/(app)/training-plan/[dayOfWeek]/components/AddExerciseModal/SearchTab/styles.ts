@@ -14,11 +14,13 @@ export const SearchBarWrapper = styled.div`
 
 export const SearchInput = styled.input`
   flex: 1;
-  padding: ${({ theme }) => theme.spacing.md};
-  background-color: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.outline};
-  border-radius: ${({ theme }) => theme.borderRadius.card};
-  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  height: 48px;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: ${({ theme }) => theme.borderRadius.chip};
+  font-family: var(--font-inter), sans-serif;
+  font-size: 15px;
   color: ${({ theme }) => theme.colors.onSurface};
   transition: border-color 200ms ease;
 
@@ -29,7 +31,6 @@ export const SearchInput = styled.input`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 3px ${({ theme }) => `${theme.colors.primary}20`};
   }
 `;
 
@@ -40,30 +41,22 @@ export const ChipsContainer = styled.div`
 `;
 
 export const FilterChip = styled.button<{ $isActive: boolean }>`
-  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.md}`};
-  background-color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.primary : theme.colors.surface};
+  padding: 6px 14px;
+  background: ${({ theme, $isActive }) =>
+    $isActive ? theme.colors.primary : theme.colors.surfaceElevated};
   color: ${({ theme, $isActive }) =>
-    $isActive ? theme.colors.onPrimary : theme.colors.onSurface};
-  border: 1px solid ${({ theme }) => theme.colors.outline};
+    $isActive ? theme.colors.onPrimary : theme.colors.onSurfaceMuted};
+  border: 1px solid
+    ${({ theme, $isActive }) =>
+      $isActive ? theme.colors.primary : theme.colors.outlineVariant};
   border-radius: ${({ theme }) => theme.borderRadius.pill};
-  font-size: ${({ theme }) => theme.typography.labelSmall.fontSize};
-  font-weight: 500;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
   transition: all 200ms ease;
-
-  &:hover {
-    background-color: ${({ theme, $isActive }) =>
-      $isActive
-        ? theme.colors.primaryStrong || theme.colors.primary
-        : theme.colors.background};
-    border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
-  }
 
   &:active {
     transform: scale(0.95);
@@ -97,10 +90,11 @@ export const ResultsContainer = styled.div`
 `;
 
 export const StateMessage = styled.p`
+  font-family: var(--font-inter), sans-serif;
   margin: 0;
   text-align: center;
   padding: ${({ theme }) => theme.spacing.md};
-  font-size: ${({ theme }) => theme.typography.bodyMedium.fontSize};
+  font-size: 14px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
 `;
 

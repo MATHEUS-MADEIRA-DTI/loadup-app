@@ -2,8 +2,6 @@
 
 import styled from "styled-components";
 
-import ThemeToggle from "@/components/ThemeToggle";
-
 export default function AuthLayout({
   children,
 }: {
@@ -11,90 +9,92 @@ export default function AuthLayout({
 }) {
   return (
     <StyledPage>
-      <StyledHeader>
-        <StyledThemeToggleWrap>
-          <ThemeToggle />
-        </StyledThemeToggleWrap>
-        <StyledLogoCircle>
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z"
-              fill="white"
-            />
-          </svg>
-        </StyledLogoCircle>
-        <StyledLogoTitle>LoadUp</StyledLogoTitle>
-        <StyledTagline>Gerencie seus treinos com inteligência</StyledTagline>
-      </StyledHeader>
-      <StyledBody>{children}</StyledBody>
+      <GlowBg />
+      <StyledContent>
+        <StyledBrand>
+          <StyledIconBox>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z"
+                fill="white"
+              />
+            </svg>
+          </StyledIconBox>
+          <StyledLogoTitle>LoadUp</StyledLogoTitle>
+          <StyledTagline>Seu treino. Sua evolução.</StyledTagline>
+        </StyledBrand>
+        {children}
+      </StyledContent>
     </StyledPage>
   );
 }
 
 const StyledPage = styled.div`
   min-height: 100dvh;
-  background-color: ${({ theme }) => theme.colors.surface};
-  display: flex;
-  flex-direction: column;
-`;
-
-const StyledThemeToggleWrap = styled.div`
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-`;
-
-const StyledHeader = styled.header`
-  position: relative;
-  background: linear-gradient(
-    176deg,
-    rgba(79, 55, 139, 1) 0%,
-    rgba(103, 80, 164, 1) 50%,
-    rgba(154, 130, 219, 1) 100%
-  );
-  border-radius: 0 0 40px 40px;
-  padding: 48px 24px 36px;
+  background-color: ${({ theme }) => theme.colors.background};
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  position: relative;
+  overflow: hidden;
 `;
 
-const StyledLogoCircle = styled.div`
-  width: 56px;
-  height: 56px;
+const GlowBg = styled.div`
+  pointer-events: none;
+  position: absolute;
+  top: -128px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 500px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.35) 0%,
+    rgba(59, 130, 246, 0.08) 35%,
+    transparent 70%
+  );
+`;
+
+const StyledContent = styled.div`
+  position: relative;
+  width: 100%;
+  padding: 64px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+`;
+
+const StyledBrand = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+`;
+
+const StyledIconBox = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
+  box-shadow: 0 0 32px rgba(59, 130, 246, 0.35);
 `;
 
 const StyledLogoTitle = styled.h1`
-  font-size: 36px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: ${({ theme }) => theme.colors.onPrimary};
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 48px;
   line-height: 1;
+  letter-spacing: 0.05em;
+  color: ${({ theme }) => theme.colors.onSurface};
 `;
 
 const StyledTagline = styled.p`
+  font-family: var(--font-inter), sans-serif;
   font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0.035em;
-  color: rgba(255, 255, 255, 0.75);
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-align: center;
-`;
-
-const StyledBody = styled.div`
-  flex: 1;
-  padding: 0 20px 40px;
 `;

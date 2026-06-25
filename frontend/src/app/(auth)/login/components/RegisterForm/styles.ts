@@ -1,6 +1,7 @@
 import styled from "styled-components";
 
 export const StyledError = styled.div`
+  font-family: var(--font-inter), sans-serif;
   font-size: 13px;
   color: ${({ theme }) => theme.colors.error};
   background-color: ${({ theme }) => theme.colors.errorContainer};
@@ -12,31 +13,39 @@ export const StyledError = styled.div`
 export const StyledForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 `;
 
 export const StyledFieldWrapper = styled.div`
-  position: relative;
-  border: 1px solid ${({ theme }) => theme.colors.outline};
-  border-radius: 4px;
-  background-color: ${({ theme }) => theme.colors.surface};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 `;
 
 export const StyledFloatingLabel = styled.label`
-  position: absolute;
-  top: -9px;
-  left: 14px;
-  background-color: ${({ theme }) => theme.colors.surface};
-  padding: 0 4px;
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  line-height: 1;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  padding-left: 4px;
 `;
 
 export const StyledInputRow = styled.div`
+  height: 52px;
+  border-radius: 12px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   padding: 0 14px;
+  gap: 10px;
+  transition: border-color 200ms ease;
+
+  &:focus-within {
+    border-color: #3b82f6;
+  }
 `;
 
 export const StyledInputIcon = styled.span`
@@ -44,47 +53,64 @@ export const StyledInputIcon = styled.span`
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  margin-right: 8px;
 `;
 
 export const StyledInput = styled.input`
   flex: 1;
+  background: transparent;
   border: none;
   outline: none;
-  background: transparent;
-  padding: 16px 0;
-  font-size: 16px;
-  color: ${({ theme }) => theme.colors.onSurface};
-  font-family: inherit;
-  width: 100%;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 15px;
+  color: #f8fafc;
+
   &::placeholder {
-    color: ${({ theme }) => theme.colors.onBackgroundSubtle};
+    color: #64748b;
   }
 `;
 
 export const StyledEyeButton = styled.button`
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   background: none;
   border: none;
-  cursor: pointer;
-  padding: 4px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   display: flex;
   align-items: center;
+  cursor: pointer;
+  padding: 0;
   flex-shrink: 0;
+  transition: color 150ms ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.onSurface};
+  }
 `;
 
 export const StyledSubmitButton = styled.button`
+  margin-top: 8px;
   width: 100%;
-  padding: 14px 24px;
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.onPrimary};
-  border-radius: 1200px;
-  font-size: 16px;
-  font-weight: 700;
+  height: 56px;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
   border: none;
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.4);
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 900;
+  font-size: 17px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   cursor: pointer;
-  box-shadow: 0px 4px 12px 0px rgba(103, 80, 164, 0.35);
-  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
-  transition: opacity 0.2s ease;
-  font-family: inherit;
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
 `;

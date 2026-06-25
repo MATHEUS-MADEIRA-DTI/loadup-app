@@ -4,27 +4,20 @@ export const ResultCard = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
-  background-color: ${({ theme }) => theme.colors.surface};
-  border: 1px solid ${({ theme }) => theme.colors.outline};
-  border-radius: ${({ theme }) => theme.borderRadius.card};
+  padding: 12px ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.surfaceElevated};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
   cursor: pointer;
-  transition:
-    background-color 200ms ease,
-    border-color 200ms ease;
+  transition: all 200ms ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.background};
     border-color: ${({ theme }) => theme.colors.primary};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.primary};
-    outline-offset: 2px;
+    background: ${({ theme }) => theme.colors.primaryContainer};
   }
 
   &:active {
-    background-color: ${({ theme }) => theme.colors.background};
+    transform: scale(0.98);
   }
 `;
 
@@ -38,8 +31,9 @@ export const TextContent = styled.div`
 
 export const ExerciseTitle = styled.p`
   margin: 0;
-  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
-  font-weight: ${({ theme }) => theme.typography.bodyMedium.fontWeight};
+  font-family: var(--font-inter), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
   color: ${({ theme }) => theme.colors.onSurface};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -65,6 +59,7 @@ export const VideoLink = styled.a`
 
 export const TipText = styled.p`
   margin: 0;
+  font-family: var(--font-inter), sans-serif;
   font-size: 11px;
   color: ${({ theme }) => theme.colors.onSurfaceMuted};
   overflow: hidden;
