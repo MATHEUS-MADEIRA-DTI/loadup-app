@@ -48,7 +48,7 @@ export const StyledEditBtn = styled.button`
   align-items: center;
   padding: 8px;
   flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.borderRadius.circle};
+  border-radius: ${({ theme }) => theme.borderRadius.avatar};
   transition:
     background 0.2s ease,
     color 0.2s ease;
@@ -68,7 +68,7 @@ export const StyledTrashBtn = styled.button`
   align-items: center;
   padding: 8px;
   flex-shrink: 0;
-  border-radius: ${({ theme }) => theme.borderRadius.circle};
+  border-radius: ${({ theme }) => theme.borderRadius.avatar};
   transition:
     background 0.2s ease,
     color 0.2s ease;

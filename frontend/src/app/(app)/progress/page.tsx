@@ -90,7 +90,7 @@ export default function ProgressPage() {
     "progress",
   );
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
-  const [userName, setUserName] = useState(strings.common.defaultUserName);
+  const [userName, setUserName] = useState<string>("Atleta");
   const [editingName, setEditingName] = useState(false);
   const [restSeconds, setRestSeconds] = useState(60);
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");

@@ -248,7 +248,7 @@ const StyledBackBtn = styled.button`
     background 180ms ease,
     transform 180ms ease;
   &:active {
-    background: ${({ theme }) => theme.colors.surfaceVariant};
+    background: ${({ theme }) => theme.colors.surfaceElevated};
     transform: scale(0.98);
   }
 `;

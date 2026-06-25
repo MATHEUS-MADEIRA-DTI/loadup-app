@@ -55,7 +55,7 @@ export default function TrainingPlanPage() {
         (d) =>
           sheet.data?.days.find((sd) => sd.dayOfWeek === d) ?? {
             dayOfWeek: d,
-            status: "rest",
+            status: "rest" as const,
             exercises: [],
           },
       ),
@@ -132,7 +132,7 @@ export default function TrainingPlanPage() {
                 onNavigate={(d) => router.push(`/training-plan/${d}`)}
                 onToggle={handleToggleDay}
                 isUpdating={
-                  activeToggleDay === day.dayOfWeek && updateDay.isLoading
+                  activeToggleDay === day.dayOfWeek && updateDay.isPending
                 }
               />
             ))}

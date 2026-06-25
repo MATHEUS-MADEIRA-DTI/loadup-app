@@ -23,7 +23,7 @@ export const StyledBreadcrumb = styled.button`
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: ${({ theme }) => theme.borderRadius.circle};
+  border-radius: ${({ theme }) => theme.borderRadius.avatar};
   transition:
     background 200ms ease,
     color 200ms ease,

@@ -18,7 +18,7 @@ export const StyledStatsRow = styled.div`
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: ${({ theme }) => theme.spacing.sm};
   padding: 0 ${({ theme }) => theme.spacing.md}
-    ${({ theme }) => theme.spacing.md};
+    ${({ theme }) => theme.spacing.md}
 `;
 
 export const StyledSectionHeading = styled.h2`
@@ -127,7 +127,7 @@ export const StyledFab = styled.button`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.focus};
+    box-shadow: ${({ theme }) => theme.shadows.card};
   }
 `;
 
@@ -157,6 +157,6 @@ export const StyledStartBtn = styled.button`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.focus};
+    box-shadow: ${({ theme }) => theme.shadows.card};
   }
 `;

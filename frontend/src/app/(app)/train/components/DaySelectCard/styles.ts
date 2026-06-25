@@ -20,7 +20,7 @@ export const StyledDayCard = styled.button<{ $selected: boolean }>`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.shadows.focus};
+    box-shadow: ${({ theme }) => theme.shadows.card};
   }
 
   &:active {
