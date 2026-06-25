@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-primary: 59 130 246;
+  --c-primary-dark: 29 78 216;
+  --c-surface: 15 23 42;
+  --c-surface-elevated: 30 41 59;
+  --c-bg: 2 6 23;
+  --c-text: 248 250 252;
+  --c-text-muted: 100 116 139;
+  --c-success: 34 197 94;
+  --c-warning: 245 158 11;
+  --c-destructive: 239 68 68;
+  --c-border: 255 255 255;
+  --c-border-alpha: 0.08;
+}
+
+html.light {
+  --c-surface: 248 250 252;
+  --c-surface-elevated: 255 255 255;
+  --c-bg: 241 245 249;
+  --c-text: 15 23 42;
+  --c-text-muted: 100 116 139;
+  --c-border: 15 23 42;
+  --c-border-alpha: 0.08;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .font-headline {
+    font-family: 'Barlow Condensed', Inter, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
+  .font-label {
+    font-family: 'Barlow Condensed', Inter, sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .font-condensed {
+    font-family: 'Barlow Condensed', Inter, sans-serif;
+    font-weight: 400;
+  }
+  .glass {
+    background: rgb(var(--c-surface-elevated) / 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .glass-strong {
+    background: rgb(var(--c-surface-elevated) / 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .border-line {
+    border-color: rgb(var(--c-border) / var(--c-border-alpha));
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
