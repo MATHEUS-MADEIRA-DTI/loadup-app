@@ -92,7 +92,7 @@ export default function FriendsTab() {
               <SkeletonCard />
             </>
           ) : search.data?.length === 0 ? (
-            <EmptyText>Nenhum resultado para "&ldquo;{query}&rdquo;"</EmptyText>
+            <EmptyText>Nenhum resultado para {`"${query}"`}</EmptyText>
           ) : (
             search.data?.map((user) => (
               <UserCard key={user._id}>

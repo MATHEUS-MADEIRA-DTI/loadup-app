@@ -187,8 +187,8 @@ function RestoreModal({
         </ModalIconWrapper>
         <ModalTitle>Restaurar versão?</ModalTitle>
         <ModalText>
-          Seu treino atual será substituído pela versão "&ldquo;{label}&rdquo;
-          ". Esta ação não pode ser desfeita.
+          Seu treino atual será substituído pela versão {`"${label}"`}. Esta
+          ação não pode ser desfeita.
         </ModalText>
         <ModalConfirmBtn onClick={onConfirm} disabled={isPending}>
           {isPending ? "Restaurando..." : "Restaurar"}
