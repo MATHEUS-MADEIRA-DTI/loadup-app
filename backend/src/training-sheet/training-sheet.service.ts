@@ -127,7 +127,126 @@ export class TrainingSheetService {
 
     return updatedDay;
   }
+  async swapDays(userId: string, dayA: string, dayB: string) {
+    const sheet = await this.getTrainingSheet(userId);
 
+    const dA = sheet.days.find((d) => d.dayOfWeek === dayA);
+    const dB = sheet.days.find((d) => d.dayOfWeek === dayB);
+
+    if (!dA || !dB) {
+      throw new NotFoundException('One or both days not found');
+    }
+
+    const tempExercises = [...dA.exercises];
+    const tempStatus = dA.status;
+
+    dA.exercises = dB.exercises;
+    dA.status = dB.status;
+
+    dB.exercises = tempExercises;
+    dB.status = tempStatus;
+
+    sheet.markModified('days');
+    return sheet.save();
+  }
+  async saveSnapshot(userId: string, label?: string) {
+    const sheet = await this.getTrainingSheet(userId);
+
+    const snapshot = {
+      label: label ?? `Versão ${new Date().toLocaleDateString('pt-BR')}`,
+      type: label ? 'manual' : 'auto',
+      days: JSON.parse(JSON.stringify(sheet.days)),
+      createdAt: new Date(),
+    };
+
+    if (sheet.snapshots.length >= 15) {
+      const manualCount = sheet.snapshots.filter((s) => s.type === 'manual').length;
+      if (manualCount > 0) {
+        const firstAutoIdx = sheet.snapshots.findIndex((s) => s.type === 'auto');
+        if (firstAutoIdx >= 0) sheet.snapshots.splice(firstAutoIdx, 1);
+        else sheet.snapshots.shift();
+      } else {
+        sheet.snapshots.shift();
+      }
+    }
+
+    sheet.snapshots.push(snapshot as any);
+    sheet.markModified('snapshots');
+    return sheet.save();
+  }
+
+  async getSnapshots(userId: string, muscleGroup?: string) {
+    const sheet = await this.getTrainingSheet(userId);
+
+    let snapshots = [...sheet.snapshots].reverse();
+
+    if (muscleGroup) {
+      snapshots = snapshots.filter((s) =>
+        s.days.some((d) => d.exercises.some((ex) => ex.muscleGroup === muscleGroup)),
+      );
+    }
+
+    return snapshots.map((s) => ({
+      _id: s._id,
+      label: s.label,
+      type: s.type,
+      createdAt: s.createdAt,
+      muscleGroups: Array.from(
+        new Set(s.days.flatMap((d) => d.exercises.map((ex) => ex.muscleGroup))),
+      ),
+      totalExercises: s.days.reduce((acc, d) => acc + d.exercises.length, 0),
+    }));
+  }
+
+  async restoreSnapshot(userId: string, snapshotId: string) {
+    const sheet = await this.getTrainingSheet(userId);
+
+    const snapshot = sheet.snapshots.find((s) => s._id?.toString() === snapshotId);
+
+    if (!snapshot) throw new NotFoundException('Snapshot not found');
+
+    // Auto-save current state before restoring
+    await this.saveSnapshot(
+      userId,
+      `Antes de restaurar — ${new Date().toLocaleDateString('pt-BR')}`,
+    );
+
+    const freshSheet = await this.getTrainingSheet(userId);
+    freshSheet.days = snapshot.days.map((d) => ({ ...d })) as any;
+    freshSheet.markModified('days');
+    return freshSheet.save();
+  }
+
+  // Atualiza o copyDay para salvar snapshot automático antes de copiar
+  async copyDay(
+    userId: string,
+    sourceUserId: string,
+    sourceDayOfWeek: string,
+    targetDayOfWeek: string,
+    isFriend: boolean,
+  ) {
+    const sourceSheet = await this.trainingSheetModel
+      .findOne({ userId: toObjectId(sourceUserId) })
+      .exec();
+
+    if (!sourceSheet) throw new NotFoundException('Source training sheet not found');
+
+    const sourceDay = sourceSheet.days.find((d) => d.dayOfWeek === sourceDayOfWeek);
+    if (!sourceDay) throw new NotFoundException('Source day not found');
+
+    // Auto snapshot before copy
+    await this.saveSnapshot(userId, `Antes de copiar ${sourceDayOfWeek} de outro usuário`);
+
+    const mySheet = await this.getTrainingSheet(userId);
+    const targetDay = mySheet.days.find((d) => d.dayOfWeek === targetDayOfWeek);
+    if (!targetDay) throw new NotFoundException('Target day not found');
+
+    targetDay.exercises = JSON.parse(JSON.stringify(sourceDay.exercises));
+    targetDay.status = 'training';
+
+    mySheet.markModified('days');
+    return mySheet.save();
+  }
   private generateExerciseId(): string {
     return `ex_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }

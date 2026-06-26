@@ -12,6 +12,8 @@ import { ExercisesModule } from './exercises/exercises.module';
 import { ExercisesApiModule } from './exercises-api/exercises-api.module';
 import { PlateauModule } from './plateau/plateau.module';
 import { databaseConfig } from './config/database.config';
+import { FriendshipModule } from './friendship/friendship.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { databaseConfig } from './config/database.config';
     CalendarModule,
     ProgressionModule,
     PlateauModule,
+    FriendshipModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

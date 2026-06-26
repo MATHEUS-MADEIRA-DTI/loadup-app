@@ -17,9 +17,13 @@ export class User {
   @Prop({ default: 'America/Sao_Paulo' })
   timezone: string;
 
+  @Prop({ default: false })
+  isPublic: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ name: 'text' });

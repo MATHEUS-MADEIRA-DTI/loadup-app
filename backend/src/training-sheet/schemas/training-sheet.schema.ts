@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Day, DaySchema } from './day.schema';
+import { Snapshot, SnapshotSchema } from './snapshot.schema';
 
 export type TrainingSheetDocument = TrainingSheet & Document;
 
@@ -11,6 +12,9 @@ export class TrainingSheet {
 
   @Prop({ type: [DaySchema], required: true })
   days: Day[];
+
+  @Prop({ type: [SnapshotSchema], default: [] })
+  snapshots: Snapshot[];
 
   @Prop({ default: 1 })
   version: number;
