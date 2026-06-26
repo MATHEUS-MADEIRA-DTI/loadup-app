@@ -127,7 +127,7 @@ export function PlateauAlertsModal({
     accept.mutate(friendshipId, {
       onSuccess: () => {
         markAsRead.mutate(notifId);
-        setProcessedIds((prev) => new Set([...prev, notifId]));
+        setProcessedIds((prev) => new Set(Array.from(prev).concat(notifId)));
         toast.success("Pedido aceito! Agora vocês são amigos 🎉");
       },
       onError: (error: any) => {
@@ -136,7 +136,7 @@ export function PlateauAlertsModal({
           msg.includes("already handled") ||
           msg.includes("Already friends")
         ) {
-          setProcessedIds((prev) => new Set([...prev, notifId]));
+          setProcessedIds((prev) => new Set(Array.from(prev).concat(notifId)));
           markAsRead.mutate(notifId);
           toast("Este pedido já foi processado anteriormente.");
         } else {
@@ -151,13 +151,13 @@ export function PlateauAlertsModal({
     reject.mutate(friendshipId, {
       onSuccess: () => {
         markAsRead.mutate(notifId);
-        setProcessedIds((prev) => new Set([...prev, notifId]));
+        setProcessedIds((prev) => new Set(Array.from(prev).concat(notifId)));
         toast("Pedido recusado.");
       },
       onError: (error: any) => {
         const msg = error?.message ?? "";
         if (msg.includes("already handled")) {
-          setProcessedIds((prev) => new Set([...prev, notifId]));
+          setProcessedIds((prev) => new Set(Array.from(prev).concat(notifId)));
           markAsRead.mutate(notifId);
           toast("Este pedido já foi processado anteriormente.");
         } else {
