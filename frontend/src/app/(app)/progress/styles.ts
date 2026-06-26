@@ -99,32 +99,47 @@ export const StyledBody = styled.main`
 
 export const StyledTabBar = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  background: ${({ theme }) => theme.colors.surfaceElevated};
-  border-radius: 999px;
-  padding: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  position: relative;
   margin-top: ${({ theme }) => theme.spacing.md};
+  border-bottom: 2px solid ${({ theme }) => theme.colors.outlineVariant};
 `;
 
 export const StyledTabButton = styled.button<{ $active: boolean }>`
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.surface};
+  background: transparent;
   color: ${({ $active, theme }) =>
-    $active ? theme.colors.onPrimary : theme.colors.onSurfaceMuted};
+    $active ? theme.colors.primary : theme.colors.onSurfaceMuted};
   border: none;
-  border-radius: 999px;
-  padding: 14px 12px;
-  font-family: "Barlow Condensed", Inter, sans-serif;
-  font-size: ${({ theme }) => theme.typography.labelLarge.fontSize};
+  padding: 12px;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 18px;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition:
-    background 200ms ease,
-    color 200ms ease;
-`;
+  transition: color 200ms ease;
+  position: relative;
+  z-index: 1;
 
+  &:active {
+    opacity: 0.7;
+  }
+`;
+export const StyledTabIndicator = styled.div<{
+  $index: number;
+  $total: number;
+}>`
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  height: 2px;
+  width: ${({ $total }) => 100 / $total}%;
+  background: ${({ theme }) => theme.colors.primary};
+  border-radius: 999px;
+  transform: translateX(${({ $index }) => $index * 100}%);
+  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 8px ${({ theme }) => theme.colors.primary}80;
+`;
 export const StyledProfileRow = styled.div`
   display: flex;
   align-items: center;
@@ -571,4 +586,57 @@ export const StyledMuscleCount = styled.span`
   width: 64px;
   text-align: right;
   flex-shrink: 0;
+`;
+export const StyledHistoryRow = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.md} 0;
+  background: none;
+  border: none;
+  border-top: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  cursor: pointer;
+  text-align: left;
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  transition: opacity 150ms ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+export const StyledHistoryIcon = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+export const StyledHistoryInfo = styled.div`
+  flex: 1;
+`;
+
+export const StyledHistoryLabel = styled.span`
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.onSurface};
+  display: block;
+`;
+
+export const StyledHistorySub = styled.span`
+  font-family: var(--font-inter), sans-serif;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+`;
+
+export const StyledHistoryChevron = styled.span`
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  font-size: 18px;
 `;

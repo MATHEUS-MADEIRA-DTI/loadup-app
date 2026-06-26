@@ -3,10 +3,11 @@ import styled from "styled-components";
 export const StyledError = styled.div`
   font-family: var(--font-inter), sans-serif;
   font-size: 13px;
-  color: ${({ theme }) => theme.colors.error};
-  background-color: ${({ theme }) => theme.colors.errorContainer};
-  border-radius: ${({ theme }) => theme.borderRadius.chip};
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 12px;
+  padding: 10px 16px;
   text-align: center;
 `;
 
@@ -45,11 +46,12 @@ export const StyledInputRow = styled.div`
 
   &:focus-within {
     border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 `;
 
 export const StyledInputIcon = styled.span`
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  color: #475569;
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -65,14 +67,14 @@ export const StyledInput = styled.input`
   color: #f8fafc;
 
   &::placeholder {
-    color: #64748b;
+    color: #475569;
   }
 `;
 
 export const StyledEyeButton = styled.button`
   background: none;
   border: none;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  color: #475569;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -81,7 +83,7 @@ export const StyledEyeButton = styled.button`
   transition: color 150ms ease;
 
   &:hover {
-    color: ${({ theme }) => theme.colors.onSurface};
+    color: #94a3b8;
   }
 `;
 
@@ -89,7 +91,7 @@ export const StyledSubmitButton = styled.button`
   margin-top: 8px;
   width: 100%;
   height: 56px;
-  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  border-radius: 999px;
   border: none;
   background: #3b82f6;
   color: #ffffff;

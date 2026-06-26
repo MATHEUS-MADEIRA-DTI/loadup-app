@@ -5,7 +5,8 @@ import { CheckCircle2, Flame, Hand, Trophy } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import { strings } from "@/constants/strings";
 import { ProgressionSummary } from "@/types";
-
+import { useRouter } from "next/navigation";
+import { useUnreadCount } from "@/hooks/useNotification";
 import {
   StyledAvatar,
   StyledAvatarRow,
@@ -36,6 +37,14 @@ export default function HomeHeader({
   onAlertBellClick,
   onLogout,
 }: HomeHeaderProps) {
+  const router = useRouter();
+  const { data: unreadData } = useUnreadCount();
+  const notifCount = unreadData?.count ?? 0;
+  const totalCount = alertCount + notifCount;
+
+  const handleBellClick = () => {
+    onAlertBellClick();
+  };
   return (
     <StyledHeader>
       <StyledHeaderTopRow>
@@ -50,7 +59,7 @@ export default function HomeHeader({
         <StyledHeaderActions>
           <StyledIconButton
             aria-label={strings.common.ariaNotifications}
-            onClick={onAlertBellClick}
+            onClick={handleBellClick}
             style={{ position: "relative" }}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -74,7 +83,7 @@ export default function HomeHeader({
                   fontWeight: "bold",
                 }}
               >
-                {alertCount}
+                {totalCount > 9 ? "9+" : totalCount}
               </div>
             )}
           </StyledIconButton>

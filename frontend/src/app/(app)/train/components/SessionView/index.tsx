@@ -85,7 +85,10 @@ export default function SessionView({
   }, [session.isError, createAttempted, createSession]);
 
   const sessionData = session.data;
-  const exercises = sheetDay?.exercises ?? [];
+  const exercises = useMemo(
+    () => sheetDay?.exercises ?? [],
+    [sheetDay?.exercises],
+  );
   const totalSeries = exercises.reduce((acc, ex) => acc + ex.series.length, 0);
 
   const loggedCount = useMemo(() => {

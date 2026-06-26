@@ -3,16 +3,30 @@ import styled from "styled-components";
 export const StyledDayCard = styled.div<{
   $isToday: boolean;
   $isRest: boolean;
+  $isDragging?: boolean;
 }>`
   background: ${({ theme, $isToday }) =>
     $isToday ? theme.colors.primaryContainer : theme.colors.surfaceElevated};
   border-radius: ${({ theme }) => theme.borderRadius.inner};
   padding: ${({ theme }) => theme.spacing.md};
-  box-shadow: ${({ theme }) => theme.shadows.card};
+  box-shadow: ${({ theme, $isDragging }) =>
+    $isDragging
+      ? (theme.shadows.primary ?? "0 8px 32px rgba(0,0,0,0.5)")
+      : theme.shadows.card};
   border: 2px solid
-    ${({ theme, $isToday }) =>
-      $isToday ? theme.colors.primary : "transparent"};
-  opacity: ${({ $isRest }) => ($isRest ? 0.62 : 1)};
+    ${({ theme, $isToday, $isDragging }) =>
+      $isDragging
+        ? theme.colors.primary
+        : $isToday
+          ? theme.colors.primary
+          : "transparent"};
+  opacity: ${({ $isRest, $isDragging }) =>
+    $isDragging ? 0.8 : $isRest ? 0.62 : 1};
+  transform: ${({ $isDragging }) => ($isDragging ? "scale(1.02)" : "scale(1)")};
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    opacity 150ms ease;
 `;
 
 export const StyledCardRow = styled.div`
@@ -28,7 +42,25 @@ export const StyledAbbrCol = styled.div`
   gap: 2px;
   flex-shrink: 0;
 `;
+export const StyledDragHandle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 150ms ease;
 
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+`;
 export const StyledAbbrPill = styled.div<{ $isToday: boolean }>`
   width: 40px;
   height: 40px;

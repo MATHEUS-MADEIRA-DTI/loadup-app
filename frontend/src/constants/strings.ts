@@ -77,7 +77,7 @@ export const strings = {
 
   trainingPlan: {
     title: "Meu Plano de Treino",
-    titleSub: "Meu",
+    titleSub: "",
     titleMain: "Plano de Treino",
     createSheet: "Criar plano",
     noSheetTitle: "Nenhum plano criado",
@@ -207,7 +207,7 @@ export const strings = {
 
   progression: {
     title: "Progresso",
-    titleMain: "Meu Progresso",
+    titleMain: "Perfil",
     summaryTitle: "Resumo",
     currentStreak: "Sequência atual",
     longestStreak: "Maior sequência",

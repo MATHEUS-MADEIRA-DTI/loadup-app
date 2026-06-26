@@ -31,7 +31,7 @@ export default function AuthLayout({
 
 const StyledPage = styled.div`
   min-height: 100dvh;
-  background-color: ${({ theme }) => theme.colors.background};
+  background-color: #1e293b;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,7 +76,7 @@ const StyledIconBox = styled.div`
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: ${({ theme }) => theme.colors.surfaceElevated};
+  background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
@@ -89,12 +89,12 @@ const StyledLogoTitle = styled.h1`
   font-size: 48px;
   line-height: 1;
   letter-spacing: 0.05em;
-  color: ${({ theme }) => theme.colors.onSurface};
+  color: white;
 `;
 
 const StyledTagline = styled.p`
   font-family: var(--font-inter), sans-serif;
   font-size: 14px;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  color: white;
   text-align: center;
 `;

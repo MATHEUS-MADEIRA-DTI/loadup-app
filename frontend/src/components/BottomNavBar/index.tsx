@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ClipboardList, Dumbbell, TrendingUp } from "lucide-react";
 import styled from "styled-components";
-
+import { useUnreadCount } from "@/hooks/useNotification";
+import { useRouter } from "next/navigation";
 import { strings } from "@/constants/strings";
 
 const tabs = [
@@ -20,7 +21,8 @@ const tabs = [
 
 export default function BottomNavBar() {
   const pathname = usePathname();
-
+  const { data: unreadData } = useUnreadCount();
+  const unreadCount = unreadData?.count ?? 0;
   return (
     <StyledNav>
       {tabs.map((tab) => {
@@ -34,6 +36,9 @@ export default function BottomNavBar() {
                 color="currentColor"
                 strokeWidth={isActive ? 2.5 : 1.8}
               />
+              {tab.href === "/home" && unreadCount > 0 && (
+                <NotifBadge>{unreadCount > 9 ? "9+" : unreadCount}</NotifBadge>
+              )}
             </IconWrapper>
             <StyledLabel $active={isActive}>{tab.label}</StyledLabel>
           </StyledTab>
@@ -86,8 +91,10 @@ const StyledTab = styled(Link)<{ $active: boolean }>`
 `;
 
 const IconWrapper = styled.div<{ $active: boolean }>`
-  display: grid;
-  place-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -104,4 +111,21 @@ const StyledLabel = styled.span<{ $active: boolean }>`
   font-size: ${({ theme }) => theme.typography.labelSmall.fontSize};
   font-weight: ${({ theme }) => theme.typography.labelSmall.fontWeight};
   color: inherit;
+`;
+const NotifBadge = styled.span`
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 `;

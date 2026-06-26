@@ -143,109 +143,118 @@ export default function HomePage() {
   }
 
   return (
-    <PageTransition>
-      <StyledPage>
-        <HomeHeader
-          userName={userName}
-          summary={progression.data}
-          weeklyCompleted={weeklyCompleted}
-          alertCount={activeAlerts.length}
-          onAlertBellClick={() => setModalOpen(true)}
-          onLogout={logout}
-        />
-        <StyledBody>
-          <StyledCard>
-            <StyledCalendarHeader>
-              <StyledMonthLabel>{monthLabelCapitalized}</StyledMonthLabel>
-              <StyledPlanLink onClick={() => router.push("/training-plan")}>
-                Ver plano
-              </StyledPlanLink>
-            </StyledCalendarHeader>
-            <WeekStrip
-              weekly={weeklyData}
-              isLoading={weekly.isLoading}
-              selectedDow={selectedDow ?? todayDow}
-              todayDow={todayDow}
-              emptyMessage={strings.home.calendarNoSheet}
-              onDayClick={(dow) =>
-                setSelectedDow((prev) =>
-                  prev === dow || (prev === null && dow === todayDow)
-                    ? null
-                    : dow,
-                )
-              }
-            />
-          </StyledCard>
-
-          <StyledCard>
-            {hasNoSheet ? (
-              <EmptyState
-                title={strings.home.noSheetSubtitle}
-                ctaLabel={strings.home.noSheetCta}
-                onCta={() => router.push("/training-plan")}
-              />
-            ) : today.error ? (
-              <EmptyState
-                title={strings.home.errorTitle}
-                ctaLabel={strings.home.errorRetry}
-                onCta={() => today.refetch()}
-              />
-            ) : (
-              <>
-                <StyledCardHeader>
-                  <StyledCardTitle>
-                    {cardIsRest
-                      ? strings.home.restDayBigTitle
-                      : isViewingToday
-                        ? strings.home.todayWorkoutTitle
-                        : strings.home.dayWorkoutTitle(
-                            DAY_FULL_LABELS[viewDow!],
-                          )}
-                  </StyledCardTitle>
-                  {isDone && (
-                    <StyledBadge $status={sessionStatus ?? ""}>
-                      {sessionStatus === "completed"
-                        ? strings.home.completedBadge
-                        : strings.home.skippedBadge}
-                    </StyledBadge>
-                  )}
-                </StyledCardHeader>
-                {cardIsRest ? (
-                  <StyledRestIndicator>
-                    <MoonStar size={36} strokeWidth={1.5} />
-                    <StyledRestText>
-                      {strings.home.restDayRecovery}
-                    </StyledRestText>
-                  </StyledRestIndicator>
-                ) : cardExercises.length === 0 ? (
-                  <StyledRestIndicator>
-                    <StyledRestText>{strings.home.noExercises}</StyledRestText>
-                  </StyledRestIndicator>
-                ) : (
-                  <TodayPreview
-                    dayOfWeek={viewDow!}
-                    exercises={cardExercises}
-                    isDone={isDone}
-                    onStart={handleStart}
-                  />
-                )}
-              </>
-            )}
-          </StyledCard>
-
-          {recentSessions.length > 0 && (
+    <>
+      <PageTransition>
+        <StyledPage>
+          <HomeHeader
+            userName={userName}
+            summary={progression.data}
+            weeklyCompleted={weeklyCompleted}
+            alertCount={activeAlerts.length}
+            onAlertBellClick={() => setModalOpen(true)}
+            onLogout={logout}
+          />
+          <StyledBody>
             <StyledCard>
-              <SessionHistory
-                sessions={recentSessions}
-                onViewAll={() => router.push("/training-plan")}
-                onSessionClick={(date) =>
-                  router.push(`/session/${date.split("T")[0]}`)
+              <StyledCalendarHeader>
+                <StyledMonthLabel>{monthLabelCapitalized}</StyledMonthLabel>
+                <StyledPlanLink onClick={() => router.push("/training-plan")}>
+                  Ver plano
+                </StyledPlanLink>
+              </StyledCalendarHeader>
+              <WeekStrip
+                weekly={weeklyData}
+                isLoading={weekly.isLoading}
+                selectedDow={selectedDow ?? todayDow}
+                todayDow={todayDow}
+                emptyMessage={strings.home.calendarNoSheet}
+                onDayClick={(dow) =>
+                  setSelectedDow((prev) =>
+                    prev === dow || (prev === null && dow === todayDow)
+                      ? null
+                      : dow,
+                  )
                 }
               />
             </StyledCard>
-          )}
-        </StyledBody>
-      </StyledPage>
+
+            <StyledCard>
+              {hasNoSheet ? (
+                <EmptyState
+                  title={strings.home.noSheetSubtitle}
+                  ctaLabel={strings.home.noSheetCta}
+                  onCta={() => router.push("/training-plan")}
+                />
+              ) : today.error ? (
+                <EmptyState
+                  title={strings.home.errorTitle}
+                  ctaLabel={strings.home.errorRetry}
+                  onCta={() => today.refetch()}
+                />
+              ) : (
+                <>
+                  <StyledCardHeader>
+                    <StyledCardTitle>
+                      {cardIsRest
+                        ? strings.home.restDayBigTitle
+                        : isViewingToday
+                          ? strings.home.todayWorkoutTitle
+                          : strings.home.dayWorkoutTitle(
+                              DAY_FULL_LABELS[viewDow!],
+                            )}
+                    </StyledCardTitle>
+                    {isDone && (
+                      <StyledBadge $status={sessionStatus ?? ""}>
+                        {sessionStatus === "completed"
+                          ? strings.home.completedBadge
+                          : strings.home.skippedBadge}
+                      </StyledBadge>
+                    )}
+                  </StyledCardHeader>
+                  {cardIsRest ? (
+                    <StyledRestIndicator>
+                      <MoonStar size={36} strokeWidth={1.5} />
+                      <StyledRestText>
+                        {strings.home.restDayRecovery}
+                      </StyledRestText>
+                    </StyledRestIndicator>
+                  ) : cardExercises.length === 0 ? (
+                    <StyledRestIndicator>
+                      <StyledRestText>
+                        {strings.home.noExercises}
+                      </StyledRestText>
+                    </StyledRestIndicator>
+                  ) : (
+                    <TodayPreview
+                      dayOfWeek={viewDow!}
+                      exercises={cardExercises}
+                      isDone={isDone}
+                      onStart={handleStart}
+                    />
+                  )}
+                </>
+              )}
+            </StyledCard>
+
+            {recentSessions.length > 0 && (
+              <StyledCard>
+                <SessionHistory
+                  sessions={recentSessions}
+                  onViewAll={() => router.push("/training-plan")}
+                  onSessionClick={(date) =>
+                    router.push(`/session/${date.split("T")[0]}`)
+                  }
+                />
+              </StyledCard>
+            )}
+          </StyledBody>
+        </StyledPage>
+        <WrongDayModal
+          isOpen={showWrongDayModal}
+          onClose={() => setShowWrongDayModal(false)}
+          todayLabel={todayDow ? DAY_FULL_LABELS[todayDow] : "hoje"}
+        />
+      </PageTransition>
       <PlateauAlertsModal
         isOpen={modalOpen}
         alerts={activeAlerts}
@@ -258,11 +267,6 @@ export default function HomePage() {
           setModalOpen(false);
         }}
       />
-      <WrongDayModal
-        isOpen={showWrongDayModal}
-        onClose={() => setShowWrongDayModal(false)}
-        todayLabel={todayDow ? DAY_FULL_LABELS[todayDow] : "hoje"}
-      />
-    </PageTransition>
+    </>
   );
 }

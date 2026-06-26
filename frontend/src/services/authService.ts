@@ -25,7 +25,6 @@ export const authService = {
     if (typeof window === "undefined") return "";
     const stored = localStorage.getItem("loadup_user_name");
     if (stored) return stored;
-    // fallback: decode JWT payload to get name or email
     const token = localStorage.getItem("loadup_token");
     if (!token) return "";
     try {
@@ -35,6 +34,23 @@ export const authService = {
       return name;
     } catch {
       return "";
+    }
+  },
+  getEmail(): string {
+    if (typeof window === "undefined") return "";
+    const token = localStorage.getItem("loadup_token");
+    if (!token) return "";
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.email || "";
+    } catch {
+      return "";
+    }
+  },
+
+  storeEmail(response: AuthResponse): void {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("loadup_user_email", response.email ?? "");
     }
   },
 };

@@ -1,6 +1,13 @@
 import { apiClient } from "@/lib/apiClient";
 import { DayOfWeek, DayType, TrainingSheet } from "@/types";
-
+export interface SnapshotSummary {
+  _id: string;
+  label: string;
+  type: "manual" | "auto";
+  createdAt: string;
+  muscleGroups: string[];
+  totalExercises: number;
+}
 export const trainingSheetService = {
   getTrainingSheet(): Promise<TrainingSheet> {
     return apiClient.get<TrainingSheet>("/training-sheet");
@@ -20,10 +27,46 @@ export const trainingSheetService = {
       days: defaultDays,
     });
   },
-
+  swapDays(dayA: DayOfWeek, dayB: DayOfWeek): Promise<TrainingSheet> {
+    return apiClient.patch<TrainingSheet>("/training-sheet/days/swap", {
+      dayA,
+      dayB,
+    });
+  },
   updateDay(day: DayOfWeek, status: DayType): Promise<TrainingSheet> {
     return apiClient.patch<TrainingSheet>(`/training-sheet/days/${day}`, {
       status,
     });
+  },
+  copyDay(data: {
+    sourceUserId: string;
+    sourceDayOfWeek: string;
+    targetDayOfWeek: string;
+  }): Promise<TrainingSheet> {
+    return apiClient.post<TrainingSheet>("/training-sheet/copy-day", data);
+  },
+
+  getFriendSheet(userId: string): Promise<TrainingSheet> {
+    return apiClient.get<TrainingSheet>(`/training-sheet/user/${userId}`);
+  },
+
+  saveSnapshot(label?: string): Promise<TrainingSheet> {
+    return apiClient.post<TrainingSheet>("/training-sheet/snapshots", {
+      label,
+    });
+  },
+
+  getSnapshots(muscleGroup?: string): Promise<SnapshotSummary[]> {
+    const q = muscleGroup
+      ? `?muscleGroup=${encodeURIComponent(muscleGroup)}`
+      : "";
+    return apiClient.get<SnapshotSummary[]>(`/training-sheet/snapshots${q}`);
+  },
+
+  restoreSnapshot(snapshotId: string): Promise<TrainingSheet> {
+    return apiClient.post<TrainingSheet>(
+      `/training-sheet/snapshots/${snapshotId}/restore`,
+      {},
+    );
   },
 };
