@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Weight, Layers, Check, ArrowLeft } from "lucide-react";
+import { CheckCircle2, Weight, Layers, Check, ArrowLeft, Share2 } from "lucide-react";
 import styled, { keyframes } from "styled-components";
+
+import ShareSheet from "./components/ShareSheet";
+import type { ShareCardExercise } from "./components/WorkoutShareCard";
 
 import { useTodaySession } from "@/hooks/useSession";
 import { useTrainingSheet } from "@/hooks/useTrainingSheet";
@@ -72,6 +75,17 @@ export default function CompletedWorkoutPage() {
     day: "numeric",
     month: "long",
   });
+
+  const [showShare, setShowShare] = useState(false);
+
+  const topExercises = useMemo<ShareCardExercise[]>(() => {
+    return groupedExercises.slice(0, 5).map((ex) => {
+      const working = ex.records.filter((r) => r.seriesType === "working");
+      const pool = working.length > 0 ? working : ex.records;
+      const best = pool.reduce((b, r) => (r.weight > b.weight ? r : b), pool[0]);
+      return { name: ex.name, bestWeight: best.weight, bestReps: best.repsCompleted };
+    });
+  }, [groupedExercises]);
 
   const isLoading = session.isLoading || sheet.isLoading;
 
@@ -198,6 +212,10 @@ export default function CompletedWorkoutPage() {
 
       {/* Bottom */}
       <BottomBar>
+        <ShareCardBtn onClick={() => setShowShare(true)}>
+          <Share2 size={16} />
+          Compartilhar treino
+        </ShareCardBtn>
         <PrimaryBtn onClick={() => router.push("/progress")}>
           VER HISTÓRICO COMPLETO
         </PrimaryBtn>
@@ -205,6 +223,16 @@ export default function CompletedWorkoutPage() {
           Voltar ao início
         </SecondaryBtn>
       </BottomBar>
+
+      {showShare && (
+        <ShareSheet
+          dayName={DAY_FULL[todayDayOfWeek] ?? "TREINO"}
+          date={today}
+          stats={stats}
+          topExercises={topExercises}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </PageWrapper>
   );
 }
@@ -495,6 +523,31 @@ const BottomBar = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+`;
+
+const ShareCardBtn = styled.button`
+  width: 100%;
+  height: 52px;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  border: 1.5px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.onSurface};
+  font-family: "Barlow Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 150ms ease, color 150ms ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 const PrimaryBtn = styled.button`

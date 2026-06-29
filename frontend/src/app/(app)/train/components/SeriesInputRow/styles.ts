@@ -244,6 +244,33 @@ export const StyledCheckBtn = styled.button<{ $logged: boolean }>`
   }
 `;
 
+export const StyledCardTopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const StyledNumPadTrigger = styled.button`
+  width: 28px;
+  height: 28px;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
 export const StyledFieldLabel = styled.label`
   font-size: 11px;
   font-weight: 600;
