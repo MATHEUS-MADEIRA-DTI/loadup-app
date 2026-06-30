@@ -564,6 +564,7 @@ const ShareCardBtn = styled.button`
   color: ${({ theme }) => theme.colors.onSurface};
   font-family: "Barlow Condensed", sans-serif;
   font-weight: 700;
+  backdrop-filter: blur(4px);
   font-size: 15px;
   text-transform: uppercase;
   letter-spacing: 0.06em;

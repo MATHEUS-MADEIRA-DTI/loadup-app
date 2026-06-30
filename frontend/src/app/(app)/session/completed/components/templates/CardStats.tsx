@@ -89,6 +89,9 @@ const CardStats = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
                 </React.Fragment>
               );
             })}
+            {topExercises.length > 4 && (
+              <OverflowHint>+{topExercises.length - 3} exercícios</OverflowHint>
+            )}
           </ExList>
 
           {/* Footer */}
@@ -318,4 +321,11 @@ const FooterBrand = styled.span`
   font-family: var(--font-bebas), sans-serif;
   font-size: 16px;
   letter-spacing: 0.1em;
+`;
+
+const OverflowHint = styled.div`
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  color: ${MUTED};
+  padding: 6px 0 2px;
 `;

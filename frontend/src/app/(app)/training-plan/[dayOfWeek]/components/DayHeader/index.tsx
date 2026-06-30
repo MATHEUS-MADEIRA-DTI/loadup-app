@@ -1,5 +1,7 @@
 "use client";
 
+import { GripVertical } from "lucide-react";
+
 import MuscleChip from "@/components/MuscleChip";
 import { strings } from "@/constants/strings";
 import { MuscleGroup } from "@/types";
@@ -8,6 +10,9 @@ import {
   StyledBreadcrumb,
   StyledHeader,
   StyledMuscleRow,
+  StyledReorderBtn,
+  StyledReorderLeft,
+  StyledReorderStatus,
   StyledTitle,
   StyledTopRow,
 } from "./styles";
@@ -16,12 +21,16 @@ interface DayHeaderProps {
   dayLabel: string;
   uniqueMuscles: MuscleGroup[];
   onBack: () => void;
+  dragEnabled?: boolean;
+  onToggleDrag?: () => void;
 }
 
 export default function DayHeader({
   dayLabel,
   uniqueMuscles,
   onBack,
+  dragEnabled,
+  onToggleDrag,
 }: DayHeaderProps) {
   return (
     <StyledHeader>
@@ -42,6 +51,21 @@ export default function DayHeader({
             <MuscleChip key={mg} muscleGroup={mg} />
           ))}
         </StyledMuscleRow>
+      )}
+      {onToggleDrag !== undefined && (
+        <StyledReorderBtn
+          $active={!!dragEnabled}
+          onClick={onToggleDrag}
+          type="button"
+        >
+          <StyledReorderLeft>
+            <GripVertical size={14} />
+            Reordenar exercícios
+          </StyledReorderLeft>
+          <StyledReorderStatus $active={!!dragEnabled}>
+            {dragEnabled ? "Ativado" : "Desativado"}
+          </StyledReorderStatus>
+        </StyledReorderBtn>
       )}
     </StyledHeader>
   );

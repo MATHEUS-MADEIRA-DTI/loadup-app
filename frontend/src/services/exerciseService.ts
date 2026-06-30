@@ -33,6 +33,13 @@ export const exerciseService = {
     );
   },
 
+  reorderExercises(day: DayOfWeek, orderedIds: string[]): Promise<Exercise[]> {
+    return apiClient.patch<Exercise[]>(
+      `/training-sheet/days/${day}/exercises/reorder`,
+      { orderedIds },
+    );
+  },
+
   deleteExercise(day: DayOfWeek, id: string): Promise<void> {
     return apiClient.delete<void>(
       `/training-sheet/days/${day}/exercises/${id}`,

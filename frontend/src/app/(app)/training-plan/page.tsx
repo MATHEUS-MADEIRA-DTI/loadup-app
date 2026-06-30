@@ -52,6 +52,7 @@ function SortableDayCard({
   onToggle,
   isUpdating,
   hasActiveSession,
+  dragEnabled,
 }: {
   day: TrainingDay;
   isToday: boolean;
@@ -59,6 +60,7 @@ function SortableDayCard({
   onToggle: (d: DayOfWeek, s: "training" | "rest") => void;
   isUpdating: boolean;
   hasActiveSession?: boolean;
+  dragEnabled: boolean;
 }) {
   const {
     attributes,
@@ -67,7 +69,10 @@ function SortableDayCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: day.dayOfWeek, disabled: !!hasActiveSession });
+  } = useSortable({
+    id: day.dayOfWeek,
+    disabled: !!hasActiveSession || !dragEnabled,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -100,7 +105,11 @@ function SortableDayCard({
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...(dragEnabled ? { ...attributes, ...listeners } : {})}
+    >
       <DayCard {...sharedCardProps} />
     </div>
   );
@@ -117,6 +126,7 @@ export default function TrainingPlanPage() {
     null,
   );
   const [activeDragId, setActiveDragId] = useState<DayOfWeek | null>(null);
+  const [dragEnabled, setDragEnabled] = useState(false);
   const todayDow = JS_TO_DOW[new Date().getDay()];
 
   // Block reorder only when the user has actually started recording sets today
@@ -208,7 +218,7 @@ export default function TrainingPlanPage() {
     return (
       <PageTransition>
         <StyledPage>
-          <PlanHeader trainingCount={0} restCount={0} />
+          <PlanHeader trainingCount={0} restCount={0} dragEnabled={dragEnabled} onToggleDrag={() => setDragEnabled((v) => !v)} />
           <StyledBody>
             {Array.from({ length: 7 }).map((_, i) => (
               <StyledSkeletonCard key={i} />
@@ -223,7 +233,7 @@ export default function TrainingPlanPage() {
     return (
       <PageTransition>
         <StyledPage>
-          <PlanHeader trainingCount={0} restCount={0} />
+          <PlanHeader trainingCount={0} restCount={0} dragEnabled={dragEnabled} onToggleDrag={() => setDragEnabled((v) => !v)} />
           <StyledBody>
             <EmptyState
               title={strings.trainingPlan.noSheetTitle}
@@ -251,7 +261,7 @@ export default function TrainingPlanPage() {
   return (
     <PageTransition>
       <StyledPage>
-        <PlanHeader trainingCount={trainingCount} restCount={restCount} />
+        <PlanHeader trainingCount={trainingCount} restCount={restCount} dragEnabled={dragEnabled} onToggleDrag={() => setDragEnabled((v) => !v)} />
         <StyledBody>
           <StyledSection>
             <StyledSectionTitle>
@@ -278,6 +288,7 @@ export default function TrainingPlanPage() {
                       activeToggleDay === day.dayOfWeek && updateDay.isPending
                     }
                     hasActiveSession={day.dayOfWeek === activeDow}
+                    dragEnabled={dragEnabled}
                   />
                 ))}
               </SortableContext>

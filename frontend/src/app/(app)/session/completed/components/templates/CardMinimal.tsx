@@ -65,7 +65,7 @@ const CardMinimal = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
 
           {/* exercises */}
           <ExList>
-            {topExercises.map((ex, i) => (
+            {topExercises.slice(0, 4).map((ex, i) => (
               <React.Fragment key={i}>
                 <ExRow>
                   <ExNum style={{ color: primary }}>
@@ -76,9 +76,12 @@ const CardMinimal = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
                     {ex.bestWeight}kg × {ex.bestReps}
                   </ExVal>
                 </ExRow>
-                {i < topExercises.length - 1 && <ExDivider />}
+                {i < Math.min(topExercises.length, 4) - 1 && <ExDivider />}
               </React.Fragment>
             ))}
+            {topExercises.length > 4 && (
+              <OverflowHint>+{topExercises.length - 3} exercícios</OverflowHint>
+            )}
           </ExList>
         </Content>
       </Root>
@@ -253,4 +256,11 @@ const ExVal = styled.span`
   font-size: 14px;
   color: ${MUTED2};
   flex-shrink: 0;
+`;
+
+const OverflowHint = styled.div`
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  color: ${MUTED};
+  padding: 6px 0 2px;
 `;

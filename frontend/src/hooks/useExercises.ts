@@ -59,3 +59,15 @@ export function useDeleteExercise(day: DayOfWeek) {
     },
   });
 }
+
+export function useReorderExercises(day: DayOfWeek) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (orderedIds: string[]) =>
+      exerciseService.reorderExercises(day, orderedIds),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: sheetKey });
+      qc.invalidateQueries({ queryKey: dayKey(day) });
+    },
+  });
+}

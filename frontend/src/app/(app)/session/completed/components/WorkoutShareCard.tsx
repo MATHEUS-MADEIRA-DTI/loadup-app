@@ -94,7 +94,7 @@ const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
         {/* exercises */}
         <ExSection>
           <ExSectionLabel>EXERCÍCIOS</ExSectionLabel>
-          {topExercises.map((ex, i) => (
+          {topExercises.slice(0, 4).map((ex, i) => (
             <React.Fragment key={i}>
               <ExRow>
                 <ExIdx style={{ color: primary }}>
@@ -108,9 +108,12 @@ const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
                   {ex.bestReps}
                 </ExBest>
               </ExRow>
-              {i < topExercises.length - 1 && <ExDivider />}
+              {i < Math.min(topExercises.length, 4) - 1 && <ExDivider />}
             </React.Fragment>
           ))}
+          {topExercises.length > 4 && (
+            <OverflowHint>+{topExercises.length - 3} exercícios</OverflowHint>
+          )}
         </ExSection>
 
         {/* footer */}
@@ -323,6 +326,13 @@ const ExRow = styled.div`
 `;
 
 const ExDivider = styled.div``;
+
+const OverflowHint = styled.div`
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  color: ${MUTED};
+  padding: 6px 0 2px;
+`;
 
 const ExIdx = styled.span`
   font-family: var(--font-bebas), sans-serif;

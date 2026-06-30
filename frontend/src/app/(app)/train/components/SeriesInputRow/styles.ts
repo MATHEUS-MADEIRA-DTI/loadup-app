@@ -251,8 +251,8 @@ export const StyledCardTopRow = styled.div`
 `;
 
 export const StyledNumPadTrigger = styled.button`
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: ${({ theme }) => theme.borderRadius.pill};
   border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   background: transparent;

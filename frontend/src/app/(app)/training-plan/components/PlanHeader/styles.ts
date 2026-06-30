@@ -42,3 +42,41 @@ export const StyledSummaryBadge = styled.span`
   color: ${({ theme }) => theme.colors.onSurface};
   border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
 `;
+
+export const StyledReorderBtn = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  border: 1px solid
+    ${({ theme, $active }) =>
+      $active ? theme.colors.primary : theme.colors.outlineVariant};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.primaryContainer : theme.colors.surface};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.primary : theme.colors.onSurfaceMuted};
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+`;
+
+export const StyledReorderLeft = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+`;
+
+export const StyledReorderStatus = styled.span<{ $active: boolean }>`
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: ${({ $active }) => ($active ? 1 : 0.5)};
+`;

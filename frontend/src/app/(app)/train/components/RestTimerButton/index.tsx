@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { formatMMSS } from "@/lib/formatMMSS";
 import { useAppTheme } from "@/styles/ThemeProvider";
@@ -27,20 +27,68 @@ export default function RestTimerOverlay({
 }: RestTimerOverlayProps) {
   const { theme } = useAppTheme();
   const [timeLeft, setTimeLeft] = useState(restDuration);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!visible) return;
-    let remaining = restDuration;
-    setTimeLeft(remaining);
+
+    const targetTime = Date.now() + restDuration * 1000;
+    setTimeLeft(restDuration);
+
+    const acquireWakeLock = async () => {
+      if ("wakeLock" in navigator) {
+        try {
+          wakeLockRef.current = await navigator.wakeLock.request("screen");
+        } catch {
+        }
+      }
+    };
+    acquireWakeLock();
+
     const interval = setInterval(() => {
-      remaining -= 1;
+      const remaining = Math.round((targetTime - Date.now()) / 1000);
       setTimeLeft(remaining);
+
       if (remaining <= 0) {
         clearInterval(interval);
+
+        if (!audioRef.current) {
+          audioRef.current = new Audio(
+            "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA" +
+              "EAAQARAAIAIgAAABZAAAIAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2" +
+              "YyFxaM0O3jlVIlDA+Z7vXupF4fEBCt8v79s20tEhK29v//tHEvFxfG/f///8" +
+              "SAAB"
+          );
+        }
+        audioRef.current.play().catch(() => {});
+
+        if ("Notification" in window) {
+          const fire = () =>
+            new Notification("Descanso encerrado!", {
+              body: "Hora de voltar ao treino 💪",
+              icon: "/icon-192x192.png",
+            });
+
+          if (Notification.permission === "granted") {
+            fire();
+          } else if (Notification.permission === "default") {
+            Notification.requestPermission().then((permission) => {
+              if (permission === "granted") fire();
+            });
+          }
+        }
+
         onDismiss();
       }
-    }, 1000);
-    return () => clearInterval(interval);
+    }, 500);
+
+    return () => {
+      clearInterval(interval);
+      wakeLockRef.current?.release().then(() => {
+        wakeLockRef.current = null;
+      });
+    };
   }, [visible, restDuration, onDismiss]);
 
   if (!visible) return null;

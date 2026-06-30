@@ -1,12 +1,29 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import EmptyState from "@/components/EmptyState";
 import PageTransition from "@/components/PageTransition";
 import { strings } from "@/constants/strings";
-import { useExercises } from "@/hooks/useExercises";
+import { useExercises, useReorderExercises } from "@/hooks/useExercises";
 import { useTodaySession } from "@/hooks/useSession";
 import WrongDayModal from "./components/WrongDayModal";
 import { DayOfWeek, Exercise, MuscleGroup } from "@/types";
@@ -32,16 +49,88 @@ import {
 } from "./styles";
 import { DAY_LABEL, isValidDay } from "./utils";
 
+function SortableExerciseCard({
+  exercise,
+  index,
+  onEdit,
+  onDelete,
+  dragEnabled,
+}: {
+  exercise: Exercise;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+  dragEnabled: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: exercise._id, disabled: !dragEnabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...(dragEnabled ? { ...attributes, ...listeners } : {})}
+    >
+      <ExerciseCard
+        exercise={exercise}
+        index={index}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
 export default function DayExercisesPage() {
   const router = useRouter();
   const params = useParams();
   const dayOfWeek = params.dayOfWeek as string;
   const exercises = useExercises(dayOfWeek as DayOfWeek);
+  const reorderExercises = useReorderExercises(dayOfWeek as DayOfWeek);
   const [showWrongDayModal, setShowWrongDayModal] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [editExercise, setEditExercise] = useState<Exercise | null>(null);
   const [deleteExercise, setDeleteExercise] = useState<Exercise | null>(null);
+  const [dragEnabled, setDragEnabled] = useState(false);
+  const [localOrder, setLocalOrder] = useState<string[]>([]);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const session = useTodaySession();
+
+  useEffect(() => {
+    if (exercises.data) {
+      setLocalOrder(exercises.data.map((ex) => ex._id));
+    }
+  }, [exercises.data]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveDragId(null);
+    if (!over || active.id === over.id) return;
+
+    setLocalOrder((prev) => {
+      const newOrder = [...prev];
+      const aIdx = newOrder.indexOf(active.id as string);
+      const bIdx = newOrder.indexOf(over.id as string);
+      [newOrder[aIdx], newOrder[bIdx]] = [newOrder[bIdx], newOrder[aIdx]];
+      reorderExercises.mutate(newOrder);
+      return newOrder;
+    });
+  };
 
   const todayDayOfWeek = (() => {
     const days = [
@@ -81,11 +170,18 @@ export default function DayExercisesPage() {
   }
 
   const dayLabel = DAY_LABEL[dayOfWeek];
-  const list = exercises.data ?? [];
+  const raw = exercises.data ?? [];
+  const list =
+    localOrder.length === raw.length
+      ? localOrder.map((id) => raw.find((ex) => ex._id === id)!).filter(Boolean)
+      : raw;
   const totalSeries = list.reduce((acc, ex) => acc + ex.series.length, 0);
   const uniqueMuscles = Array.from(
     new Set(list.map((ex) => ex.muscleGroup)),
   ) as MuscleGroup[];
+  const activeDragExercise = activeDragId
+    ? list.find((ex) => ex._id === activeDragId)
+    : null;
 
   if (exercises.isLoading) {
     return (
@@ -139,6 +235,8 @@ export default function DayExercisesPage() {
             dayLabel={dayLabel}
             uniqueMuscles={uniqueMuscles}
             onBack={() => router.back()}
+            dragEnabled={dragEnabled}
+            onToggleDrag={list.length > 1 ? () => setDragEnabled((v) => !v) : undefined}
           />
 
           {list.length > 0 && (
@@ -180,15 +278,38 @@ export default function DayExercisesPage() {
                 onCta={() => setAddOpen(true)}
               />
             ) : (
-              list.map((exercise, i) => (
-                <ExerciseCard
-                  key={exercise._id}
-                  exercise={exercise}
-                  index={i}
-                  onEdit={() => setEditExercise(exercise)}
-                  onDelete={() => setDeleteExercise(exercise)}
-                />
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={list.map((ex) => ex._id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {list.map((exercise, i) => (
+                    <SortableExerciseCard
+                      key={exercise._id}
+                      exercise={exercise}
+                      index={i}
+                      onEdit={() => setEditExercise(exercise)}
+                      onDelete={() => setDeleteExercise(exercise)}
+                      dragEnabled={dragEnabled}
+                    />
+                  ))}
+                </SortableContext>
+                <DragOverlay>
+                  {activeDragExercise && (
+                    <ExerciseCard
+                      exercise={activeDragExercise}
+                      index={list.indexOf(activeDragExercise)}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
+                    />
+                  )}
+                </DragOverlay>
+              </DndContext>
             )}
           </StyledBody>
 

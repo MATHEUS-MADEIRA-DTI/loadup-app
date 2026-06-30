@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import styled, { keyframes } from "styled-components";
+import styled, { keyframes, useTheme } from "styled-components";
 import { ArrowLeft, Camera, ImageDown, Share2, X } from "lucide-react";
-import html2canvas from "html2canvas";
 
 import WorkoutShareCard, { WorkoutShareCardProps } from "./WorkoutShareCard";
 import CardBold from "./templates/CardBold";
@@ -31,6 +30,7 @@ export default function ShareSheet({
   topExercises,
   onClose,
 }: ShareSheetProps) {
+  const theme = useTheme();
   const [mounted, setMounted] = useState(false);
   const [selectedTemplate, setSelectedTemplate] =
     useState<TemplateId>("classic");
@@ -41,7 +41,6 @@ export default function ShareSheet({
   const [dragY, setDragY] = useState(0);
 
   const sheetRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -51,6 +50,15 @@ export default function ShareSheet({
       document.body.style.overflow = "";
     };
   }, []);
+
+  // Revoke the ObjectURL whenever it's replaced to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (generatedUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(generatedUrl);
+      }
+    };
+  }, [generatedUrl]);
 
   // Clear generated image when user edits template/photo
   useEffect(() => {
@@ -80,27 +88,32 @@ export default function ShareSheet({
   };
 
   const handleGenerate = async () => {
-    if (!cardRef.current) return;
     setIsCapturing(true);
     try {
-      await document.fonts.ready;
-
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#020617",
-        width: 360,
-        height: 640,
-        scrollX: -window.scrollX,
-        scrollY: -window.scrollY,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateId: selectedTemplate,
+          dayName,
+          date,
+          stats,
+          topExercises,
+          photoUrl,
+          primaryColor: theme.colors.primary,
+          primaryDarkColor: theme.colors.primaryDark,
+        }),
       });
 
-      setGeneratedUrl(canvas.toDataURL("image/png"));
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(
+          (err as { error?: string }).error ?? "Erro desconhecido",
+        );
+      }
+
+      const blob = await response.blob();
+      setGeneratedUrl(URL.createObjectURL(blob));
     } catch (error) {
       console.error("Erro ao gerar imagem:", error);
     } finally {
@@ -108,12 +121,22 @@ export default function ShareSheet({
     }
   };
 
+  const handleDownload = () => {
+    if (!generatedUrl) return;
+    const a = document.createElement("a");
+    a.href = generatedUrl;
+    a.download = "loadup-treino.png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   const handleShare = async () => {
     if (!generatedUrl) return;
-    const response = await fetch(generatedUrl);
-    const blob = await response.blob();
-    const file = new File([blob], "loadup-treino.png", { type: "image/png" });
     try {
+      const response = await fetch(generatedUrl);
+      const blob = await response.blob();
+      const file = new File([blob], "loadup-treino.png", { type: "image/png" });
       if (
         typeof navigator.share === "function" &&
         navigator.canShare({ files: [file] })
@@ -124,18 +147,11 @@ export default function ShareSheet({
           text: `${dayName} · ${stats.exercises} exercícios · ${stats.kg}kg`,
         });
       } else {
-        downloadBlob(blob);
+        handleDownload();
       }
     } catch {
       // user cancelled or not supported
     }
-  };
-
-  const handleDownload = async () => {
-    if (!generatedUrl) return;
-    const response = await fetch(generatedUrl);
-    const blob = await response.blob();
-    downloadBlob(blob);
   };
 
   if (!mounted) return null;
@@ -190,18 +206,10 @@ export default function ShareSheet({
             <GeneratedPreviewArea>
               <GeneratedImg src={generatedUrl} alt="Card do treino" />
             </GeneratedPreviewArea>
-            <SaveHint>
-              <SaveHintIcon>👆</SaveHintIcon>
-              <SaveHintText>
-                Pressione e segure a imagem para salvar na galeria
-              </SaveHintText>
-            </SaveHint>
             <ShareRow>
               <DownloadBtn
                 type="button"
-                onClick={() => {
-                  void handleDownload();
-                }}
+                onClick={handleDownload}
                 aria-label="Baixar"
               >
                 <ImageDown size={18} />
@@ -224,7 +232,7 @@ export default function ShareSheet({
             <ScrollableContent>
               <PreviewScroll>
                 <PreviewWrapper>
-                  <ActiveTemplate ref={cardRef} {...cardProps} />
+                  <ActiveTemplate {...cardProps} />
                 </PreviewWrapper>
               </PreviewScroll>
             </ScrollableContent>
@@ -277,17 +285,6 @@ export default function ShareSheet({
     </>,
     document.body,
   );
-}
-
-function downloadBlob(blob: Blob) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "loadup-treino.png";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
 /* ─── Styles ─────────────────────────────────────────── */
@@ -403,29 +400,6 @@ const GeneratedImg = styled.img`
   height: auto;
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-`;
-
-const SaveHint = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.inner};
-  margin: 0 20px;
-  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
-`;
-
-const SaveHintIcon = styled.span`
-  font-size: 20px;
-  flex-shrink: 0;
-`;
-
-const SaveHintText = styled.span`
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  line-height: 1.4;
 `;
 
 const ShareRow = styled.div`
