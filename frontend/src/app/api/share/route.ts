@@ -60,9 +60,8 @@ async function getBrowser() {
 
   return puppeteer.launch({
     args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
     executablePath,
-    headless: chromium.headless as boolean,
+    headless: true,
   });
 }
 
@@ -461,7 +460,7 @@ export async function POST(req: NextRequest) {
 
     const html = buildHtml(body.templateId ?? "classic", body);
 
-    await page.setContent(html, { waitUntil: "networkidle2", timeout: 30_000 });
+    await page.setContent(html, { waitUntil: "load", timeout: 30_000 });
     // Ensure web fonts have finished loading before screenshotting
     await page.evaluate(() => document.fonts.ready);
 
