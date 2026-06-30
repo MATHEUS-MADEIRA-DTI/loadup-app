@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Weight, Layers, Check, ArrowLeft, Share2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Timer,
+  Layers,
+  Check,
+  ArrowLeft,
+  Share2,
+} from "lucide-react";
 import styled, { keyframes } from "styled-components";
 
 import ShareSheet from "./components/ShareSheet";
@@ -46,7 +53,8 @@ export default function CompletedWorkoutPage() {
   };
 
   const stats = useMemo(() => {
-    if (!sessionData?.records) return { kg: 0, series: 0, exercises: 0 };
+    if (!sessionData?.records)
+      return { kg: 0, series: 0, exercises: 0, duration: "—" };
     const kg = sessionData.records.reduce(
       (acc, r) => acc + r.weight * r.repsCompleted,
       0,
@@ -54,7 +62,23 @@ export default function CompletedWorkoutPage() {
     const series = sessionData.records.length;
     const exercises = new Set(sessionData.records.map((r) => r.exerciseName))
       .size;
-    return { kg: Math.round(kg * 10) / 10, series, exercises };
+
+    let duration = "—";
+    if (sessionData.createdAt && sessionData.completedAt) {
+      const diffMs =
+        new Date(sessionData.completedAt).getTime() -
+        new Date(sessionData.createdAt).getTime();
+      const diffMins = Math.round(diffMs / 60000);
+      if (diffMins < 1) duration = "<1min";
+      else if (diffMins < 60) duration = `${diffMins}min`;
+      else {
+        const h = Math.floor(diffMins / 60);
+        const m = diffMins % 60;
+        duration = m > 0 ? `${h}h ${m}min` : `${h}h`;
+      }
+    }
+
+    return { kg: Math.round(kg * 10) / 10, series, exercises, duration };
   }, [sessionData]);
 
   const groupedExercises = useMemo(() => {
@@ -82,8 +106,15 @@ export default function CompletedWorkoutPage() {
     return groupedExercises.slice(0, 5).map((ex) => {
       const working = ex.records.filter((r) => r.seriesType === "working");
       const pool = working.length > 0 ? working : ex.records;
-      const best = pool.reduce((b, r) => (r.weight > b.weight ? r : b), pool[0]);
-      return { name: ex.name, bestWeight: best.weight, bestReps: best.repsCompleted };
+      const best = pool.reduce(
+        (b, r) => (r.weight > b.weight ? r : b),
+        pool[0],
+      );
+      return {
+        name: ex.name,
+        bestWeight: best.weight,
+        bestReps: best.repsCompleted,
+      };
     });
   }, [groupedExercises]);
 
@@ -143,21 +174,21 @@ export default function CompletedWorkoutPage() {
         <StatsRow>
           <StatCard>
             <StyledStatIcon>
-              <Weight size={20} strokeWidth={2} />
+              <Timer size={20} strokeWidth={2} />
             </StyledStatIcon>
-            <StatValue>{stats.kg}</StatValue>
-            <StatLabel>KG TOTAIS</StatLabel>
+            <StatValue>{stats.duration}</StatValue>
+            <StatLabel>DURAÇÃO</StatLabel>
           </StatCard>
           <StatCard>
             <StyledStatIcon>
-            <Layers size={20} strokeWidth={2} />
+              <Layers size={20} strokeWidth={2} />
             </StyledStatIcon>
             <StatValue>{stats.series}</StatValue>
             <StatLabel>SÉRIES</StatLabel>
           </StatCard>
           <StatCard>
             <StyledStatIcon>
-            <Check size={20} strokeWidth={2} />
+              <Check size={20} strokeWidth={2} />
             </StyledStatIcon>
             <StatValue>{stats.exercises}</StatValue>
             <StatLabel>EXERCÍCIOS</StatLabel>
@@ -252,7 +283,6 @@ const PageWrapper = styled.div`
 const GreenGlow = styled.div`
   pointer-events: none;
   position: absolute;
-  inset-x: 0;
   top: 0;
   height: 320px;
   background: radial-gradient(
@@ -267,7 +297,7 @@ const TopBar = styled.div`
   position: relative;
   padding: 48px 24px 0;
 `;
- const StyledStatIcon = styled.div`
+const StyledStatIcon = styled.div`
   color: ${({ theme }) => theme.colors.primary};
   display: flex;
   align-items: center;
@@ -542,7 +572,9 @@ const ShareCardBtn = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: border-color 150ms ease, color 150ms ease;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};

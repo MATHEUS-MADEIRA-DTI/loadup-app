@@ -11,10 +11,10 @@ export function useProgressionSummary() {
   });
 }
 
-export function useProgressionChart(exerciseName: string) {
+export function useProgressionChart(exerciseName: string, seriesType?: string) {
   return useQuery({
-    queryKey: ["progression", "chart", exerciseName],
-    queryFn: () => progressionService.getChart(exerciseName),
+    queryKey: ["progression", "chart", exerciseName, seriesType ?? "all"],
+    queryFn: () => progressionService.getChart(exerciseName, seriesType),
     enabled: exerciseName.trim().length > 0,
   });
 }

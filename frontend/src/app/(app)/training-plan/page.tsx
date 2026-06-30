@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   DndContext,
   DragEndEvent,
@@ -29,6 +30,7 @@ import {
   useTrainingSheet,
   useUpdateDay,
 } from "@/hooks/useTrainingSheet";
+import { useTodaySession } from "@/hooks/useSession";
 import { DayOfWeek, MuscleGroup, TrainingDay } from "@/types";
 
 import DayCard from "./components/DayCard";
@@ -49,12 +51,14 @@ function SortableDayCard({
   onNavigate,
   onToggle,
   isUpdating,
+  hasActiveSession,
 }: {
   day: TrainingDay;
   isToday: boolean;
   onNavigate: (d: DayOfWeek) => void;
   onToggle: (d: DayOfWeek, s: "training" | "rest") => void;
   isUpdating: boolean;
+  hasActiveSession?: boolean;
 }) {
   const {
     attributes,
@@ -63,24 +67,41 @@ function SortableDayCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: day.dayOfWeek });
+  } = useSortable({ id: day.dayOfWeek, disabled: !!hasActiveSession });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
+  const sharedCardProps = {
+    day,
+    isToday,
+    onNavigate,
+    onToggle,
+    isUpdating,
+    isDragging,
+  };
+
+  if (hasActiveSession) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        onPointerDown={() =>
+          toast.error(
+            "Você já começou um treinamento nesse dia, conclua ou pule para poder alterar o dia",
+          )
+        }
+      >
+        <DayCard {...sharedCardProps} />
+      </div>
+    );
+  }
+
   return (
-    <div ref={setNodeRef} style={style}>
-      <DayCard
-        day={day}
-        isToday={isToday}
-        onNavigate={onNavigate}
-        onToggle={onToggle}
-        isUpdating={isUpdating}
-        isDragging={isDragging}
-        dragHandleProps={{ ...attributes, ...listeners }}
-      />
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <DayCard {...sharedCardProps} />
     </div>
   );
 }
@@ -91,11 +112,19 @@ export default function TrainingPlanPage() {
   const createSheet = useCreateTrainingSheet();
   const updateDay = useUpdateDay();
   const swapDays = useSwapDays();
+  const todaySession = useTodaySession();
   const [activeToggleDay, setActiveToggleDay] = useState<DayOfWeek | null>(
     null,
   );
   const [activeDragId, setActiveDragId] = useState<DayOfWeek | null>(null);
   const todayDow = JS_TO_DOW[new Date().getDay()];
+
+  // Block reorder only when the user has actually started recording sets today
+  const activeDow =
+    todaySession.data?.status === "partial" &&
+    (todaySession.data.records?.length ?? 0) > 0
+      ? (todaySession.data.dayOfWeek as DayOfWeek)
+      : null;
 
   const handleToggleDay = (
     day: DayOfWeek,
@@ -151,6 +180,14 @@ export default function TrainingPlanPage() {
 
     const dayA = active.id as DayOfWeek;
     const dayB = over.id as DayOfWeek;
+
+    // Block if the drop target has an active session (dragging TO a started day)
+    if (dayB === activeDow) {
+      toast.error(
+        "Você já começou um treinamento nesse dia, conclua ou pule para poder alterar o dia",
+      );
+      return;
+    }
 
     // Optimistic update
     setLocalOrder((prev) => {
@@ -240,6 +277,7 @@ export default function TrainingPlanPage() {
                     isUpdating={
                       activeToggleDay === day.dayOfWeek && updateDay.isPending
                     }
+                    hasActiveSession={day.dayOfWeek === activeDow}
                   />
                 ))}
               </SortableContext>

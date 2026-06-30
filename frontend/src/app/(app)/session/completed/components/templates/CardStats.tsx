@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import styled, { useTheme } from "styled-components";
 
 import { WorkoutShareCardProps } from "../WorkoutShareCard";
@@ -29,9 +29,9 @@ const CardStats = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
             </HeaderRight>
           </Header>
 
-          {/* Hero KG */}
+          {/* Hero duration */}
           <HeroBlock>
-            <HeroLabel>VOLUME TOTAL</HeroLabel>
+            <HeroLabel>DURAÇÃO DO TREINO</HeroLabel>
             <HeroVal
               style={{
                 background: `linear-gradient(135deg, #ffffff 0%, ${primary} 100%)`,
@@ -39,18 +39,27 @@ const CardStats = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
                 WebkitTextFillColor: "transparent",
               }}
             >
-              {stats.kg.toLocaleString("pt-BR")}
+              {stats.duration}
             </HeroVal>
-            <HeroUnit>kg levantados</HeroUnit>
           </HeroBlock>
 
           {/* Secondary stats */}
           <SecRow>
-            <SecCard style={{ borderColor: `${primary}30`, background: `${primary}0D` }}>
+            <SecCard
+              style={{
+                borderColor: `${primary}30`,
+                background: `${primary}0D`,
+              }}
+            >
               <SecVal>{stats.series}</SecVal>
               <SecLbl>SÉRIES</SecLbl>
             </SecCard>
-            <SecCard style={{ borderColor: `${primary}30`, background: `${primary}0D` }}>
+            <SecCard
+              style={{
+                borderColor: `${primary}30`,
+                background: `${primary}0D`,
+              }}
+            >
               <SecVal>{stats.exercises}</SecVal>
               <SecLbl>EXERCÍCIOS</SecLbl>
             </SecCard>
@@ -62,18 +71,24 @@ const CardStats = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
           {/* Exercise list */}
           <ExLabel>MELHORES SETS</ExLabel>
           <ExList>
-            {topExercises.slice(0, 4).map((ex, i) => (
-              <ExRow key={i} $last={i === Math.min(topExercises.length, 4) - 1}>
-                <ExNum style={{ color: primary }}>
-                  {String(i + 1).padStart(2, "0")}
-                </ExNum>
-                <ExName>{ex.name}</ExName>
-                <ExBest>
-                  <span style={{ color: primary }}>{ex.bestWeight}</span>
-                  <ExBestUnit>kg × {ex.bestReps}</ExBestUnit>
-                </ExBest>
-              </ExRow>
-            ))}
+            {topExercises.slice(0, 4).map((ex, i) => {
+              const isLast = i === Math.min(topExercises.length, 4) - 1;
+              return (
+                <React.Fragment key={i}>
+                  <ExRow>
+                    <ExNum style={{ color: primary }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </ExNum>
+                    <ExName>{ex.name}</ExName>
+                    <ExBest>
+                      <span style={{ color: primary }}>{ex.bestWeight}</span>
+                      <ExBestUnit>kg × {ex.bestReps}</ExBestUnit>
+                    </ExBest>
+                  </ExRow>
+                  {!isLast && <ExDivider />}
+                </React.Fragment>
+              );
+            })}
           </ExList>
 
           {/* Footer */}
@@ -100,6 +115,7 @@ const MUTED2 = "#94A3B8";
 const Root = styled.div`
   position: relative;
   width: 360px;
+  height: 640px;
   background: ${BG};
   border-radius: 24px;
   overflow: hidden;
@@ -107,17 +123,21 @@ const Root = styled.div`
 
 const BgGlow = styled.div`
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 `;
 
 const Content = styled.div`
   position: relative;
   z-index: 1;
+  height: 100%;
   padding: 24px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  box-sizing: border-box;
 `;
 
 const Header = styled.div`
@@ -128,7 +148,7 @@ const Header = styled.div`
 `;
 
 const AppName = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 20px;
   letter-spacing: 0.1em;
 `;
@@ -140,7 +160,7 @@ const HeaderRight = styled.div`
 `;
 
 const DayChip = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -156,11 +176,12 @@ const HeroBlock = styled.div`
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 8px 0 24px;
+  flex-shrink: 0;
+  padding: 8px 0 20px;
 `;
 
 const HeroLabel = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -170,25 +191,19 @@ const HeroLabel = styled.span`
 `;
 
 const HeroVal = styled.span`
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 88px;
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 64px;
   line-height: 0.9;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   display: block;
-`;
-
-const HeroUnit = styled.span`
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  color: ${MUTED2};
-  margin-top: 8px;
 `;
 
 const SecRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 20px;
+  flex-shrink: 0;
+  margin-bottom: 16px;
 `;
 
 const SecCard = styled.div`
@@ -202,14 +217,14 @@ const SecCard = styled.div`
 `;
 
 const SecVal = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 32px;
   color: ${TEXT};
   line-height: 1;
 `;
 
 const SecLbl = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
@@ -224,7 +239,7 @@ const Divider = styled.div`
 `;
 
 const ExLabel = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -234,28 +249,33 @@ const ExLabel = styled.span`
 `;
 
 const ExList = styled.div`
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 `;
 
-const ExRow = styled.div<{ $last: boolean }>`
+const ExRow = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 9px 0;
-  border-bottom: ${({ $last }) => ($last ? "none" : `1px solid ${BORDER}`)};
+`;
+
+const ExDivider = styled.div`
+  height: 1px;
+  background: ${BORDER};
+  flex-shrink: 0;
 `;
 
 const ExNum = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 16px;
   width: 22px;
   flex-shrink: 0;
   line-height: 1;
 `;
 
-const ExName = styled.span`
-  font-family: "Inter", sans-serif;
+const ExName = styled.div`
+  font-family: var(--font-inter), sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: ${TEXT};
@@ -267,13 +287,13 @@ const ExName = styled.span`
 `;
 
 const ExBest = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 16px;
   flex-shrink: 0;
 `;
 
 const ExBestUnit = styled.span`
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 10px;
   font-weight: 500;
   color: ${MUTED2};
@@ -289,13 +309,13 @@ const Footer = styled.div`
 `;
 
 const FooterDate = styled.span`
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 11px;
   color: ${MUTED};
 `;
 
 const FooterBrand = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 16px;
   letter-spacing: 0.1em;
 `;

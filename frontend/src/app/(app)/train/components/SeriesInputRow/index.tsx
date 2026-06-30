@@ -1,8 +1,16 @@
 "use client";
 
-import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
 import { strings } from "@/constants/strings";
+import { useProgressionChart } from "@/hooks/useProgression";
 import { useAddRecord, useUpdateRecord } from "@/hooks/useSession";
 import { Exercise, LoggedSet, Series } from "@/types";
 
@@ -72,8 +80,20 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
   ) {
     const addRecord = useAddRecord(sessionId);
     const updateRecord = useUpdateRecord(sessionId);
+    const chart = useProgressionChart(exercise.name, series.type);
+    const weightInitialized = useRef(false);
     const [isEditing, setIsEditing] = useState(false);
     const [weight, setWeight] = useState<string>("0.5");
+
+    useEffect(() => {
+      if (!weightInitialized.current && chart.data?.chartData.length) {
+        const last = chart.data.chartData[chart.data.chartData.length - 1];
+        if (last?.weight && last.weight > 0) {
+          setWeight(String(last.weight));
+          weightInitialized.current = true;
+        }
+      }
+    }, [chart.data]);
     const [reps, setReps] = useState<string>(String(series.reps));
     const [rest, setRest] = useState<string>(String(series.restTime ?? "0"));
     const [logError, setLogError] = useState<string | null>(null);

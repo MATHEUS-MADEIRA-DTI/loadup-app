@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import styled, { useTheme } from "styled-components";
 
 import { WorkoutShareCardProps } from "../WorkoutShareCard";
@@ -11,13 +11,19 @@ const CardMinimal = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
     const primary = theme.colors.primary;
 
     return (
-      <Root ref={ref}>
-        {photoUrl && (
-          <>
-            <BgPhoto src={photoUrl} alt="" />
-            <BgOverlay />
-          </>
-        )}
+      <Root
+        ref={ref}
+        style={
+          photoUrl
+            ? {
+                backgroundImage: `url(${photoUrl})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : undefined
+        }
+      >
+        {photoUrl && <BgOverlay />}
 
         <Content>
           {/* top row */}
@@ -39,8 +45,8 @@ const CardMinimal = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
           {/* stats */}
           <StatsRow>
             <Stat>
-              <StatVal>{stats.kg.toLocaleString("pt-BR")}</StatVal>
-              <StatLbl>kg totais</StatLbl>
+              <StatVal>{stats.duration}</StatVal>
+              <StatLbl>duração</StatLbl>
             </Stat>
             <StatDiv />
             <Stat>
@@ -60,15 +66,18 @@ const CardMinimal = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
           {/* exercises */}
           <ExList>
             {topExercises.map((ex, i) => (
-              <ExRow key={i} $last={i === topExercises.length - 1}>
-                <ExNum style={{ color: primary }}>
-                  {String(i + 1).padStart(2, "0")}
-                </ExNum>
-                <ExName>{ex.name}</ExName>
-                <ExVal>
-                  {ex.bestWeight}kg × {ex.bestReps}
-                </ExVal>
-              </ExRow>
+              <React.Fragment key={i}>
+                <ExRow>
+                  <ExNum style={{ color: primary }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </ExNum>
+                  <ExName>{ex.name}</ExName>
+                  <ExVal>
+                    {ex.bestWeight}kg × {ex.bestReps}
+                  </ExVal>
+                </ExRow>
+                {i < topExercises.length - 1 && <ExDivider />}
+              </React.Fragment>
             ))}
           </ExList>
         </Content>
@@ -90,31 +99,31 @@ const MUTED2 = "#94A3B8";
 const Root = styled.div`
   position: relative;
   width: 360px;
+  height: 640px;
   background: ${BG};
   border-radius: 24px;
   overflow: hidden;
-`;
-
-const BgPhoto = styled.img`
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background-size: cover;
+  background-position: center;
 `;
 
 const BgOverlay = styled.div`
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(2, 6, 23, 0.88);
 `;
 
 const Content = styled.div`
   position: relative;
   z-index: 1;
+  height: 100%;
   padding: 24px 24px 20px;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 `;
 
 const TopRow = styled.div`
@@ -125,13 +134,13 @@ const TopRow = styled.div`
 `;
 
 const AppName = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 18px;
   letter-spacing: 0.12em;
 `;
 
 const DoneTag = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -146,7 +155,7 @@ const AccentBar = styled.div`
 `;
 
 const DayName = styled.div`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 54px;
   color: ${TEXT};
   line-height: 0.9;
@@ -154,7 +163,7 @@ const DayName = styled.div`
 `;
 
 const DateText = styled.div`
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 13px;
   color: ${MUTED2};
   margin-top: 8px;
@@ -186,14 +195,14 @@ const StatDiv = styled.div`
 `;
 
 const StatVal = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 28px;
   color: ${TEXT};
   line-height: 1;
 `;
 
 const StatLbl = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
@@ -202,28 +211,33 @@ const StatLbl = styled.span`
 `;
 
 const ExList = styled.div`
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 `;
 
-const ExRow = styled.div<{ $last: boolean }>`
+const ExRow = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 9px 0;
-  border-bottom: ${({ $last }) => ($last ? "none" : `1px solid ${BORDER}`)};
+`;
+
+const ExDivider = styled.div`
+  height: 1px;
+  background: ${BORDER};
+  flex-shrink: 0;
 `;
 
 const ExNum = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 16px;
   width: 20px;
   flex-shrink: 0;
   line-height: 1;
 `;
 
-const ExName = styled.span`
-  font-family: "Inter", sans-serif;
+const ExName = styled.div`
+  font-family: var(--font-inter), sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: ${TEXT};
@@ -235,7 +249,7 @@ const ExName = styled.span`
 `;
 
 const ExVal = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 14px;
   color: ${MUTED2};
   flex-shrink: 0;

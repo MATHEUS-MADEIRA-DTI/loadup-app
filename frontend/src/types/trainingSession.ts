@@ -21,6 +21,7 @@ export interface TrainingSession {
   records: LoggedSet[];
   createdAt: string;
   updatedAt: string;
+  completedAt?: string;
 }
 
 export interface AddRecordPayload {

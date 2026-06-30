@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import styled, { useTheme } from "styled-components";
 
 import { WorkoutShareCardProps } from "../WorkoutShareCard";
@@ -14,10 +14,18 @@ const CardBold = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
     return (
       <Root ref={ref}>
         {/* Hero */}
-        <Hero>
-          {photoUrl ? (
-            <HeroImg src={photoUrl} alt="" />
-          ) : (
+        <Hero
+          style={
+            photoUrl
+              ? {
+                  backgroundImage: `url(${photoUrl})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }
+              : undefined
+          }
+        >
+          {!photoUrl && (
             <NoPhotoGrad
               style={{
                 background: `linear-gradient(155deg, ${primary} 0%, ${primaryDark} 100%)`,
@@ -26,9 +34,7 @@ const CardBold = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
           )}
           <HeroOverlay />
           <HeroContent>
-            <AppTag style={{ color: primary, borderColor: `${primary}50` }}>
-              LOADUP
-            </AppTag>
+            <AppTag style={{ color: primary }}>LOADUP</AppTag>
             <HeroDayName>{dayName}</HeroDayName>
             <HeroDate>{date}</HeroDate>
           </HeroContent>
@@ -38,8 +44,8 @@ const CardBold = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
         <Body>
           <StatsStrip>
             <StripStat>
-              <StripVal>{stats.kg.toLocaleString("pt-BR")}</StripVal>
-              <StripLbl>kg</StripLbl>
+              <StripVal>{stats.duration}</StripVal>
+              <StripLbl>duração</StripLbl>
             </StripStat>
             <StripBar />
             <StripStat>
@@ -54,15 +60,21 @@ const CardBold = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
           </StatsStrip>
 
           <ExList>
-            {topExercises.slice(0, 4).map((ex, i) => (
-              <ExRow key={i} $last={i === Math.min(topExercises.length, 4) - 1}>
-                <ExName>{ex.name}</ExName>
-                <ExVal style={{ color: primary }}>
-                  {ex.bestWeight}
-                  <ExUnit>kg</ExUnit>
-                </ExVal>
-              </ExRow>
-            ))}
+            {topExercises.slice(0, 4).map((ex, i) => {
+              const isLast = i === Math.min(topExercises.length, 4) - 1;
+              return (
+                <React.Fragment key={i}>
+                  <ExRow>
+                    <ExName>{ex.name}</ExName>
+                    <ExVal style={{ color: primary }}>
+                      {ex.bestWeight}
+                      <ExUnit>kg</ExUnit>
+                    </ExVal>
+                  </ExRow>
+                  {!isLast && <ExDivider />}
+                </React.Fragment>
+              );
+            })}
           </ExList>
 
           <FooterRow>
@@ -89,6 +101,7 @@ const MUTED2 = "#94A3B8";
 const Root = styled.div`
   position: relative;
   width: 360px;
+  height: 640px;
   background: ${BG};
   border-radius: 24px;
   overflow: hidden;
@@ -98,26 +111,27 @@ const Root = styled.div`
 
 const Hero = styled.div`
   position: relative;
-  height: 260px;
+  height: 240px;
+  flex-shrink: 0;
   overflow: hidden;
-`;
-
-const HeroImg = styled.img`
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background-size: cover;
+  background-position: center;
 `;
 
 const NoPhotoGrad = styled.div`
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 `;
 
 const HeroOverlay = styled.div`
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(
     to bottom,
     rgba(2, 6, 23, 0.15) 0%,
@@ -138,19 +152,16 @@ const HeroContent = styled.div`
 `;
 
 const AppTag = styled.span`
-  display: inline-block;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 12px;
   letter-spacing: 0.2em;
-  border: 1px solid;
-  padding: 2px 8px;
-  border-radius: 999px;
   align-self: flex-start;
   margin-bottom: 8px;
+  opacity: 0.85;
 `;
 
 const HeroDayName = styled.div`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 52px;
   color: ${TEXT};
   line-height: 0.9;
@@ -158,13 +169,15 @@ const HeroDayName = styled.div`
 `;
 
 const HeroDate = styled.div`
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 13px;
   color: rgba(248, 250, 252, 0.65);
   margin-top: 4px;
 `;
 
 const Body = styled.div`
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: 0 20px 20px;
@@ -173,9 +186,9 @@ const Body = styled.div`
 const StatsStrip = styled.div`
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   padding: 14px 0;
   border-bottom: 1px solid ${BORDER};
-  gap: 0;
 `;
 
 const StripStat = styled.div`
@@ -193,14 +206,14 @@ const StripBar = styled.div`
 `;
 
 const StripVal = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 26px;
   color: ${TEXT};
   line-height: 1;
 `;
 
 const StripLbl = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
@@ -209,21 +222,26 @@ const StripLbl = styled.span`
 `;
 
 const ExList = styled.div`
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   margin-top: 14px;
 `;
 
-const ExRow = styled.div<{ $last: boolean }>`
+const ExRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 9px 0;
-  border-bottom: ${({ $last }) => ($last ? "none" : `1px solid ${BORDER}`)};
 `;
 
-const ExName = styled.span`
-  font-family: "Inter", sans-serif;
+const ExDivider = styled.div`
+  height: 1px;
+  background: ${BORDER};
+  flex-shrink: 0;
+`;
+
+const ExName = styled.div`
+  font-family: var(--font-inter), sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: ${TEXT};
@@ -236,14 +254,14 @@ const ExName = styled.span`
 `;
 
 const ExVal = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 18px;
   line-height: 1;
   flex-shrink: 0;
 `;
 
 const ExUnit = styled.span`
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter), sans-serif;
   font-size: 10px;
   font-weight: 500;
   color: ${MUTED2};
@@ -253,26 +271,23 @@ const FooterRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  flex-shrink: 0;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid ${BORDER};
 `;
 
 const FooterBrand = styled.span`
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--font-bebas), sans-serif;
   font-size: 16px;
   letter-spacing: 0.1em;
 `;
 
 const DonePill = styled.span`
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #22c55e;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
 `;
