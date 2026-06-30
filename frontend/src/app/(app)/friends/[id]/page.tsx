@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, AlertTriangle, X } from "lucide-react";
 import styled from "styled-components";
 
+import { toast } from "sonner";
+
 import { useFriendSheet } from "@/hooks/useTrainingSheet";
 import { useCopyDay } from "@/hooks/useTrainingSheet";
 import { userService } from "@/services/userService";
@@ -194,12 +196,17 @@ function CopySheet({
 
   const handleConfirm = async () => {
     if (!targetDay) return;
-    await copyDay.mutateAsync({
-      sourceUserId,
-      sourceDayOfWeek,
-      targetDayOfWeek: targetDay,
-    });
-    onClose();
+    try {
+      await copyDay.mutateAsync({
+        sourceUserId,
+        sourceDayOfWeek,
+        targetDayOfWeek: targetDay,
+      });
+      toast.success("Treino copiado com sucesso!");
+      onClose();
+    } catch {
+      toast.error("Erro ao copiar treino. Tente novamente.");
+    }
   };
 
   const visibleExercises = sourceDay.exercises.slice(0, 4);

@@ -159,7 +159,10 @@ export default function SessionDetailPage() {
                   <StyledSeriesRow>
                     {ex.series.map((s, i) => (
                       <StyledSeriesChip key={i}>
-                        {strings.exercises.seriesType[s.type]} · {s.reps} rep
+                        {strings.exercises.seriesType[s.type]} ·{" "}
+                        {s.repsMin === s.repsMax
+                          ? `${s.repsMin} rep`
+                          : `${s.repsMin}–${s.repsMax} reps`}
                       </StyledSeriesChip>
                     ))}
                   </StyledSeriesRow>

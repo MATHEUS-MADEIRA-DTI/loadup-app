@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, RotateCcw, Save } from "lucide-react";
 import styled, { keyframes } from "styled-components";
 
+import { toast } from "sonner";
+
 import {
   useSnapshots,
   useRestoreSnapshot,
@@ -49,15 +51,25 @@ export default function HistoryPage() {
 
   const handleRestore = async () => {
     if (!restoreId) return;
-    await restore.mutateAsync(restoreId);
-    setRestoreId(null);
-    router.back();
+    try {
+      await restore.mutateAsync(restoreId);
+      toast.success("Versão restaurada com sucesso!");
+      setRestoreId(null);
+      router.back();
+    } catch {
+      toast.error("Erro ao restaurar versão. Tente novamente.");
+    }
   };
 
   const handleSave = async () => {
-    await save.mutateAsync(saveLabel.trim() || undefined);
-    setSaveLabel("");
-    setShowSaveModal(false);
+    try {
+      await save.mutateAsync(saveLabel.trim() || undefined);
+      toast.success("Versão salva com sucesso!");
+      setSaveLabel("");
+      setShowSaveModal(false);
+    } catch {
+      toast.error("Erro ao salvar versão. Tente novamente.");
+    }
   };
 
   return (

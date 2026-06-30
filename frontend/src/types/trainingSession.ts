@@ -2,6 +2,15 @@ import { SeriesType } from "./trainingSheet";
 
 export type SessionStatus = "partial" | "completed" | "skipped";
 
+export type RepRangeAlertType = "exceeded" | "below_min";
+
+export interface RepRangeAlert {
+  alertType: RepRangeAlertType;
+  exerciseName: string;
+  repsMin: number;
+  repsMax: number;
+}
+
 export interface LoggedSet {
   _id: string;
   exerciseName: string;
@@ -31,6 +40,16 @@ export interface AddRecordPayload {
   weight: number;
   repsCompleted: number;
   restTime: number;
+}
+
+export interface AddRecordResponse {
+  session: TrainingSession;
+  repRangeAlert: RepRangeAlert | null;
+}
+
+export interface CompleteSessionResponse {
+  session: TrainingSession;
+  repRangeAlerts: RepRangeAlert[];
 }
 
 export interface UpdateRecordPayload {

@@ -144,9 +144,19 @@ export default function TrainingPlanPage() {
     setActiveToggleDay(day);
     updateDay.mutate(
       { day, status: nextStatus },
-      { onSettled: () => setActiveToggleDay(null) },
+      {
+        onSuccess: () => toast.success("Dia atualizado!"),
+        onError: () => toast.error("Erro ao atualizar dia. Tente novamente."),
+        onSettled: () => setActiveToggleDay(null),
+      },
     );
   };
+
+  const handleCreateSheet = () =>
+    createSheet.mutate(undefined, {
+      onSuccess: () => toast.success("Planilha criada com sucesso!"),
+      onError: () => toast.error("Erro ao criar planilha. Tente novamente."),
+    });
 
   const days = useMemo(
     () =>
@@ -208,7 +218,10 @@ export default function TrainingPlanPage() {
       return newOrder;
     });
 
-    swapDays.mutate({ dayA, dayB });
+    swapDays.mutate(
+      { dayA, dayB },
+      { onError: () => toast.error("Erro ao reordenar dias. Tente novamente.") },
+    );
   };
 
   const trainingCount = days.filter((d) => d.status === "training").length;
@@ -243,11 +256,8 @@ export default function TrainingPlanPage() {
                   ? strings.common.loading
                   : strings.trainingPlan.createSheet
               }
-              onCta={() => createSheet.mutate()}
+              onCta={handleCreateSheet}
             />
-            {createSheet.isError && (
-              <StyledErrorText>{strings.common.error}</StyledErrorText>
-            )}
           </StyledBody>
         </StyledPage>
       </PageTransition>

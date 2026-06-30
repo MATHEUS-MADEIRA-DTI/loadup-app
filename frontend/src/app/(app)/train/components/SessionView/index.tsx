@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, MinusCircle } from "lucide-react";
 
+import { toast } from "sonner";
+
 import { strings } from "@/constants/strings";
 import {
   useCompleteSession,
@@ -10,7 +12,9 @@ import {
   useTodaySession,
 } from "@/hooks/useSession";
 import MuscleChip from "@/components/MuscleChip";
-import { DayOfWeek, SeriesType, TrainingDay } from "@/types";
+import { DayOfWeek, RepRangeAlert, SeriesType, TrainingDay } from "@/types";
+import { trainingSheetService } from "@/services/trainingSheetService";
+import RepRangeAlertSheet from "../RepRangeAlertSheet";
 
 import { DAY_FULL, todayIso } from "../../utils";
 import RestTimerOverlay from "../RestTimerButton";
@@ -25,7 +29,6 @@ import {
   StyledDoneBannerSub,
   StyledDoneBannerText,
   StyledEmptyText,
-  StyledErrorToast,
   StyledExerciseFocus,
   StyledExerciseHeader,
   StyledExerciseInfo,
@@ -73,6 +76,13 @@ export default function SessionView({
   const [currentSeriesIndex, setCurrentSeriesIndex] = useState(0);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restDuration, setRestDuration] = useState(0);
+  const [repRangeAlert, setRepRangeAlert] = useState<RepRangeAlert | null>(null);
+  const [endOfSessionAlerts, setEndOfSessionAlerts] = useState<RepRangeAlert[]>([]);
+  const [suggestedWeightAlert, setSuggestedWeightAlert] = useState<{
+    exerciseId: string;
+    seriesOrder: number;
+    suggestedWeight: number;
+  } | null>(null);
 
   const seriesInputRef = useRef<SeriesInputRowHandle>(null);
   const hasInitialized = useRef(false);
@@ -138,8 +148,6 @@ export default function SessionView({
     (session.isError && !createAttempted) ||
     createSession.isPending;
 
-  const [errorToast, setErrorToast] = useState<string | null>(null);
-
   const currentExercise = exercises[currentExerciseIndex];
   const currentSeries = currentExercise?.series[currentSeriesIndex];
   const totalSeriesInExercise = currentExercise?.series.length ?? 0;
@@ -163,21 +171,64 @@ export default function SessionView({
     );
   }, [sessionData, currentExercise, currentSeriesIndex]);
 
-  const showError = (msg: string) => {
-    setErrorToast(msg);
-    setTimeout(() => setErrorToast(null), 3500);
-  };
-
   const handleConclude = useCallback(() => {
     completeSession.mutate(
       { status: "completed" },
-      { onError: () => showError("Erro ao concluir treino. Tente novamente.") },
+      {
+        onSuccess: (data) => {
+          if (data.repRangeAlerts?.length) {
+            setEndOfSessionAlerts(data.repRangeAlerts);
+          } else {
+            toast.success("Treino concluído!");
+          }
+        },
+        onError: () => toast.error("Erro ao concluir treino. Tente novamente."),
+      },
     );
   }, [completeSession]);
 
   const handleDismissRest = useCallback(() => {
     setShowRestTimer(false);
   }, []);
+
+  const handleRepRangeAlert = useCallback(
+    (alert: RepRangeAlert, weight: number) => {
+      setRepRangeAlert(alert);
+    },
+    [],
+  );
+
+  const handleAlertConfirm = useCallback(
+    async (newWeight: number) => {
+      const alert = repRangeAlert ?? endOfSessionAlerts[0];
+      if (!alert) return;
+
+      const exercise = exercises.find((ex) => ex.name === alert.exerciseName);
+      if (exercise) {
+        const workingSeries = exercise.series.filter((s) => s.type === "working");
+        await trainingSheetService.bulkUpdateSuggestedWeight(
+          dayOfWeek,
+          exercise._id,
+          workingSeries.map((_, idx) => ({ seriesOrder: idx + 1, suggestedWeight: newWeight })),
+        );
+      }
+
+      if (repRangeAlert) {
+        setRepRangeAlert(null);
+      } else {
+        setEndOfSessionAlerts((prev) => prev.slice(1));
+      }
+    },
+    [repRangeAlert, endOfSessionAlerts, exercises, dayOfWeek],
+  );
+
+  const handleAlertDismiss = useCallback(() => {
+    if (repRangeAlert) {
+      setRepRangeAlert(null);
+    } else {
+      setEndOfSessionAlerts((prev) => prev.slice(1));
+    }
+  }, [repRangeAlert]);
 
   const advanceAfterSeries = useCallback(
     (restTime: number) => {
@@ -298,6 +349,7 @@ export default function SessionView({
             loggedSet={loggedSet}
             isReadOnly={false}
             inputsOnly
+            onRepRangeAlert={handleRepRangeAlert}
           />
         </StyledExerciseFocus>
 
@@ -419,7 +471,14 @@ export default function SessionView({
             />
           )}
 
-          {errorToast && <StyledErrorToast>{errorToast}</StyledErrorToast>}
+          {(repRangeAlert ?? endOfSessionAlerts[0]) && (
+            <RepRangeAlertSheet
+              alert={(repRangeAlert ?? endOfSessionAlerts[0])!}
+              currentWeight={seriesInputRef.current?.getWeight() ?? 0}
+              onConfirm={(w) => { void handleAlertConfirm(w); }}
+              onDismiss={handleAlertDismiss}
+            />
+          )}
         </>
       )}
     </StyledSessionPage>

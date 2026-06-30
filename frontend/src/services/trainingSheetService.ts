@@ -69,4 +69,27 @@ export const trainingSheetService = {
       {},
     );
   },
+
+  updateSuggestedWeight(
+    dayOfWeek: string,
+    exerciseId: string,
+    seriesOrder: number,
+    suggestedWeight: number | null,
+  ): Promise<unknown> {
+    return apiClient.patch(
+      `/training-sheet/days/${dayOfWeek}/exercises/${exerciseId}/series/${seriesOrder}/suggested-weight`,
+      { suggestedWeight },
+    );
+  },
+
+  bulkUpdateSuggestedWeight(
+    dayOfWeek: string,
+    exerciseId: string,
+    updates: Array<{ seriesOrder: number; suggestedWeight: number | null }>,
+  ): Promise<unknown> {
+    return apiClient.patch(
+      `/training-sheet/days/${dayOfWeek}/exercises/${exerciseId}/series/bulk-suggested-weight`,
+      { updates },
+    );
+  },
 };

@@ -7,7 +7,6 @@ import styled from "styled-components";
 import Modal from "@/components/Modal";
 import { strings } from "@/constants/strings";
 import { useDeleteExercise, useUpdateExercise } from "@/hooks/useExercises";
-import { formatMMSS } from "@/lib/formatMMSS";
 import {
   DayOfWeek,
   Exercise,
@@ -67,7 +66,7 @@ export default function EditExerciseModal({
   };
 
   const handleAddSeries = () => {
-    setSeriesList((prev) => [...prev, { type: "working", reps: 10 }]);
+    setSeriesList((prev) => [...prev, { type: "working", repsMin: 8, repsMax: 12 }]);
   };
 
   const handleRemoveSeries = (index: number) => {
@@ -77,7 +76,7 @@ export default function EditExerciseModal({
 
   const handleSeriesChange = (
     index: number,
-    field: "type" | "reps" | "restTime",
+    field: "type" | "repsMin" | "repsMax" | "restTime",
     value: string | number,
   ) => {
     setSeriesList((prev) =>
@@ -87,7 +86,8 @@ export default function EditExerciseModal({
           const n = Number(value);
           return { ...s, restTime: value === "" || n <= 0 ? undefined : n };
         }
-        return { ...s, [field]: field === "reps" ? Number(value) : value };
+        if (field === "type") return { ...s, type: value as SeriesType };
+        return { ...s, [field]: Math.max(1, Number(value) || 1) };
       }),
     );
   };
@@ -96,16 +96,12 @@ export default function EditExerciseModal({
     e.preventDefault();
     if (!name.trim()) return;
 
-    const cleanSeries = seriesList.map((s) => {
-      const clean: { type: SeriesType; reps: number; restTime?: number } = {
-        type: s.type,
-        reps: s.reps,
-      };
-      if (s.restTime !== undefined && s.restTime !== null) {
-        clean.restTime = s.restTime;
-      }
-      return clean;
-    });
+    const cleanSeries = seriesList.map((s) => ({
+      type: s.type,
+      repsMin: s.repsMin,
+      repsMax: s.repsMax,
+      ...(s.restTime != null ? { restTime: s.restTime } : {}),
+    }));
 
     const payload: UpdateExercisePayload = {
       name: name.trim(),
@@ -216,12 +212,23 @@ export default function EditExerciseModal({
                     <StyledRepsInput
                       type="number"
                       min={1}
-                      max={999}
-                      value={series.reps}
+                      max={200}
+                      value={series.repsMin}
                       onChange={(e) =>
-                        handleSeriesChange(index, "reps", e.target.value)
+                        handleSeriesChange(index, "repsMin", e.target.value)
                       }
-                      aria-label={`Série ${index + 1} reps`}
+                      aria-label={`Série ${index + 1} mínimo de reps`}
+                    />
+                    <StyledSeriesInputLabel style={{ opacity: 0.5 }}>a</StyledSeriesInputLabel>
+                    <StyledRepsInput
+                      type="number"
+                      min={1}
+                      max={200}
+                      value={series.repsMax}
+                      onChange={(e) =>
+                        handleSeriesChange(index, "repsMax", e.target.value)
+                      }
+                      aria-label={`Série ${index + 1} máximo de reps`}
                     />
                     <StyledSeriesInputLabel>reps</StyledSeriesInputLabel>
                   </StyledSeriesInputGroup>

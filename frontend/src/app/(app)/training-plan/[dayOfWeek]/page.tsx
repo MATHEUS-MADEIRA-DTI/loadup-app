@@ -20,6 +20,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { toast } from "sonner";
+
 import EmptyState from "@/components/EmptyState";
 import PageTransition from "@/components/PageTransition";
 import { strings } from "@/constants/strings";
@@ -122,13 +124,14 @@ export default function DayExercisesPage() {
     setActiveDragId(null);
     if (!over || active.id === over.id) return;
 
-    setLocalOrder((prev) => {
-      const newOrder = [...prev];
-      const aIdx = newOrder.indexOf(active.id as string);
-      const bIdx = newOrder.indexOf(over.id as string);
-      [newOrder[aIdx], newOrder[bIdx]] = [newOrder[bIdx], newOrder[aIdx]];
-      reorderExercises.mutate(newOrder);
-      return newOrder;
+    const aIdx = localOrder.indexOf(active.id as string);
+    const bIdx = localOrder.indexOf(over.id as string);
+    const newOrder = [...localOrder];
+    [newOrder[aIdx], newOrder[bIdx]] = [newOrder[bIdx], newOrder[aIdx]];
+
+    setLocalOrder(newOrder);
+    reorderExercises.mutate(newOrder, {
+      onError: () => toast.error("Erro ao reordenar exercícios. Tente novamente."),
     });
   };
 

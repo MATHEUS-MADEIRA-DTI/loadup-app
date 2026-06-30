@@ -1,7 +1,9 @@
 import { apiClient } from "@/lib/apiClient";
 import {
   AddRecordPayload,
+  AddRecordResponse,
   CompleteSessionPayload,
+  CompleteSessionResponse,
   TrainingSession,
   UpdateRecordPayload,
 } from "@/types";
@@ -18,8 +20,8 @@ export const sessionService = {
   addRecord(
     sessionId: string,
     payload: AddRecordPayload,
-  ): Promise<TrainingSession> {
-    return apiClient.post<TrainingSession>(
+  ): Promise<AddRecordResponse> {
+    return apiClient.post<AddRecordResponse>(
       `/training-sessions/${sessionId}/records`,
       payload,
     );
@@ -45,8 +47,8 @@ export const sessionService = {
   completeSession(
     sessionId: string,
     payload: CompleteSessionPayload,
-  ): Promise<TrainingSession> {
-    return apiClient.patch<TrainingSession>(
+  ): Promise<CompleteSessionResponse> {
+    return apiClient.patch<CompleteSessionResponse>(
       `/training-sessions/${sessionId}/complete`,
       payload,
     );

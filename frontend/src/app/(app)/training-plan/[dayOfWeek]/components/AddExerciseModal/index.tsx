@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Timer } from "lucide-react";
 
+import { toast } from "sonner";
+
 import Modal from "@/components/Modal";
 import { strings } from "@/constants/strings";
 import { useAddExercise } from "@/hooks/useExercises";
@@ -25,7 +27,6 @@ import {
   StyledActions,
   StyledAddSeriesBtn,
   StyledCancelBtn,
-  StyledError,
   StyledFieldGroup,
   StyledForm,
   StyledInput,
@@ -81,7 +82,7 @@ export default function AddExerciseModal({
   const [videoUrl, setVideoUrl] = useState<string | undefined>();
   const [tip, setTip] = useState<string | undefined>();
   const [seriesList, setSeriesList] = useState<Series[]>([
-    { type: "working", reps: 10 },
+    { type: "working", repsMin: 8, repsMax: 12 },
   ]);
 
   const handleExerciseSelect = (result: SearchResult) => {
@@ -97,7 +98,7 @@ export default function AddExerciseModal({
     setMuscleGroup("");
     setVideoUrl(undefined);
     setTip(undefined);
-    setSeriesList([{ type: "working", reps: 10 }]);
+    setSeriesList([{ type: "working", repsMin: 8, repsMax: 12 }]);
     setActiveTab("search");
   };
   const handleClose = () => {
@@ -105,14 +106,14 @@ export default function AddExerciseModal({
     onClose();
   };
   const handleAddSeries = () =>
-    setSeriesList((prev) => [...prev, { type: "working", reps: 10 }]);
+    setSeriesList((prev) => [...prev, { type: "working", repsMin: 8, repsMax: 12 }]);
   const handleRemoveSeries = (i: number) => {
     if (seriesList.length === 1) return;
     setSeriesList((prev) => prev.filter((_, idx) => idx !== i));
   };
   const handleSeriesChange = (
     i: number,
-    field: "type" | "reps" | "restTime",
+    field: "type" | "repsMin" | "repsMax" | "restTime",
     value: string | number,
   ) => {
     setSeriesList((prev) =>
@@ -122,7 +123,8 @@ export default function AddExerciseModal({
           const n = Number(value);
           return { ...s, restTime: value === "" || n <= 0 ? undefined : n };
         }
-        return { ...s, [field]: field === "reps" ? Number(value) : value };
+        if (field === "type") return { ...s, type: value as SeriesType };
+        return { ...s, [field]: Math.max(1, Number(value) || 1) };
       }),
     );
   };
@@ -132,11 +134,22 @@ export default function AddExerciseModal({
     const payload: CreateExercisePayload = {
       name: name.trim(),
       muscleGroup,
-      series: seriesList,
+      series: seriesList.map((s) => ({
+        type: s.type,
+        repsMin: s.repsMin,
+        repsMax: s.repsMax,
+        ...(s.restTime != null ? { restTime: s.restTime } : {}),
+      })),
       ...(videoUrl && { videoUrl }),
       ...(tip && { tip }),
     };
-    addExercise.mutate(payload, { onSuccess: handleClose });
+    addExercise.mutate(payload, {
+      onSuccess: () => {
+        toast.success("Exercício adicionado!");
+        handleClose();
+      },
+      onError: () => toast.error("Erro ao adicionar exercício. Tente novamente."),
+    });
   };
 
   return (
@@ -233,12 +246,23 @@ export default function AddExerciseModal({
                       <StyledRepsInput
                         type="number"
                         min={1}
-                        max={999}
-                        value={series.reps}
+                        max={200}
+                        value={series.repsMin}
                         onChange={(e) =>
-                          handleSeriesChange(i, "reps", e.target.value)
+                          handleSeriesChange(i, "repsMin", e.target.value)
                         }
-                        aria-label={`${strings.exercises.seriesLabel} ${i + 1} reps`}
+                        aria-label={`Série ${i + 1} mínimo de reps`}
+                      />
+                      <StyledSeriesInputLabel style={{ opacity: 0.5 }}>a</StyledSeriesInputLabel>
+                      <StyledRepsInput
+                        type="number"
+                        min={1}
+                        max={200}
+                        value={series.repsMax}
+                        onChange={(e) =>
+                          handleSeriesChange(i, "repsMax", e.target.value)
+                        }
+                        aria-label={`Série ${i + 1} máximo de reps`}
                       />
                       <StyledSeriesInputLabel>reps</StyledSeriesInputLabel>
                     </StyledSeriesInputGroup>
@@ -268,10 +292,6 @@ export default function AddExerciseModal({
                 + {strings.exercises.addSeriesButton}
               </StyledAddSeriesBtn>
             </StyledFieldGroup>
-
-            {addExercise.isError && (
-              <StyledError>{strings.common.error}</StyledError>
-            )}
 
             <StyledActions>
               <StyledCancelBtn type="button" onClick={handleClose}>

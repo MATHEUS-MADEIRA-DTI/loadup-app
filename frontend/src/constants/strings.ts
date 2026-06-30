@@ -192,6 +192,7 @@ export const strings = {
     // Session view
     inProgress: "Em andamento",
     goalLabel: (reps: number) => `Meta: ${reps} reps`,
+    goalRangeLabel: (min: number, max: number) => `Meta: ${min} a ${max} reps`,
     seriesLabel: (n: number) => `Série ${n}`,
     progressCounter: (done: number, total: number) => `${done}/${total}`,
     skipBtn: "Pular",

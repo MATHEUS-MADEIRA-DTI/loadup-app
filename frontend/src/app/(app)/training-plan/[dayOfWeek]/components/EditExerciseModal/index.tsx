@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "sonner";
+
 import Modal from "@/components/Modal";
 import { strings } from "@/constants/strings";
 import { useDeleteExercise, useUpdateExercise } from "@/hooks/useExercises";
@@ -23,7 +25,6 @@ import {
   StyledConfirmText,
   StyledDeleteBtn,
   StyledDeleteConfirmBtn,
-  StyledError,
   StyledFieldGroup,
   StyledForm,
   StyledInput,
@@ -85,20 +86,27 @@ export default function EditExerciseModal({
     onClose();
   };
   const handleAddSeries = () =>
-    setSeriesList((prev) => [...prev, { type: "working", reps: 10 }]);
+    setSeriesList((prev) => [
+      ...prev,
+      { type: "working", repsMin: 8, repsMax: 12 },
+    ]);
   const handleRemoveSeries = (i: number) => {
     if (seriesList.length === 1) return;
     setSeriesList((prev) => prev.filter((_, idx) => idx !== i));
   };
   const handleSeriesChange = (
     i: number,
-    field: "type" | "reps",
+    field: "type" | "repsMin" | "repsMax",
     value: string | number,
   ) => {
     setSeriesList((prev) =>
       prev.map((s, idx) =>
         idx === i
-          ? { ...s, [field]: field === "reps" ? Number(value) : value }
+          ? {
+              ...s,
+              [field]:
+                field === "type" ? value : Math.max(1, Number(value) || 1),
+            }
           : s,
       ),
     );
@@ -107,16 +115,12 @@ export default function EditExerciseModal({
     e.preventDefault();
     if (!name.trim()) return;
 
-    const cleanSeries = seriesList.map((s) => {
-      const clean: { type: SeriesType; reps: number; restTime?: number } = {
-        type: s.type,
-        reps: s.reps,
-      };
-      if (s.restTime !== undefined && s.restTime !== null) {
-        clean.restTime = s.restTime;
-      }
-      return clean;
-    });
+    const cleanSeries = seriesList.map((s) => ({
+      type: s.type,
+      repsMin: s.repsMin,
+      repsMax: s.repsMax,
+      ...(s.restTime != null ? { restTime: s.restTime } : {}),
+    }));
 
     const payload: UpdateExercisePayload = {
       name: name.trim(),
@@ -124,16 +128,25 @@ export default function EditExerciseModal({
       series: cleanSeries,
     };
 
-    // 👇 ADICIONA ISSO
-    console.log("PAYLOAD ENVIADO:", JSON.stringify(payload, null, 2));
-
     updateExercise.mutate(
       { id: exercise._id, payload },
-      { onSuccess: handleClose },
+      {
+        onSuccess: () => {
+          toast.success("Exercício atualizado!");
+          handleClose();
+        },
+        onError: () => toast.error("Erro ao atualizar exercício. Tente novamente."),
+      },
     );
   };
   const handleDelete = () =>
-    deleteExercise.mutate(exercise._id, { onSuccess: handleClose });
+    deleteExercise.mutate(exercise._id, {
+      onSuccess: () => {
+        toast.success("Exercício removido!");
+        handleClose();
+      },
+      onError: () => toast.error("Erro ao remover exercício. Tente novamente."),
+    });
 
   return (
     <Modal
@@ -213,12 +226,23 @@ export default function EditExerciseModal({
                 <StyledRepsInput
                   type="number"
                   min={1}
-                  max={999}
-                  value={series.reps}
+                  max={200}
+                  value={series.repsMin}
                   onChange={(e) =>
-                    handleSeriesChange(i, "reps", e.target.value)
+                    handleSeriesChange(i, "repsMin", e.target.value)
                   }
-                  aria-label={`Série ${i + 1} reps`}
+                  aria-label={`Série ${i + 1} mínimo de reps`}
+                />
+                <span style={{ fontSize: 12, color: "inherit", opacity: 0.6 }}>a</span>
+                <StyledRepsInput
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={series.repsMax}
+                  onChange={(e) =>
+                    handleSeriesChange(i, "repsMax", e.target.value)
+                  }
+                  aria-label={`Série ${i + 1} máximo de reps`}
                 />
                 <span style={{ fontSize: 12 }}>reps</span>
                 <StyledRemoveBtn
@@ -235,10 +259,6 @@ export default function EditExerciseModal({
               + {strings.exercises.addSeriesButton}
             </StyledAddSeriesBtn>
           </StyledFieldGroup>
-
-          {(updateExercise.isError || deleteExercise.isError) && (
-            <StyledError>{strings.common.error}</StyledError>
-          )}
 
           <StyledActions>
             <StyledDeleteBtn

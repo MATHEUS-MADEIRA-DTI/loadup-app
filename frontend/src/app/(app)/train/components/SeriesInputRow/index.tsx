@@ -9,6 +9,8 @@ import {
   useState,
 } from "react";
 
+import { toast } from "sonner";
+
 import { strings } from "@/constants/strings";
 import { useProgressionChart } from "@/hooks/useProgression";
 import { useAddRecord, useUpdateRecord } from "@/hooks/useSession";
@@ -37,7 +39,6 @@ import {
   StyledNumPadTrigger,
   StyledSeriesDot,
   StyledSeriesDots,
-  StyledSeriesError,
   StyledSeriesGoal,
   StyledSeriesInputsRow,
   StyledSeriesName,
@@ -49,6 +50,7 @@ import {
 export interface SeriesInputRowHandle {
   check: () => Promise<boolean>;
   getRestTime: () => number;
+  getWeight: () => number;
 }
 
 interface SeriesInputRowProps {
@@ -59,6 +61,7 @@ interface SeriesInputRowProps {
   loggedSet: LoggedSet | undefined;
   isReadOnly: boolean;
   inputsOnly?: boolean;
+  onRepRangeAlert?: (alert: import("@/types").RepRangeAlert, weight: number) => void;
 }
 
 function formatNumber(value: number) {
@@ -75,6 +78,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       loggedSet,
       isReadOnly,
       inputsOnly = false,
+      onRepRangeAlert,
     },
     ref,
   ) {
@@ -86,17 +90,23 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
     const [weight, setWeight] = useState<string>("0.5");
 
     useEffect(() => {
-      if (!weightInitialized.current && chart.data?.chartData.length) {
-        const last = chart.data.chartData[chart.data.chartData.length - 1];
-        if (last?.weight && last.weight > 0) {
-          setWeight(String(last.weight));
+      if (!weightInitialized.current) {
+        if (series.suggestedWeight && series.suggestedWeight > 0) {
+          setWeight(String(series.suggestedWeight));
           weightInitialized.current = true;
+          return;
+        }
+        if (chart.data?.chartData.length) {
+          const last = chart.data.chartData[chart.data.chartData.length - 1];
+          if (last?.weight && last.weight > 0) {
+            setWeight(String(last.weight));
+            weightInitialized.current = true;
+          }
         }
       }
-    }, [chart.data]);
-    const [reps, setReps] = useState<string>(String(series.reps));
+    }, [chart.data, series.suggestedWeight]);
+    const [reps, setReps] = useState<string>(String(series.repsMax ?? series.repsMin ?? 10));
     const [rest, setRest] = useState<string>(String(series.restTime ?? "0"));
-    const [logError, setLogError] = useState<string | null>(null);
     const [numpadTarget, setNumpadTarget] = useState<"weight" | "rest" | null>(
       null,
     );
@@ -115,7 +125,6 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       if (isBusy || isReadOnly) return Promise.resolve(false);
       if (loggedSet && !isEditing) return Promise.resolve(true);
 
-      setLogError(null);
       const parsedWeight = parseFloat(weight);
       const safeWeight = parsedWeight >= 0.5 ? parsedWeight : 0.5;
       const safeReps = Math.max(0, parseInt(reps, 10) || 0);
@@ -143,7 +152,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
                 resolve(true);
               },
               onError: () => {
-                setLogError("Erro ao salvar. Tente novamente.");
+                toast.error("Erro ao salvar. Tente novamente.");
                 resolve(false);
               },
             },
@@ -151,15 +160,17 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
         });
       }
 
-      return new Promise((resolve) => {
-        addRecord.mutate(payload, {
-          onSuccess: () => resolve(true),
-          onError: () => {
-            setLogError("Erro ao registrar. Tente novamente.");
-            resolve(false);
-          },
-        });
+      addRecord.mutate(payload, {
+        onSuccess: (data) => {
+          if (data.repRangeAlert && onRepRangeAlert) {
+            onRepRangeAlert(data.repRangeAlert, safeWeight);
+          }
+        },
+        onError: () => {
+          toast.error("Erro ao registrar. Tente novamente.");
+        },
       });
+      return Promise.resolve(true);
     }, [
       isBusy,
       isReadOnly,
@@ -173,6 +184,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       seriesIndex,
       updateRecord,
       addRecord,
+      onRepRangeAlert,
     ]);
 
     useImperativeHandle(
@@ -181,8 +193,9 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
         check: handleCheck,
         getRestTime: () =>
           Math.max(0, parseInt(rest, 10) || series.restTime || 0),
+        getWeight: () => parseFloat(weight) || 0.5,
       }),
-      [handleCheck, rest, series.restTime],
+      [handleCheck, rest, series.restTime, weight],
     );
 
     const handleEditClick = () => {
@@ -207,7 +220,9 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
               {strings.workout.seriesLabel(seriesIndex + 1)}
             </StyledSeriesName>
             <StyledSeriesGoal>
-              {strings.workout.goalLabel(series.reps)}
+              {series.repsMin === series.repsMax
+                ? strings.workout.goalLabel(series.repsMin)
+                : strings.workout.goalRangeLabel(series.repsMin, series.repsMax)}
             </StyledSeriesGoal>
           </StyledSeriesTopRow>
         )}
@@ -259,7 +274,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
             <StyledCounterCard>
               <StyledCardLabel>{strings.workout.repsShort}</StyledCardLabel>
               <StyledCardValue>
-                {formatNumber(parseFloat(reps) || series.reps)}
+                {formatNumber(parseFloat(reps) || series.repsMax || series.repsMin || 0)}
               </StyledCardValue>
               <StyledCardControls>
                 <StyledControlBtn
@@ -392,8 +407,6 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
             ))}
           </StyledSeriesDots>
         )}
-
-        {logError && <StyledSeriesError>{logError}</StyledSeriesError>}
 
         {numpadTarget && (
           <NumPad

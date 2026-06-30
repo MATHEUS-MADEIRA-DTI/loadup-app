@@ -6,6 +6,8 @@ import { sessionService } from "@/services/sessionService";
 import {
   AddRecordPayload,
   CompleteSessionPayload,
+  LoggedSet,
+  TrainingSession,
   UpdateRecordPayload,
 } from "@/types";
 
@@ -31,7 +33,34 @@ export function useAddRecord(sessionId: string) {
   return useMutation({
     mutationFn: (payload: AddRecordPayload) =>
       sessionService.addRecord(sessionId, payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: TODAY_KEY }),
+    onMutate: async (payload) => {
+      await qc.cancelQueries({ queryKey: TODAY_KEY });
+      const prev = qc.getQueryData<TrainingSession>(TODAY_KEY);
+      if (prev) {
+        const optimisticRecord: LoggedSet = {
+          _id: `optimistic-${Date.now()}`,
+          exerciseName: payload.exerciseName,
+          seriesType: payload.seriesType,
+          seriesOrder: payload.seriesOrder,
+          weight: payload.weight,
+          repsCompleted: payload.repsCompleted,
+          restTime: payload.restTime,
+        };
+        qc.setQueryData<TrainingSession>(TODAY_KEY, {
+          ...prev,
+          records: [...(prev.records ?? []), optimisticRecord],
+        });
+      }
+      return { prev };
+    },
+    onError: (_err, _payload, context) => {
+      if (context?.prev) {
+        qc.setQueryData(TODAY_KEY, context.prev);
+      }
+    },
+    onSuccess: (data) => {
+      qc.setQueryData(TODAY_KEY, data.session);
+    },
   });
 }
 
@@ -45,7 +74,9 @@ export function useUpdateRecord(sessionId: string) {
       recordId: string;
       payload: UpdateRecordPayload;
     }) => sessionService.updateRecord(sessionId, recordId, payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: TODAY_KEY }),
+    onSuccess: (data) => {
+      qc.setQueryData(TODAY_KEY, data);
+    },
   });
 }
 
@@ -54,7 +85,9 @@ export function useDeleteRecord(sessionId: string) {
   return useMutation({
     mutationFn: (recordId: string) =>
       sessionService.deleteRecord(sessionId, recordId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: TODAY_KEY }),
+    onSuccess: (data) => {
+      qc.setQueryData(TODAY_KEY, data);
+    },
   });
 }
 
@@ -63,6 +96,8 @@ export function useCompleteSession(sessionId: string) {
   return useMutation({
     mutationFn: (payload: CompleteSessionPayload) =>
       sessionService.completeSession(sessionId, payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: TODAY_KEY }),
+    onSuccess: (data) => {
+      qc.setQueryData(TODAY_KEY, data.session);
+    },
   });
 }

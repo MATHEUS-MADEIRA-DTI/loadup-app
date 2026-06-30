@@ -11,10 +11,11 @@ export function useTodayCalendar() {
   });
 }
 
-export function useMonthlyCalendar(year: number, month: number) {
+export function useMonthlyCalendar(year: number, month: number, enabled = true) {
   return useQuery({
     queryKey: ["calendar", "monthly", year, month],
     queryFn: () => calendarService.getMonthly(year, month),
+    enabled,
   });
 }
 

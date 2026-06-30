@@ -17,7 +17,11 @@ export default function SeriesRow({ series, index }: SeriesRowProps) {
     <StyledRow>
       <StyledIndex>{index + 1}</StyledIndex>
       <StyledTypeBadge $type={series.type}>{typeLabel}</StyledTypeBadge>
-      <StyledReps>{series.reps} reps</StyledReps>
+      <StyledReps>
+        {series.repsMin === series.repsMax
+          ? `${series.repsMin} reps`
+          : `${series.repsMin}–${series.repsMax} reps`}
+      </StyledReps>
     </StyledRow>
   );
 }

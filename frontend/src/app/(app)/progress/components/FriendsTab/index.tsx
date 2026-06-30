@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Search, Users, X } from "lucide-react";
 import styled from "styled-components";
 
+import { toast } from "sonner";
+
 import {
   useFriends,
   useFriendStatus,
@@ -52,7 +54,12 @@ function UserActionBtn({ userId }: { userId: string }) {
   return (
     <ActionBtn
       $variant="outlined"
-      onClick={() => sendRequest.mutate(userId)}
+      onClick={() =>
+        sendRequest.mutate(userId, {
+          onSuccess: () => toast.success("Solicitação enviada!"),
+          onError: () => toast.error("Erro ao enviar solicitação. Tente novamente."),
+        })
+      }
       disabled={sendRequest.isPending}
     >
       Adicionar

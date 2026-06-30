@@ -30,7 +30,7 @@ export function useUpdateDay() {
   return useMutation({
     mutationFn: ({ day, status }: { day: DayOfWeek; status: DayType }) =>
       trainingSheetService.updateDay(day, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: SHEET_KEY }),
+    onSuccess: (data) => qc.setQueryData(SHEET_KEY, data),
   });
 }
 
@@ -39,8 +39,8 @@ export function useSwapDays() {
   return useMutation({
     mutationFn: ({ dayA, dayB }: { dayA: DayOfWeek; dayB: DayOfWeek }) =>
       trainingSheetService.swapDays(dayA, dayB),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: SHEET_KEY });
+    onSuccess: (data) => {
+      qc.setQueryData(SHEET_KEY, data);
     },
   });
 }
@@ -61,8 +61,8 @@ export function useCopyDay() {
       sourceDayOfWeek: string;
       targetDayOfWeek: string;
     }) => trainingSheetService.copyDay(data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: SHEET_KEY });
+    onSuccess: (data) => {
+      qc.setQueryData(SHEET_KEY, data);
       qc.invalidateQueries({ queryKey: ["snapshots"] });
     },
   });
@@ -90,8 +90,8 @@ export function useRestoreSnapshot() {
   return useMutation({
     mutationFn: (snapshotId: string) =>
       trainingSheetService.restoreSnapshot(snapshotId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: SHEET_KEY });
+    onSuccess: (data) => {
+      qc.setQueryData(SHEET_KEY, data);
       qc.invalidateQueries({ queryKey: ["snapshots"] });
     },
   });

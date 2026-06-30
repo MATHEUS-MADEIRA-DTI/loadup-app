@@ -17,8 +17,8 @@ export interface PlateauAlert {
   exerciseName: string;
   /** Day of week when alert was detected */
   dayOfWeek: string;
-  /** Type of alert: exercise stagnation or day-based */
-  alertType: "exercise" | "day";
+  /** Type of alert: exercise stagnation, day-based, or rep-range-max */
+  alertType: "exercise" | "day" | "rep-range-max";
   /** Number of sessions without progression */
   sessionCount: number;
   /** Recommendation text for the user */

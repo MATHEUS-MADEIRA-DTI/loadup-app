@@ -26,8 +26,10 @@ export type MuscleGroup =
 
 export interface Series {
   type: SeriesType;
-  reps: number;
+  repsMin: number;
+  repsMax: number;
   restTime?: number;
+  suggestedWeight?: number | null;
 }
 
 export interface Exercise {
@@ -53,10 +55,17 @@ export interface TrainingSheet {
   updatedAt: string;
 }
 
+export interface SeriesPayload {
+  type: SeriesType;
+  repsMin: number;
+  repsMax: number;
+  restTime?: number;
+}
+
 export interface CreateExercisePayload {
   name: string;
   muscleGroup: MuscleGroup;
-  series: Series[];
+  series: SeriesPayload[];
   videoUrl?: string;
   tip?: string;
 }
@@ -64,7 +73,7 @@ export interface CreateExercisePayload {
 export interface UpdateExercisePayload {
   name?: string;
   muscleGroup?: MuscleGroup;
-  series?: Series[];
+  series?: SeriesPayload[];
   videoUrl?: string;
   tip?: string;
 }

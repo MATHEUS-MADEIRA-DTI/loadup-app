@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import Modal from "@/components/Modal";
 import { strings } from "@/constants/strings";
 import { useDeleteExercise } from "@/hooks/useExercises";
@@ -28,7 +30,13 @@ export default function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   const deleteExercise = useDeleteExercise(dayOfWeek);
   const handleConfirm = () =>
-    deleteExercise.mutate(exercise._id, { onSuccess: onClose });
+    deleteExercise.mutate(exercise._id, {
+      onSuccess: () => {
+        toast.success("Exercício removido!");
+        onClose();
+      },
+      onError: () => toast.error("Erro ao remover exercício. Tente novamente."),
+    });
 
   return (
     <Modal

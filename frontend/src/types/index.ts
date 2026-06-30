@@ -18,8 +18,12 @@ export type {
   LoggedSet,
   TrainingSession,
   AddRecordPayload,
+  AddRecordResponse,
   UpdateRecordPayload,
   CompleteSessionPayload,
+  CompleteSessionResponse,
+  RepRangeAlertType,
+  RepRangeAlert,
 } from "./trainingSession";
 
 export type {

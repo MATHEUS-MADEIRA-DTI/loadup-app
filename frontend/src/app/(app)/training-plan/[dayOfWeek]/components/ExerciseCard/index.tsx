@@ -66,7 +66,11 @@ export default function ExerciseCard({
         {exercise.series.map((s, i) => (
           <StyledSeriesRow key={i}>
             <StyledSeriesCircle>{i + 1}</StyledSeriesCircle>
-            <StyledSeriesReps>{s.reps} reps</StyledSeriesReps>
+            <StyledSeriesReps>
+              {s.repsMin === s.repsMax
+                ? `${s.repsMin} reps`
+                : `${s.repsMin}–${s.repsMax} reps`}
+            </StyledSeriesReps>
           </StyledSeriesRow>
         ))}
       </StyledSeriesList>
