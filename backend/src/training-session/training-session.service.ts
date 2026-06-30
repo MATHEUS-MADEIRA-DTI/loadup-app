@@ -129,6 +129,9 @@ export class TrainingSessionService {
   async completeSession(userId: string, sessionId: string, status: 'completed' | 'skipped') {
     const session = await this.getTrainingSession(userId, sessionId);
     session.status = status;
+    if (status === 'completed') {
+      session.completedAt = new Date();
+    }
     const saved = await session.save();
     if (status === 'completed') {
       this.eventEmitter.emit('session.completed', {

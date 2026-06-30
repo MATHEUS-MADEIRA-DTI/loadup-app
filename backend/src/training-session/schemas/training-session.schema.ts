@@ -20,6 +20,9 @@ export class TrainingSession {
 
   @Prop({ type: [SessionRecordSchema], default: [] })
   records: SessionRecord[];
+
+  @Prop()
+  completedAt?: Date;
 }
 
 export const TrainingSessionSchema = SchemaFactory.createForClass(TrainingSession);
