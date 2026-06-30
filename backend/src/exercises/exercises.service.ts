@@ -120,6 +120,22 @@ export class ExercisesService {
     return exercise;
   }
 
+  async reorderExercisesInDay(userId: string, dayOfWeek: string, orderedIds: string[]) {
+    const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
+    if (!sheet) {
+      throw new NotFoundException('Training sheet not found');
+    }
+    const day = this.getDay(sheet, dayOfWeek);
+    const exerciseMap = new Map(day.exercises.map((ex) => [ex._id, ex]));
+    if (orderedIds.length !== day.exercises.length || orderedIds.some((id) => !exerciseMap.has(id))) {
+      throw new NotFoundException('Invalid exercise IDs');
+    }
+    day.exercises = orderedIds.map((id, idx) => ({ ...exerciseMap.get(id)!, order: idx + 1 }));
+    sheet.markModified('days');
+    await sheet.save();
+    return day.exercises;
+  }
+
   async deleteExerciseFromDay(userId: string, dayOfWeek: string, exerciseId: string) {
     const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
     if (!sheet) {

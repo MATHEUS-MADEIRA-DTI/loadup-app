@@ -43,6 +43,15 @@ export class ExercisesController {
     return this.exercisesService.getExerciseById(userId, dayOfWeek.toLowerCase(), exerciseId);
   }
 
+  @Patch('reorder')
+  async reorderExercises(
+    @CurrentUser('id') userId: string,
+    @Param('dayOfWeek') dayOfWeek: string,
+    @Body() body: { orderedIds: string[] },
+  ) {
+    return this.exercisesService.reorderExercisesInDay(userId, dayOfWeek.toLowerCase(), body.orderedIds);
+  }
+
   @Patch(':exerciseId')
   async updateExercise(
     @CurrentUser('id') userId: string,
