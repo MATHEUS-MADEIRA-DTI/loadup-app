@@ -2,7 +2,7 @@ export class PlateauAlertItemDto {
   _id: string;
   exerciseName: string;
   dayOfWeek: string;
-  alertType: 'exercise' | 'day';
+  alertType: 'exercise' | 'day' | 'rep-range-max';
   suggestion: string | null;
   sessionCount: number;
   detectedAt: Date;
@@ -19,7 +19,7 @@ export class ExercisePlateauStatusDto {
   plateau: boolean;
   suggestion: string | null;
   dayOfWeek?: string;
-  alertType?: 'exercise';
+  alertType?: 'exercise' | 'rep-range-max';
   sessionCount?: number;
   detectedAt?: Date;
 }

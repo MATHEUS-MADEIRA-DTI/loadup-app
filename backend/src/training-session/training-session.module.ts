@@ -7,12 +7,14 @@ import {
   TrainingSheet,
   TrainingSheetSchema,
 } from '../training-sheet/schemas/training-sheet.schema';
+import { PlateauAlert, PlateauAlertSchema } from '../plateau/schemas/plateau-alert.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: TrainingSession.name, schema: TrainingSessionSchema },
       { name: TrainingSheet.name, schema: TrainingSheetSchema },
+      { name: PlateauAlert.name, schema: PlateauAlertSchema },
     ]),
   ],
   controllers: [TrainingSessionController],

@@ -14,8 +14,8 @@ export class PlateauAlert {
   @Prop({ required: true })
   dayOfWeek: string;
 
-  @Prop({ required: true, enum: ['exercise', 'day'] })
-  alertType: 'exercise' | 'day';
+  @Prop({ required: true, enum: ['exercise', 'day', 'rep-range-max'] })
+  alertType: 'exercise' | 'day' | 'rep-range-max';
 
   @Prop({ type: String, default: null })
   suggestion: string | null;

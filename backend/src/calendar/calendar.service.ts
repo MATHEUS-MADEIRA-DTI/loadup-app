@@ -66,7 +66,8 @@ export class CalendarService {
                 muscleGroup: ex.muscleGroup,
                 series: ex.series.map((series) => ({
                   type: series.type,
-                  reps: series.reps,
+                  repsMin: series.repsMin,
+                  repsMax: series.repsMax,
                   order: series.order,
                 })),
               })),
@@ -151,7 +152,8 @@ export class CalendarService {
                 muscleGroup: ex.muscleGroup,
                 series: ex.series.map((series) => ({
                   type: series.type,
-                  reps: series.reps,
+                  repsMin: series.repsMin,
+                  repsMax: series.repsMax,
                   order: series.order,
                 })),
               })),

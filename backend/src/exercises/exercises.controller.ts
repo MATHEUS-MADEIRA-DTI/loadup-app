@@ -76,4 +76,36 @@ export class ExercisesController {
   ) {
     await this.exercisesService.deleteExerciseFromDay(userId, dayOfWeek.toLowerCase(), exerciseId);
   }
+
+  @Patch(':exerciseId/series/bulk-suggested-weight')
+  async bulkUpdateSuggestedWeight(
+    @CurrentUser('id') userId: string,
+    @Param('dayOfWeek') dayOfWeek: string,
+    @Param('exerciseId') exerciseId: string,
+    @Body() body: { updates: Array<{ seriesOrder: number; suggestedWeight: number | null }> },
+  ) {
+    return this.exercisesService.bulkUpdateSuggestedWeight(
+      userId,
+      dayOfWeek.toLowerCase(),
+      exerciseId,
+      body.updates,
+    );
+  }
+
+  @Patch(':exerciseId/series/:seriesOrder/suggested-weight')
+  async updateSuggestedWeight(
+    @CurrentUser('id') userId: string,
+    @Param('dayOfWeek') dayOfWeek: string,
+    @Param('exerciseId') exerciseId: string,
+    @Param('seriesOrder') seriesOrder: string,
+    @Body() body: { suggestedWeight: number | null },
+  ) {
+    return this.exercisesService.updateSuggestedWeight(
+      userId,
+      dayOfWeek.toLowerCase(),
+      exerciseId,
+      Number(seriesOrder),
+      body.suggestedWeight,
+    );
+  }
 }

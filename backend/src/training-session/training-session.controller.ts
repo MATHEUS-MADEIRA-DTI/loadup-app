@@ -36,7 +36,12 @@ export class TrainingSessionController {
     @Param('sessionId') sessionId: string,
     @Body() recordDto: RecordSetDto,
   ) {
-    return this.trainingSessionService.addRecordToSession(userId, sessionId, recordDto);
+    const { session, repRangeAlert } = await this.trainingSessionService.addRecordToSession(
+      userId,
+      sessionId,
+      recordDto,
+    );
+    return { session, repRangeAlert };
   }
 
   @Get('today')
@@ -74,6 +79,11 @@ export class TrainingSessionController {
     @Param('sessionId') sessionId: string,
     @Body() updateDto: UpdateTrainingSessionDto,
   ) {
-    return this.trainingSessionService.completeSession(userId, sessionId, updateDto.status);
+    const { session, repRangeAlerts } = await this.trainingSessionService.completeSession(
+      userId,
+      sessionId,
+      updateDto.status,
+    );
+    return { session, repRangeAlerts };
   }
 }

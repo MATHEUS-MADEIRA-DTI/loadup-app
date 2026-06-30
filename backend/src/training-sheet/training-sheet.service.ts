@@ -44,10 +44,30 @@ export class TrainingSheetService {
     return sheet.save();
   }
 
+  private migrateSeriesReps(sheet: any): boolean {
+    let changed = false;
+    for (const day of sheet.days ?? []) {
+      for (const exercise of day.exercises ?? []) {
+        for (const s of exercise.series ?? []) {
+          if ((s.repsMin == null || s.repsMax == null) && s.reps != null) {
+            s.repsMin = s.reps;
+            s.repsMax = s.reps;
+            changed = true;
+          }
+        }
+      }
+    }
+    return changed;
+  }
+
   async getTrainingSheet(userId: string) {
     const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
     if (!sheet) {
       throw new NotFoundException('Training sheet not found');
+    }
+    if (this.migrateSeriesReps(sheet)) {
+      sheet.markModified('days');
+      await sheet.save();
     }
     return sheet;
   }

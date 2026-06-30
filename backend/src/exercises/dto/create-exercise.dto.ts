@@ -17,8 +17,15 @@ class ExerciseSeriesDto {
   @IsIn(['warm-up', 'adjustment', 'working'])
   type: 'warm-up' | 'adjustment' | 'working';
 
-  @IsNotEmpty()
-  reps: number;
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  repsMin: number;
+
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  repsMax: number;
 
   @IsOptional()
   @IsInt()

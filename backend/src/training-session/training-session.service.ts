@@ -11,9 +11,19 @@ import {
   TrainingSheet,
   TrainingSheetDocument,
 } from '../training-sheet/schemas/training-sheet.schema';
+import { PlateauAlert, PlateauAlertDocument } from '../plateau/schemas/plateau-alert.schema';
 import { getDayOfWeek, getSaoPauloStartOfDayUtc } from '../common/utils/timezone.util';
 import { toObjectId } from '../common/utils/object-id.util';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+
+export type RepRangeAlertType = 'exceeded' | 'below_min';
+
+export interface RepRangeAlert {
+  alertType: RepRangeAlertType;
+  exerciseName: string;
+  repsMin: number;
+  repsMax: number;
+}
 
 export interface SessionCompletedEvent {
   userId: string;
@@ -28,6 +38,8 @@ export class TrainingSessionService {
     private readonly trainingSessionModel: Model<TrainingSessionDocument>,
     @InjectModel(TrainingSheet.name)
     private readonly trainingSheetModel: Model<TrainingSheetDocument>,
+    @InjectModel(PlateauAlert.name)
+    private readonly plateauAlertModel: Model<PlateauAlertDocument>,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -66,6 +78,66 @@ export class TrainingSessionService {
     return session;
   }
 
+  private normalizeSeries(s: any): { repsMin: number; repsMax: number } {
+    const min = s.repsMin ?? s.reps ?? 1;
+    const max = s.repsMax ?? s.reps ?? 1;
+    return { repsMin: min, repsMax: max };
+  }
+
+  private async checkRepRangeAlert(
+    userId: string,
+    session: TrainingSessionDocument,
+    exerciseName: string,
+  ): Promise<RepRangeAlert | null> {
+    if (!session.dayOfWeek) return null;
+
+    const sheet = await this.trainingSheetModel
+      .findOne({ userId: toObjectId(userId) })
+      .lean()
+      .exec();
+    if (!sheet) return null;
+
+    const day = sheet.days.find((d: any) => d.dayOfWeek === session.dayOfWeek);
+    if (!day) return null;
+
+    const exercise = day.exercises.find((ex: any) => ex.name === exerciseName);
+    if (!exercise) return null;
+
+    const workingSeries: Array<{ order: number; repsMin: number; repsMax: number }> = exercise.series
+      .filter((s: any) => s.type === 'working')
+      .map((s: any) => ({ order: s.order, ...this.normalizeSeries(s) }));
+
+    if (workingSeries.length === 0) return null;
+
+    const sessionWorkingRecords = (session.records as any[]).filter(
+      (r: any) => r.exerciseName === exerciseName && r.seriesType === 'working',
+    );
+
+    if (sessionWorkingRecords.length < workingSeries.length) return null;
+
+    const allExceeded = workingSeries.every((ws) => {
+      const record = sessionWorkingRecords.find((r: any) => r.seriesOrder === ws.order);
+      return record && record.repsCompleted > ws.repsMax;
+    });
+
+    if (allExceeded) {
+      const first = workingSeries[0];
+      return { alertType: 'exceeded', exerciseName, repsMin: first.repsMin, repsMax: first.repsMax };
+    }
+
+    const allBelow = workingSeries.every((ws) => {
+      const record = sessionWorkingRecords.find((r: any) => r.seriesOrder === ws.order);
+      return record && record.repsCompleted < ws.repsMin;
+    });
+
+    if (allBelow) {
+      const first = workingSeries[0];
+      return { alertType: 'below_min', exerciseName, repsMin: first.repsMin, repsMax: first.repsMax };
+    }
+
+    return null;
+  }
+
   async addRecordToSession(
     userId: string,
     sessionId: string,
@@ -77,7 +149,7 @@ export class TrainingSessionService {
       repsCompleted: number;
       restTime: number;
     },
-  ) {
+  ): Promise<{ session: TrainingSessionDocument; repRangeAlert: RepRangeAlert | null }> {
     const session = await this.getTrainingSession(userId, sessionId);
     if (session.status === 'skipped') {
       throw new ConflictException('Cannot record sets for a skipped session');
@@ -90,7 +162,13 @@ export class TrainingSessionService {
       repsCompleted: payload.repsCompleted,
       restTime: payload.restTime,
     });
-    return session.save();
+    const saved = await session.save();
+
+    const repRangeAlert = payload.seriesType === 'working'
+      ? await this.checkRepRangeAlert(userId, saved, payload.exerciseName)
+      : null;
+
+    return { session: saved, repRangeAlert };
   }
 
   async updateSessionRecord(
@@ -126,21 +204,118 @@ export class TrainingSessionService {
     return session.save();
   }
 
-  async completeSession(userId: string, sessionId: string, status: 'completed' | 'skipped') {
+  private async runRepRangeMaxDetection(
+    userId: string,
+    session: TrainingSessionDocument,
+  ): Promise<RepRangeAlert[]> {
+    const sheet = await this.trainingSheetModel
+      .findOne({ userId: toObjectId(userId) })
+      .lean()
+      .exec();
+    if (!sheet) return [];
+
+    const day = sheet.days.find((d: any) => d.dayOfWeek === session.dayOfWeek);
+    if (!day) return [];
+
+    const pastSessions = await this.trainingSessionModel
+      .find({
+        userId: toObjectId(userId),
+        dayOfWeek: session.dayOfWeek,
+        status: 'completed',
+        _id: { $ne: session._id },
+      })
+      .sort({ date: -1 })
+      .limit(1)
+      .lean()
+      .exec();
+
+    if (pastSessions.length === 0) return [];
+    const prevSession = pastSessions[0];
+
+    const alerts: RepRangeAlert[] = [];
+
+    for (const exercise of day.exercises) {
+      const workingSeries: Array<{ order: number; repsMin: number; repsMax: number }> = exercise.series
+        .filter((s: any) => s.type === 'working')
+        .map((s: any) => ({ order: s.order, ...this.normalizeSeries(s) }));
+
+      if (workingSeries.length === 0) continue;
+
+      const currentRecords = (session.records as any[]).filter(
+        (r: any) => r.exerciseName === exercise.name && r.seriesType === 'working',
+      );
+      const prevRecords = ((prevSession.records as any[]) ?? []).filter(
+        (r: any) => r.exerciseName === exercise.name && r.seriesType === 'working',
+      );
+
+      if (currentRecords.length < workingSeries.length || prevRecords.length < workingSeries.length) {
+        continue;
+      }
+
+      const allAtMaxCurrent = workingSeries.every((ws) => {
+        const r = currentRecords.find((rec: any) => rec.seriesOrder === ws.order);
+        return r && r.repsCompleted >= ws.repsMax;
+      });
+
+      const allAtMaxPrev = workingSeries.every((ws) => {
+        const r = prevRecords.find((rec: any) => rec.seriesOrder === ws.order);
+        return r && r.repsCompleted >= ws.repsMax;
+      });
+
+      if (allAtMaxCurrent && allAtMaxPrev) {
+        const first = workingSeries[0];
+        alerts.push({
+          alertType: 'exceeded',
+          exerciseName: exercise.name,
+          repsMin: first.repsMin,
+          repsMax: first.repsMax,
+        });
+
+        await this.plateauAlertModel
+          .findOneAndUpdate(
+            { userId: toObjectId(userId), exerciseName: exercise.name, alertType: 'rep-range-max' },
+            {
+              $set: {
+                dayOfWeek: session.dayOfWeek,
+                suggestion: `Você atingiu o máximo de ${first.repsMax} reps em todas as séries por 2 treinos consecutivos. Considere aumentar o peso.`,
+                sessionCount: 2,
+                active: true,
+                resolvedAt: null,
+              },
+              $setOnInsert: { detectedAt: new Date() },
+            },
+            { upsert: true, new: true },
+          )
+          .exec();
+      }
+    }
+
+    return alerts;
+  }
+
+  async completeSession(
+    userId: string,
+    sessionId: string,
+    status: 'completed' | 'skipped',
+  ): Promise<{ session: TrainingSessionDocument; repRangeAlerts: RepRangeAlert[] }> {
     const session = await this.getTrainingSession(userId, sessionId);
     session.status = status;
     if (status === 'completed') {
       session.completedAt = new Date();
     }
     const saved = await session.save();
+
+    let repRangeAlerts: RepRangeAlert[] = [];
     if (status === 'completed') {
+      repRangeAlerts = await this.runRepRangeMaxDetection(userId, saved);
       this.eventEmitter.emit('session.completed', {
         userId,
         sessionId,
         dayOfWeek: session.dayOfWeek,
       } satisfies SessionCompletedEvent);
     }
-    return saved;
+
+    return { session: saved, repRangeAlerts };
   }
 
   async getTodaySession(userId: string) {
