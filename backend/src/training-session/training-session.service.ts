@@ -298,12 +298,46 @@ export class TrainingSessionService {
     return alerts;
   }
 
+  private accumulateActiveTime(session: TrainingSessionDocument) {
+    if (session.status === 'active' && session.lastResumedAt) {
+      const elapsedSeconds = Math.floor(
+        (Date.now() - session.lastResumedAt.getTime()) / 1000,
+      );
+      session.activeSeconds = (session.activeSeconds ?? 0) + Math.max(0, elapsedSeconds);
+      session.lastResumedAt = undefined;
+    }
+  }
+
+  async startSession(userId: string, sessionId: string) {
+    const session = await this.getTrainingSession(userId, sessionId);
+    if (session.status === 'completed' || session.status === 'skipped') {
+      throw new ConflictException('Cannot start a finished session');
+    }
+    if (session.status !== 'active') {
+      session.status = 'active';
+      session.lastResumedAt = new Date();
+      await session.save();
+    }
+    return session;
+  }
+
+  async pauseSession(userId: string, sessionId: string) {
+    const session = await this.getTrainingSession(userId, sessionId);
+    if (session.status === 'active') {
+      this.accumulateActiveTime(session);
+      session.status = 'partial';
+      await session.save();
+    }
+    return session;
+  }
+
   async completeSession(
     userId: string,
     sessionId: string,
     status: 'completed' | 'skipped',
   ): Promise<{ session: TrainingSessionDocument; repRangeAlerts: RepRangeAlert[] }> {
     const session = await this.getTrainingSession(userId, sessionId);
+    this.accumulateActiveTime(session);
     session.status = status;
     if (status === 'completed') {
       session.completedAt = new Date();

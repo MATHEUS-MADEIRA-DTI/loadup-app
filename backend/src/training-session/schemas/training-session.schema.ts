@@ -15,14 +15,20 @@ export class TrainingSession {
   @Prop({ required: true })
   dayOfWeek: string;
 
-  @Prop({ required: true, enum: ['partial', 'completed', 'skipped'] })
-  status: 'partial' | 'completed' | 'skipped';
+  @Prop({ required: true, enum: ['partial', 'active', 'completed', 'skipped'] })
+  status: 'partial' | 'active' | 'completed' | 'skipped';
 
   @Prop({ type: [SessionRecordSchema], default: [] })
   records: SessionRecord[];
 
   @Prop()
   completedAt?: Date;
+
+  @Prop({ default: 0 })
+  activeSeconds: number;
+
+  @Prop()
+  lastResumedAt?: Date;
 }
 
 export const TrainingSessionSchema = SchemaFactory.createForClass(TrainingSession);

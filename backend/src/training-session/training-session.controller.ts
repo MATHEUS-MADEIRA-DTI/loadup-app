@@ -73,6 +73,22 @@ export class TrainingSessionController {
     return this.trainingSessionService.deleteSessionRecord(userId, sessionId, recordId);
   }
 
+  @Patch(':sessionId/start')
+  async startSession(
+    @CurrentUser('id') userId: string,
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.trainingSessionService.startSession(userId, sessionId);
+  }
+
+  @Patch(':sessionId/pause')
+  async pauseSession(
+    @CurrentUser('id') userId: string,
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.trainingSessionService.pauseSession(userId, sessionId);
+  }
+
   @Patch(':sessionId/complete')
   async completeSession(
     @CurrentUser('id') userId: string,
