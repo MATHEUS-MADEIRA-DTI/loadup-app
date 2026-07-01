@@ -113,24 +113,29 @@ export class TrainingSessionService {
       (r: any) => r.exerciseName === exerciseName && r.seriesType === 'working',
     );
 
-    if (sessionWorkingRecords.length < workingSeries.length) return null;
+    // Fire as soon as a consistent signal shows up in 2 working series (or in
+    // the only one, for single-series exercises) instead of waiting for every
+    // working series of the exercise to be logged — otherwise the alert only
+    // surfaces once the exercise (often the last one) is fully done, racing
+    // with the end-of-workout completion flow.
+    const alertThreshold = Math.min(2, workingSeries.length);
 
-    const allExceeded = workingSeries.every((ws) => {
+    const exceededCount = workingSeries.filter((ws) => {
       const record = sessionWorkingRecords.find((r: any) => r.seriesOrder === ws.order);
       return record && record.repsCompleted > ws.repsMax;
-    });
+    }).length;
 
-    if (allExceeded) {
+    if (exceededCount === alertThreshold) {
       const first = workingSeries[0];
       return { alertType: 'exceeded', exerciseName, repsMin: first.repsMin, repsMax: first.repsMax };
     }
 
-    const allBelow = workingSeries.every((ws) => {
+    const belowCount = workingSeries.filter((ws) => {
       const record = sessionWorkingRecords.find((r: any) => r.seriesOrder === ws.order);
       return record && record.repsCompleted < ws.repsMin;
-    });
+    }).length;
 
-    if (allBelow) {
+    if (belowCount === alertThreshold) {
       const first = workingSeries[0];
       return { alertType: 'below_min', exerciseName, repsMin: first.repsMin, repsMax: first.repsMax };
     }
