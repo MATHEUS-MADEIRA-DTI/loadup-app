@@ -125,6 +125,19 @@ export function RestAlertsProvider({ children }: { children: ReactNode }) {
     const permission = await runUnlock();
     persistActivation();
     setShouldPromptForAlerts(false);
+
+    // iOS/Safari silently drops the first Notification fired after a
+    // permission grant unless the app is in the foreground at the time.
+    // Firing one right here (while the user is still in the app, mid
+    // gesture) "warms up" the delivery pipeline so later ones — like the
+    // rest-timer alert, fired with the app backgrounded — go through.
+    if (permission === "granted") {
+      new Notification("Alertas de treino ativados!", {
+        body: "A partir de agora você será avisado quando o descanso acabar.",
+        icon: "/icon-192x192.png",
+      });
+    }
+
     return permission;
   }, [runUnlock]);
 
