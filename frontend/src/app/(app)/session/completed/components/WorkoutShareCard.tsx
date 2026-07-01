@@ -18,13 +18,6 @@ export interface WorkoutShareCardProps {
   muscleGroups?: string[];
 }
 
-/* ─── Design tokens (standalone palette, independent of app theme) ─── */
-const ACCENT = "#F43F5E";
-const ACCENT_SOFT = "rgba(244,63,94,0.14)";
-const BG = "#07070B";
-const MUTED = "#6B7280";
-const TEXT = "#F8FAFC";
-
 const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
   function WorkoutShareCard(
     { dayName, date, stats, topExercises, photoUrl, muscleGroups = [] },
@@ -41,7 +34,7 @@ const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
         ) : (
           <BgGradient />
         )}
-        {/* Overlay wash: red top → dark bottom */}
+        {/* Overlay wash: accent top → dark bottom */}
         <Wash $hasPhoto={!!photoUrl} />
 
         <ContentCol>
@@ -117,7 +110,7 @@ const Root = styled.div`
   position: relative;
   width: 360px;
   height: 640px;
-  background: ${BG};
+  background: ${({ theme }) => theme.colors.background};
   border-radius: 24px;
   overflow: hidden;
 `;
@@ -134,22 +127,22 @@ const BgPhoto = styled.img`
 const BgGradient = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(
+  background: ${({ theme }) => `linear-gradient(
     160deg,
-    rgba(244, 63, 94, 0.28) 0%,
-    rgba(7, 7, 11, 0.6) 50%,
-    ${BG} 100%
-  );
+    ${theme.colors.primaryContainer} 0%,
+    ${theme.colors.surfaceElevated} 50%,
+    ${theme.colors.background} 100%
+  )`};
 `;
 
 const Wash = styled.div<{ $hasPhoto: boolean }>`
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: ${({ $hasPhoto }) =>
+  background: ${({ theme, $hasPhoto }) =>
     $hasPhoto
-      ? `linear-gradient(180deg, rgba(244,63,94,0.55) 0%, rgba(15,15,20,0.15) 35%, rgba(7,7,11,0.9) 70%, ${BG} 100%)`
-      : `linear-gradient(180deg, rgba(244,63,94,0.20) 0%, transparent 55%)`};
+      ? `linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.9) 70%, ${theme.colors.background} 100%)`
+      : `linear-gradient(180deg, ${theme.colors.primaryContainer} 0%, transparent 55%)`};
 `;
 
 const ContentCol = styled.div`
@@ -173,7 +166,7 @@ const Wordmark = styled.span`
   font-weight: 900;
   font-size: 13px;
   letter-spacing: 0.14em;
-  color: ${ACCENT};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const DoneBadge = styled.span`
@@ -181,7 +174,7 @@ const DoneBadge = styled.span`
   font-weight: 900;
   font-size: 10px;
   letter-spacing: 0.14em;
-  color: #4ade80;
+  color: ${({ theme }) => theme.colors.success};
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 `;
 
@@ -195,7 +188,7 @@ const DayName = styled.h1`
   font-family: var(--font-barlow), sans-serif;
   font-weight: 900;
   font-size: 54px;
-  color: ${TEXT};
+  color: #f8fafc;
   line-height: 0.88;
   text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
   margin: 0;
@@ -239,7 +232,7 @@ const GlassSep = styled.div`
 const GlassVal = styled.span`
   font-family: var(--font-bebas), sans-serif;
   font-size: 26px;
-  color: ${TEXT};
+  color: #f8fafc;
   line-height: 1;
 `;
 
@@ -248,7 +241,7 @@ const GlassLbl = styled.span`
   font-weight: 600;
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: ${MUTED};
+  color: #6b7280;
   text-transform: uppercase;
 `;
 
@@ -277,7 +270,7 @@ const SetRow = styled.div`
 
 const SetRank = styled.span`
   font-family: var(--font-bebas), sans-serif;
-  color: ${ACCENT};
+  color: ${({ theme }) => theme.colors.primary};
   font-size: 17px;
   min-width: 20px;
   line-height: 1;
@@ -288,7 +281,7 @@ const SetName = styled.span`
   font-family: var(--font-inter), sans-serif;
   font-weight: 600;
   font-size: 12px;
-  color: ${TEXT};
+  color: #f8fafc;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -304,14 +297,14 @@ const SetWeight = styled.span`
 `;
 
 const SetKg = styled.span`
-  color: ${ACCENT};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const SetUnit = styled.span`
   font-family: var(--font-barlow), sans-serif;
   font-size: 9px;
   font-weight: 600;
-  color: ${MUTED};
+  color: #6b7280;
   margin-left: 2px;
 `;
 
@@ -328,12 +321,14 @@ const Chip = styled.span<{ $accent?: boolean }>`
   font-weight: 600;
   font-size: 9px;
   letter-spacing: 0.10em;
-  color: ${TEXT};
+  color: #f8fafc;
   padding: 3px 8px;
   border: 1px solid
-    ${({ $accent }) => ($accent ? ACCENT : "rgba(255,255,255,0.14)")};
+    ${({ theme, $accent }) =>
+      $accent ? theme.colors.primary : "rgba(255,255,255,0.14)"};
   border-radius: 999px;
-  background: ${({ $accent }) => ($accent ? ACCENT_SOFT : "transparent")};
+  background: ${({ theme, $accent }) =>
+    $accent ? theme.colors.primaryContainer : "transparent"};
 `;
 
 const ChipMore = styled.span`
@@ -341,7 +336,7 @@ const ChipMore = styled.span`
   font-weight: 600;
   font-size: 9px;
   letter-spacing: 0.10em;
-  color: ${MUTED};
+  color: #6b7280;
 `;
 
 const FooterRow = styled.div`

@@ -101,3 +101,23 @@ export function useCompleteSession(sessionId: string) {
     },
   });
 }
+
+export function useStartSession(sessionId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => sessionService.startSession(sessionId),
+    onSuccess: (data) => {
+      qc.setQueryData(TODAY_KEY, data);
+    },
+  });
+}
+
+export function usePauseSession(sessionId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => sessionService.pauseSession(sessionId),
+    onSuccess: (data) => {
+      qc.setQueryData(TODAY_KEY, data);
+    },
+  });
+}

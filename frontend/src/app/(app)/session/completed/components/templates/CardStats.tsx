@@ -5,13 +5,6 @@ import styled from "styled-components";
 
 import { WorkoutShareCardProps } from "../WorkoutShareCard";
 
-/* ─── Design tokens ─── */
-const ACCENT = "#F43F5E";
-const ACCENT_SOFT = "rgba(244,63,94,0.14)";
-const BG = "#07070B";
-const MUTED = "#6B7280";
-const TEXT = "#F8FAFC";
-
 const CardStats = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
   function CardStats(
     { dayName, date, stats, topExercises, muscleGroups = [] },
@@ -106,7 +99,7 @@ const Root = styled.div`
   position: relative;
   width: 360px;
   height: 640px;
-  background: ${BG};
+  background: ${({ theme }) => theme.colors.background};
   border-radius: 24px;
   overflow: hidden;
 `;
@@ -117,12 +110,12 @@ const RadialGlow = styled.div`
   top: 0;
   height: 55%;
   pointer-events: none;
-  background: radial-gradient(
+  background: ${({ theme }) => `radial-gradient(
     ellipse at 50% 0%,
-    rgba(244, 63, 94, 0.22) 0%,
-    rgba(244, 63, 94, 0.06) 40%,
+    ${theme.colors.primaryContainer} 0%,
+    ${theme.colors.primaryContainer} 40%,
     transparent 70%
-  );
+  )`};
 `;
 
 const Content = styled.div`
@@ -146,7 +139,7 @@ const Wordmark = styled.span`
   font-weight: 900;
   font-size: 13px;
   letter-spacing: 0.14em;
-  color: ${ACCENT};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const DatePill = styled.span`
@@ -154,9 +147,9 @@ const DatePill = styled.span`
   font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.12em;
-  color: ${TEXT};
+  color: ${({ theme }) => theme.colors.onSurface};
   padding: 4px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
   border-radius: 999px;
 `;
 
@@ -170,7 +163,7 @@ const HeroLabel = styled.div`
   font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.22em;
-  color: ${MUTED};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-transform: uppercase;
 `;
 
@@ -179,7 +172,8 @@ const HeroVal = styled.div`
   font-size: 86px;
   line-height: 0.9;
   margin-top: 8px;
-  background: linear-gradient(180deg, #ffffff 0%, ${ACCENT} 100%);
+  background: ${({ theme }) =>
+    `linear-gradient(180deg, ${theme.colors.onSurface} 0%, ${theme.colors.primary} 100%)`};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -187,7 +181,7 @@ const HeroVal = styled.div`
 
 const Rule = styled.div`
   height: 1px;
-  background: rgba(255, 255, 255, 0.10);
+  background: ${({ theme }) => theme.colors.outlineVariant};
   margin: 16px 0;
   flex-shrink: 0;
 `;
@@ -205,14 +199,14 @@ const StatCell = styled.div`
 const StatSep = styled.div`
   width: 1px;
   height: 32px;
-  background: rgba(255, 255, 255, 0.10);
+  background: ${({ theme }) => theme.colors.outlineVariant};
   flex-shrink: 0;
 `;
 
 const StatVal = styled.div`
   font-family: var(--font-bebas), sans-serif;
   font-size: 26px;
-  color: ${TEXT};
+  color: ${({ theme }) => theme.colors.onSurface};
   line-height: 1;
 `;
 
@@ -221,7 +215,7 @@ const StatLbl = styled.div`
   font-weight: 600;
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: ${MUTED};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   margin-top: 5px;
   text-transform: uppercase;
 `;
@@ -238,7 +232,7 @@ const SectionLabel = styled.span`
   font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.14em;
-  color: ${MUTED};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   text-transform: uppercase;
 `;
 
@@ -253,12 +247,14 @@ const Chip = styled.span<{ $accent?: boolean }>`
   font-weight: 600;
   font-size: 9px;
   letter-spacing: 0.10em;
-  color: ${TEXT};
+  color: ${({ theme }) => theme.colors.onSurface};
   padding: 2px 7px;
   border: 1px solid
-    ${({ $accent }) => ($accent ? ACCENT : "rgba(255,255,255,0.14)")};
+    ${({ theme, $accent }) =>
+      $accent ? theme.colors.primary : theme.colors.outlineVariant};
   border-radius: 999px;
-  background: ${({ $accent }) => ($accent ? ACCENT_SOFT : "transparent")};
+  background: ${({ theme, $accent }) =>
+    $accent ? theme.colors.primaryContainer : "transparent"};
 `;
 
 const ChipMore = styled.span`
@@ -266,7 +262,7 @@ const ChipMore = styled.span`
   font-weight: 600;
   font-size: 9px;
   letter-spacing: 0.10em;
-  color: ${MUTED};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
 `;
 
 const SetsList = styled.div`
@@ -285,7 +281,7 @@ const SetRow = styled.div`
 
 const SetRank = styled.span`
   font-family: var(--font-bebas), sans-serif;
-  color: ${ACCENT};
+  color: ${({ theme }) => theme.colors.primary};
   font-size: 18px;
   min-width: 22px;
   line-height: 1;
@@ -296,7 +292,7 @@ const SetName = styled.span`
   font-family: var(--font-inter), sans-serif;
   font-weight: 600;
   font-size: 12px;
-  color: ${TEXT};
+  color: ${({ theme }) => theme.colors.onSurface};
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -312,14 +308,14 @@ const SetWeight = styled.span`
 `;
 
 const SetKg = styled.span`
-  color: ${ACCENT};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const SetUnit = styled.span`
   font-family: var(--font-barlow), sans-serif;
   font-size: 9px;
   font-weight: 600;
-  color: ${MUTED};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
   margin-left: 2px;
 `;
 
@@ -334,5 +330,5 @@ const Footer = styled.div`
 const FooterTag = styled.span`
   font-family: var(--font-inter), sans-serif;
   font-size: 10px;
-  color: ${MUTED};
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
 `;

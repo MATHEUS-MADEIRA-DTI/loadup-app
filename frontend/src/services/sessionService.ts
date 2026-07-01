@@ -53,4 +53,18 @@ export const sessionService = {
       payload,
     );
   },
+
+  startSession(sessionId: string): Promise<TrainingSession> {
+    return apiClient.patch<TrainingSession>(
+      `/training-sessions/${sessionId}/start`,
+      {},
+    );
+  },
+
+  pauseSession(sessionId: string): Promise<TrainingSession> {
+    return apiClient.patch<TrainingSession>(
+      `/training-sessions/${sessionId}/pause`,
+      {},
+    );
+  },
 };

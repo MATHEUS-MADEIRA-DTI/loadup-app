@@ -9,6 +9,8 @@ import { strings } from "@/constants/strings";
 import {
   useCompleteSession,
   useCreateSession,
+  usePauseSession,
+  useStartSession,
   useTodaySession,
 } from "@/hooks/useSession";
 import MuscleChip from "@/components/MuscleChip";
@@ -150,6 +152,37 @@ export default function SessionView({
     }
   }, [sessionData, exercises, isReadOnly]);
   const completeSession = useCompleteSession(sessionData?._id ?? "");
+  const startSession = useStartSession(sessionData?._id ?? "");
+  const pauseSession = usePauseSession(sessionData?._id ?? "");
+  const startSessionRef = useRef(startSession.mutate);
+  startSessionRef.current = startSession.mutate;
+  const pauseSessionRef = useRef(pauseSession.mutate);
+  pauseSessionRef.current = pauseSession.mutate;
+
+  // Only count time while the user is actually on this screen: start the
+  // clock when it mounts (or when leaving read-only), pause it on unmount,
+  // navigation away, or when the tab/app is backgrounded.
+  useEffect(() => {
+    const sessionId = sessionData?._id;
+    if (!sessionId || isReadOnly) return;
+
+    startSessionRef.current();
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        pauseSessionRef.current();
+      } else {
+        startSessionRef.current();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      pauseSessionRef.current();
+    };
+  }, [sessionData?._id, isReadOnly]);
+
   const isLoading =
     session.isLoading ||
     (session.isError && !createAttempted) ||

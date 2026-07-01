@@ -45,7 +45,8 @@ export default function TrainingPlanPage() {
   const todayDow = JS_TO_DOW[new Date().getDay()];
 
   const activeDow =
-    todaySession.data?.status === "partial" &&
+    (todaySession.data?.status === "partial" ||
+      todaySession.data?.status === "active") &&
     (todaySession.data.records?.length ?? 0) > 0
       ? (todaySession.data.dayOfWeek as DayOfWeek)
       : null;

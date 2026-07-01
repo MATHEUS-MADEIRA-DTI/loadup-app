@@ -30,7 +30,8 @@ function formatFullDate(dateStr: string): string {
 function statusLabel(status: string): string {
   if (status === "completed") return strings.sessionHistory.statusCompleted;
   if (status === "skipped") return strings.sessionHistory.statusSkipped;
-  if (status === "partial") return strings.sessionHistory.statusPartial;
+  if (status === "partial" || status === "active")
+    return strings.sessionHistory.statusPartial;
   return strings.sessionHistory.statusPending;
 }
 

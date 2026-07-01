@@ -1,6 +1,6 @@
 import { SeriesType } from "./trainingSheet";
 
-export type SessionStatus = "partial" | "completed" | "skipped";
+export type SessionStatus = "partial" | "active" | "completed" | "skipped";
 
 export type RepRangeAlertType = "exceeded" | "below_min";
 
@@ -31,6 +31,8 @@ export interface TrainingSession {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  activeSeconds: number;
+  lastResumedAt?: string | null;
 }
 
 export interface AddRecordPayload {

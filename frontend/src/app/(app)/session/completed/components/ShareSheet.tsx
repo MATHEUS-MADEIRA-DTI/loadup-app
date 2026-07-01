@@ -103,6 +103,13 @@ export default function ShareSheet({
           photoUrl,
           primaryColor: theme.colors.primary,
           primaryDarkColor: theme.colors.primaryDark,
+          backgroundColor: theme.colors.background,
+          surfaceColor: theme.colors.surfaceElevated,
+          textColor: theme.colors.onSurface,
+          mutedColor: theme.colors.onSurfaceMuted,
+          subtleColor: theme.colors.onBackgroundSubtle,
+          borderColor: theme.colors.outlineVariant,
+          successColor: theme.colors.success,
         }),
       });
 

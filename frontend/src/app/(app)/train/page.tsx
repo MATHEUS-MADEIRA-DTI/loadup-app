@@ -47,6 +47,18 @@ function TrainPageContent() {
       sheet.data &&
       todaySheetDay?.status === "training" &&
       view === "tabs" &&
+      todaySession.data?.status === "active"
+    ) {
+      setSessionDay(todayDow);
+      setView("session");
+    }
+  }, [sheet.data, todaySheetDay, todaySession.data, view, todayDow]);
+
+  useEffect(() => {
+    if (
+      sheet.data &&
+      todaySheetDay?.status === "training" &&
+      view === "tabs" &&
       (!todaySession.data?.status || todaySession.data?.status === "partial")
     ) {
       setView("intro");
@@ -81,7 +93,6 @@ function TrainPageContent() {
           sheetDay={todaySheetDay}
           onBack={() => router.push("/")}
           onStart={() => {
-            localStorage.setItem("workout_started_at", String(Date.now()));
             setSessionDay(todayDow);
             setView("session");
           }}

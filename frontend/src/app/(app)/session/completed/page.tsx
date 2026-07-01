@@ -64,20 +64,8 @@ export default function CompletedWorkoutPage() {
       .size;
 
     let duration = "—";
-    if (sessionData.createdAt && sessionData.completedAt) {
-      const completedMs = new Date(sessionData.completedAt).getTime();
-      const createdMs = new Date(sessionData.createdAt).getTime();
-
-      const stored = typeof window !== "undefined"
-        ? localStorage.getItem("workout_started_at")
-        : null;
-      const storedMs = stored ? parseInt(stored, 10) : 0;
-      // Use stored start time only if it falls between createdAt and completedAt
-      const startMs =
-        storedMs > createdMs && storedMs < completedMs ? storedMs : createdMs;
-
-      const diffMs = completedMs - startMs;
-      const diffMins = Math.round(diffMs / 60000);
+    if (typeof sessionData.activeSeconds === "number") {
+      const diffMins = Math.round(sessionData.activeSeconds / 60);
       if (diffMins < 1) duration = "<1min";
       else if (diffMins < 60) duration = `${diffMins}min`;
       else {
