@@ -42,23 +42,41 @@ export const StyledAbbrCol = styled.div`
   gap: 2px;
   flex-shrink: 0;
 `;
-export const StyledDragHandle = styled.div`
+export const StyledArrowCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+`;
+
+export const StyledArrowBtn = styled.button`
+  width: 36px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  color: ${({ theme }) => theme.colors.onSurfaceMuted};
-  cursor: grab;
-  flex-shrink: 0;
-  opacity: 0.5;
-  transition: opacity 150ms ease;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  color: ${({ theme }) => theme.colors.primary};
+  cursor: pointer;
+  transition: background 150ms ease;
 
-  &:active {
-    cursor: grabbing;
+  &:first-child {
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
   }
 
-  &:hover {
-    opacity: 1;
+  &:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+
+  &:disabled {
+    color: ${({ theme }) => theme.colors.onSurfaceMuted};
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):active {
+    background: ${({ theme }) => theme.colors.primaryContainer};
   }
 `;
 export const StyledAbbrPill = styled.div<{ $isToday: boolean }>`

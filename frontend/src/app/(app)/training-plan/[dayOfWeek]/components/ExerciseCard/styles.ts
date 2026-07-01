@@ -137,6 +137,44 @@ export const StyledSeriesList = styled.div`
   gap: 8px;
 `;
 
+export const StyledArrowCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+`;
+
+export const StyledArrowBtn = styled.button`
+  width: 36px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  color: ${({ theme }) => theme.colors.primary};
+  cursor: pointer;
+  transition: background 150ms ease;
+
+  &:first-child {
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+  }
+
+  &:last-child {
+    border-radius: 0 0 8px 8px;
+  }
+
+  &:disabled {
+    color: ${({ theme }) => theme.colors.onSurfaceMuted};
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):active {
+    background: ${({ theme }) => theme.colors.primaryContainer};
+  }
+`;
+
 
 
 

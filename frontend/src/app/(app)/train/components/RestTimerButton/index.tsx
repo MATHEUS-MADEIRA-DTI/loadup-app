@@ -14,6 +14,9 @@ import {
   StyledNextExerciseMuscle,
   StyledNextExerciseName,
   StyledNextLabel,
+  StyledNextSeriesRow,
+  StyledNextSeriesTypeBadge,
+  StyledNextWeight,
   StyledRestLabel,
   StyledRestOverlay,
   StyledSkipRestBtn,
@@ -23,6 +26,8 @@ interface NextExercisePreview {
   name: string;
   muscleGroup: string;
   isNewExercise: boolean;
+  seriesTypeLabel: string;
+  lastWeight: number | null;
 }
 
 interface RestTimerOverlayProps {
@@ -147,6 +152,12 @@ export default function RestTimerOverlay({
           </StyledNextLabel>
           <StyledNextExerciseName>{nextExercise.name}</StyledNextExerciseName>
           <StyledNextExerciseMuscle>{nextExercise.muscleGroup}</StyledNextExerciseMuscle>
+          <StyledNextSeriesRow>
+            <StyledNextSeriesTypeBadge>{nextExercise.seriesTypeLabel}</StyledNextSeriesTypeBadge>
+            {nextExercise.lastWeight != null && (
+              <StyledNextWeight>{nextExercise.lastWeight} kg</StyledNextWeight>
+            )}
+          </StyledNextSeriesRow>
         </StyledNextExerciseCard>
       )}
     </StyledRestOverlay>

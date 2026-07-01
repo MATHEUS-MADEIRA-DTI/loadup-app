@@ -1,6 +1,6 @@
 "use client";
 
-import { Dumbbell, GripVertical, MoonStar } from "lucide-react";
+import { Check, Dumbbell, GripVertical, MoonStar } from "lucide-react";
 
 import { strings } from "@/constants/strings";
 
@@ -9,7 +9,6 @@ import {
   StyledHeaderSub,
   StyledReorderBtn,
   StyledReorderLeft,
-  StyledReorderStatus,
   StyledSummaryBadge,
   StyledSummaryRow,
   StyledTitle,
@@ -48,12 +47,9 @@ export default function PlanHeader({
         type="button"
       >
         <StyledReorderLeft>
-          <GripVertical size={14} />
-          Reordenar dias
+          {dragEnabled ? <Check size={13} strokeWidth={3} /> : <GripVertical size={14} />}
+          {dragEnabled ? "Concluir" : "Reordenar dias"}
         </StyledReorderLeft>
-        <StyledReorderStatus $active={dragEnabled}>
-          {dragEnabled ? "Ativado" : "Desativado"}
-        </StyledReorderStatus>
       </StyledReorderBtn>
     </StyledHeader>
   );

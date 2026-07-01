@@ -41,6 +41,8 @@ const slideInFromLeft = keyframes`
 const Wrapper = styled.div<{ $direction: "left" | "right" }>`
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   gap: ${({ theme }) => theme.spacing.md};
   animation: ${({ $direction }) =>
     $direction === "right"

@@ -73,10 +73,3 @@ export const StyledReorderLeft = styled.span`
   font-weight: 600;
 `;
 
-export const StyledReorderStatus = styled.span<{ $active: boolean }>`
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: ${({ $active }) => ($active ? 1 : 0.5)};
-`;

@@ -238,7 +238,7 @@ export const strings = {
     home: "Início",
     trainingPlan: "Plano",
     workout: "Treinar",
-    progression: "Progresso",
+    progression: "Perfil",
   },
 
   common: {

@@ -1,26 +1,9 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  TouchSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-
-import { toast } from "sonner";
+import { Check } from "lucide-react";
+import { flushSync } from "react-dom";
 
 import EmptyState from "@/components/EmptyState";
 import PageTransition from "@/components/PageTransition";
@@ -37,6 +20,9 @@ import EditExerciseModal from "./components/EditExerciseModal";
 import ExerciseCard from "./components/ExerciseCard";
 import {
   StyledBody,
+  StyledConcluirBtn,
+  StyledEditBar,
+  StyledEditHint,
   StyledFab,
   StyledPage,
   StyledSectionHeading,
@@ -51,44 +37,6 @@ import {
 } from "./styles";
 import { DAY_LABEL, isValidDay } from "./utils";
 
-function SortableExerciseCard({
-  exercise,
-  index,
-  onEdit,
-  onDelete,
-  dragEnabled,
-}: {
-  exercise: Exercise;
-  index: number;
-  onEdit: () => void;
-  onDelete: () => void;
-  dragEnabled: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: exercise._id, disabled: !dragEnabled });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...(dragEnabled ? { ...attributes, ...listeners } : {})}
-    >
-      <ExerciseCard
-        exercise={exercise}
-        index={index}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    </div>
-  );
-}
-
 export default function DayExercisesPage() {
   const router = useRouter();
   const params = useParams();
@@ -101,7 +49,7 @@ export default function DayExercisesPage() {
   const [deleteExercise, setDeleteExercise] = useState<Exercise | null>(null);
   const [dragEnabled, setDragEnabled] = useState(false);
   const [localOrder, setLocalOrder] = useState<string[]>([]);
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const session = useTodaySession();
 
   useEffect(() => {
@@ -109,31 +57,6 @@ export default function DayExercisesPage() {
       setLocalOrder(exercises.data.map((ex) => ex._id));
     }
   }, [exercises.data]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-  );
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveDragId(event.active.id as string);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveDragId(null);
-    if (!over || active.id === over.id) return;
-
-    const aIdx = localOrder.indexOf(active.id as string);
-    const bIdx = localOrder.indexOf(over.id as string);
-    const newOrder = [...localOrder];
-    [newOrder[aIdx], newOrder[bIdx]] = [newOrder[bIdx], newOrder[aIdx]];
-
-    setLocalOrder(newOrder);
-    reorderExercises.mutate(newOrder, {
-      onError: () => toast.error("Erro ao reordenar exercícios. Tente novamente."),
-    });
-  };
 
   const todayDayOfWeek = (() => {
     const days = [
@@ -153,11 +76,6 @@ export default function DayExercisesPage() {
     session.data?.status === "completed" || session.data?.status === "skipped";
 
   const handleStartWorkout = () => {
-    console.log("dayOfWeek:", dayOfWeek);
-    console.log("todayDayOfWeek:", todayDayOfWeek);
-    console.log("isToday:", isToday);
-    console.log("isSessionDone:", isSessionDone);
-
     if (isToday && isSessionDone) {
       router.push("/session/completed");
     } else if (!isToday) {
@@ -182,9 +100,43 @@ export default function DayExercisesPage() {
   const uniqueMuscles = Array.from(
     new Set(list.map((ex) => ex.muscleGroup)),
   ) as MuscleGroup[];
-  const activeDragExercise = activeDragId
-    ? list.find((ex) => ex._id === activeDragId)
-    : null;
+
+  const move = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= list.length) return;
+
+    // FLIP — First: capture positions keyed by exercise identity
+    const first = new Map<string, number>();
+    cardRefs.current.forEach((el, key) => {
+      first.set(key, el.getBoundingClientRect().top);
+    });
+
+    // FLIP — Last: force sync DOM update
+    let nextOrder: string[] = [];
+    flushSync(() => {
+      setLocalOrder((prev) => {
+        const next = [...prev];
+        [next[index], next[target]] = [next[target], next[index]];
+        nextOrder = next;
+        return next;
+      });
+    });
+
+    // FLIP — Invert + Play with forced reflow so browser sees the initial position
+    cardRefs.current.forEach((el, key) => {
+      const oldTop = first.get(key) ?? 0;
+      const newTop = el.getBoundingClientRect().top;
+      const delta = oldTop - newTop;
+      if (Math.abs(delta) < 1) return;
+      el.style.transition = "none";
+      el.style.transform = `translateY(${delta}px)`;
+      el.getBoundingClientRect(); // force reflow — commits the transform before transition starts
+      el.style.transition = "transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1)";
+      el.style.transform = "";
+    });
+
+    reorderExercises.mutate(nextOrder);
+  };
 
   if (exercises.isLoading) {
     return (
@@ -239,7 +191,9 @@ export default function DayExercisesPage() {
             uniqueMuscles={uniqueMuscles}
             onBack={() => router.back()}
             dragEnabled={dragEnabled}
-            onToggleDrag={list.length > 1 ? () => setDragEnabled((v) => !v) : undefined}
+            onToggleDrag={
+              list.length > 1 ? () => setDragEnabled((v) => !v) : undefined
+            }
           />
 
           {list.length > 0 && (
@@ -281,42 +235,31 @@ export default function DayExercisesPage() {
                 onCta={() => setAddOpen(true)}
               />
             ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={list.map((ex) => ex._id)}
-                  strategy={verticalListSortingStrategy}
+              list.map((exercise, i) => (
+                <div
+                  key={exercise._id}
+                  ref={(el) => {
+                    if (el) cardRefs.current.set(exercise._id, el);
+                    else cardRefs.current.delete(exercise._id);
+                  }}
                 >
-                  {list.map((exercise, i) => (
-                    <SortableExerciseCard
-                      key={exercise._id}
-                      exercise={exercise}
-                      index={i}
-                      onEdit={() => setEditExercise(exercise)}
-                      onDelete={() => setDeleteExercise(exercise)}
-                      dragEnabled={dragEnabled}
-                    />
-                  ))}
-                </SortableContext>
-                <DragOverlay>
-                  {activeDragExercise && (
-                    <ExerciseCard
-                      exercise={activeDragExercise}
-                      index={list.indexOf(activeDragExercise)}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                    />
-                  )}
-                </DragOverlay>
-              </DndContext>
+                  <ExerciseCard
+                    exercise={exercise}
+                    index={i}
+                    onEdit={() => setEditExercise(exercise)}
+                    onDelete={() => setDeleteExercise(exercise)}
+                    editing={dragEnabled}
+                    onMoveUp={() => move(i, -1)}
+                    onMoveDown={() => move(i, 1)}
+                    isFirst={i === 0}
+                    isLast={i === list.length - 1}
+                  />
+                </div>
+              ))
             )}
           </StyledBody>
 
-          {list.length > 0 && (
+          {list.length > 0 && !dragEnabled && (
             <>
               <StyledFab
                 onClick={() => setAddOpen(true)}
@@ -344,6 +287,19 @@ export default function DayExercisesPage() {
               </StyledStartBtn>
             </>
           )}
+
+          <StyledEditBar $visible={dragEnabled}>
+            <StyledEditHint>
+              Use as setas para reordenar os exercícios.
+            </StyledEditHint>
+            <StyledConcluirBtn
+              type="button"
+              onClick={() => setDragEnabled(false)}
+            >
+              <Check size={15} strokeWidth={3} />
+              Concluir
+            </StyledConcluirBtn>
+          </StyledEditBar>
         </StyledPage>
       </PageTransition>
       <AddExerciseModal

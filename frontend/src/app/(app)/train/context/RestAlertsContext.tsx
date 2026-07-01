@@ -5,6 +5,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -14,32 +15,49 @@ const REST_ALERT_SOUND =
   "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAEAAQARAAIAIgAAABZAAAIAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2" +
   "YyFxaM0O3jlVIlDA+Z7vXupF4fEBCt8v79s20tEhK29v//tHEvFxfG/f///8SAAB";
 
+const ACTIVATED_STORAGE_KEY = "loadup:restAlertsActivated";
+
 type NotificationPermissionState = NotificationPermission | "unsupported";
 
 interface RestAlertsContextValue {
   alertsReady: boolean;
   notificationPermission: NotificationPermissionState;
+  shouldPromptForAlerts: boolean;
   unlockAlerts: () => Promise<NotificationPermissionState>;
+  dismissAlertsPrompt: () => void;
   playRestEndAlert: () => void;
 }
 
 const RestAlertsContext = createContext<RestAlertsContextValue | null>(null);
 
+function readStoredActivation() {
+  try {
+    return window.localStorage.getItem(ACTIVATED_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function persistActivation() {
+  try {
+    window.localStorage.setItem(ACTIVATED_STORAGE_KEY, "1");
+  } catch {
+    // Ignored: worst case the prompt shows again next time.
+  }
+}
+
 export function RestAlertsProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [alertsReady, setAlertsReady] = useState(false);
   const [notificationPermission, setNotificationPermission] =
-    useState<NotificationPermissionState>(() =>
-      typeof window !== "undefined" && "Notification" in window
-        ? Notification.permission
-        : "unsupported",
-    );
+    useState<NotificationPermissionState>("unsupported");
+  const [shouldPromptForAlerts, setShouldPromptForAlerts] = useState(false);
 
   // iOS/Safari only allows unlocking the audio element's playback inside a
   // direct user gesture. We play it once (silently) here so the same
   // element can be triggered programmatically later, when the rest timer
   // ends without any user interaction.
-  const unlockAlerts = useCallback(async () => {
+  const runUnlock = useCallback(async () => {
     if (!audioRef.current) {
       audioRef.current = new Audio(REST_ALERT_SOUND);
     }
@@ -57,7 +75,7 @@ export function RestAlertsProvider({ children }: { children: ReactNode }) {
     }
 
     let permission: NotificationPermissionState = "unsupported";
-    if (typeof window !== "undefined" && "Notification" in window) {
+    if ("Notification" in window) {
       try {
         permission = await Notification.requestPermission();
       } catch {
@@ -70,14 +88,54 @@ export function RestAlertsProvider({ children }: { children: ReactNode }) {
     return permission;
   }, []);
 
+  // Determined only after mount to avoid an SSR/client markup mismatch,
+  // since it depends on localStorage and the browser's Notification API.
+  useEffect(() => {
+    const supported = "Notification" in window;
+    const currentPermission: NotificationPermissionState = supported
+      ? Notification.permission
+      : "unsupported";
+    setNotificationPermission(currentPermission);
+
+    const alreadyActivated = readStoredActivation();
+    if (currentPermission === "granted" && !alreadyActivated) {
+      persistActivation();
+    }
+    setShouldPromptForAlerts(currentPermission !== "granted" && !alreadyActivated);
+  }, []);
+
+  // Someone who activated alerts in a previous visit still needs a fresh
+  // user gesture to unlock this page load's Audio element on iOS/Safari —
+  // piggyback on their first tap instead of showing the prompt again.
+  useEffect(() => {
+    if (alertsReady || shouldPromptForAlerts) return;
+    if (!readStoredActivation()) return;
+
+    const handleFirstInteraction = () => {
+      void runUnlock();
+    };
+    document.addEventListener("pointerdown", handleFirstInteraction, {
+      once: true,
+    });
+    return () =>
+      document.removeEventListener("pointerdown", handleFirstInteraction);
+  }, [alertsReady, shouldPromptForAlerts, runUnlock]);
+
+  const unlockAlerts = useCallback(async () => {
+    const permission = await runUnlock();
+    persistActivation();
+    setShouldPromptForAlerts(false);
+    return permission;
+  }, [runUnlock]);
+
+  const dismissAlertsPrompt = useCallback(() => {
+    setShouldPromptForAlerts(false);
+  }, []);
+
   const playRestEndAlert = useCallback(() => {
     audioRef.current?.play().catch(() => {});
 
-    if (
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "granted"
-    ) {
+    if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Descanso encerrado!", {
         body: "Hora de voltar ao treino 💪",
         icon: "/icon-192x192.png",
@@ -86,8 +144,22 @@ export function RestAlertsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ alertsReady, notificationPermission, unlockAlerts, playRestEndAlert }),
-    [alertsReady, notificationPermission, unlockAlerts, playRestEndAlert],
+    () => ({
+      alertsReady,
+      notificationPermission,
+      shouldPromptForAlerts,
+      unlockAlerts,
+      dismissAlertsPrompt,
+      playRestEndAlert,
+    }),
+    [
+      alertsReady,
+      notificationPermission,
+      shouldPromptForAlerts,
+      unlockAlerts,
+      dismissAlertsPrompt,
+      playRestEndAlert,
+    ],
   );
 
   return (

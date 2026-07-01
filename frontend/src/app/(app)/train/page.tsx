@@ -8,6 +8,7 @@ import { useTodaySession } from "@/hooks/useSession";
 import { useTrainingSheet } from "@/hooks/useTrainingSheet";
 import { DayOfWeek } from "@/types";
 
+import RestAlertsModal from "./components/RestAlertsModal";
 import SessionView from "./components/SessionView";
 import WorkoutIntro from "./components/WorkoutIntro";
 import { RestAlertsProvider } from "./context/RestAlertsContext";
@@ -61,26 +62,32 @@ function TrainPageContent() {
   if (view === "session" && sessionDay) {
     const sheetDay = sheet.data?.days.find((d) => d.dayOfWeek === sessionDay);
     return (
-      <SessionView
-        dayOfWeek={sessionDay}
-        sheetDay={sheetDay}
-        onBack={() => router.push("/training-plan")}
-      />
+      <>
+        <SessionView
+          dayOfWeek={sessionDay}
+          sheetDay={sheetDay}
+          onBack={() => router.push("/training-plan")}
+        />
+        <RestAlertsModal />
+      </>
     );
   }
 
   if (view === "intro" && todaySheetDay) {
     return (
-      <WorkoutIntro
-        dayOfWeek={todayDow}
-        sheetDay={todaySheetDay}
-        onBack={() => router.push("/")}
-        onStart={() => {
-          localStorage.setItem("workout_started_at", String(Date.now()));
-          setSessionDay(todayDow);
-          setView("session");
-        }}
-      />
+      <>
+        <WorkoutIntro
+          dayOfWeek={todayDow}
+          sheetDay={todaySheetDay}
+          onBack={() => router.push("/")}
+          onStart={() => {
+            localStorage.setItem("workout_started_at", String(Date.now()));
+            setSessionDay(todayDow);
+            setView("session");
+          }}
+        />
+        <RestAlertsModal />
+      </>
     );
   }
 

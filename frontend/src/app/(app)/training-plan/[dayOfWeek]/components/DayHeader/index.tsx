@@ -1,6 +1,6 @@
 "use client";
 
-import { GripVertical } from "lucide-react";
+import { Check, GripVertical } from "lucide-react";
 
 import MuscleChip from "@/components/MuscleChip";
 import { strings } from "@/constants/strings";
@@ -59,12 +59,9 @@ export default function DayHeader({
           type="button"
         >
           <StyledReorderLeft>
-            <GripVertical size={14} />
-            Reordenar exercícios
+            {dragEnabled ? <Check size={13} strokeWidth={3} /> : <GripVertical size={14} />}
+            {dragEnabled ? "Concluir" : "Reordenar exercícios"}
           </StyledReorderLeft>
-          <StyledReorderStatus $active={!!dragEnabled}>
-            {dragEnabled ? "Ativado" : "Desativado"}
-          </StyledReorderStatus>
         </StyledReorderBtn>
       )}
     </StyledHeader>

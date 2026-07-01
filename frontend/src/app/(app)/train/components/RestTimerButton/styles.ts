@@ -108,3 +108,29 @@ export const StyledNextExerciseMuscle = styled.p`
   letter-spacing: 0.1em;
   margin: 0;
 `;
+
+export const StyledNextSeriesRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+`;
+
+export const StyledNextSeriesTypeBadge = styled.span`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.primaryContainer};
+  color: ${({ theme }) => theme.colors.primary};
+`;
+
+export const StyledNextWeight = styled.span`
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 16px;
+  color: ${({ theme }) => theme.colors.onSurface};
+  letter-spacing: 0.04em;
+`;

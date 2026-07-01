@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, Dumbbell, TrendingUp } from "lucide-react";
+import { Home, ClipboardList, Dumbbell, User } from "lucide-react";
 import styled from "styled-components";
 import { useUnreadCount } from "@/hooks/useNotification";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,7 @@ const tabs = [
     Icon: ClipboardList,
   },
   { href: "/train", label: strings.nav.workout, Icon: Dumbbell },
-  { href: "/progress", label: strings.nav.progression, Icon: TrendingUp },
+  { href: "/progress", label: strings.nav.progression, Icon: User },
 ] as const;
 
 export default function BottomNavBar() {

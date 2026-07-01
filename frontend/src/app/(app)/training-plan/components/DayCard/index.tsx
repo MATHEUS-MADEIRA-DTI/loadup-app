@@ -1,6 +1,6 @@
 "use client";
 
-import { GripVertical } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import MuscleChip from "@/components/MuscleChip";
 import { strings } from "@/constants/strings";
 import { DayOfWeek, DayType, MuscleGroup, TrainingDay } from "@/types";
@@ -8,6 +8,8 @@ import { DAY_LABEL, DAY_SHORT } from "../../utils";
 import {
   StyledAbbrCol,
   StyledAbbrPill,
+  StyledArrowBtn,
+  StyledArrowCol,
   StyledCardRow,
   StyledChevronBtn,
   StyledChipsRow,
@@ -15,7 +17,6 @@ import {
   StyledControls,
   StyledDayCard,
   StyledDayName,
-  StyledDragHandle,
   StyledMeta,
   StyledNameRow,
   StyledToggle,
@@ -31,8 +32,12 @@ interface DayCardProps {
   onNavigate: (day: DayOfWeek) => void;
   onToggle: (day: DayOfWeek, currentStatus: DayType) => void;
   isUpdating: boolean;
-  dragHandleProps?: Record<string, unknown>;
   isDragging?: boolean;
+  editing?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
 export default function DayCard({
@@ -41,8 +46,12 @@ export default function DayCard({
   onNavigate,
   onToggle,
   isUpdating,
-  dragHandleProps,
   isDragging,
+  editing,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
 }: DayCardProps) {
   const isTraining = day.status === "training";
   const count = day.exercises.length;
@@ -55,35 +64,28 @@ export default function DayCard({
   ) as MuscleGroup[];
 
   return (
-    <StyledDayCard
-      $isToday={isToday}
-      $isRest={!isTraining}
-      $isDragging={isDragging}
-    >
+    <StyledDayCard $isToday={isToday} $isRest={!isTraining} $isDragging={isDragging}>
       <StyledCardRow>
-        <StyledDragHandle {...dragHandleProps}>
-          <GripVertical size={16} />
-        </StyledDragHandle>
-
-        <StyledAbbrCol>
-          <StyledAbbrPill $isToday={isToday}>
-            {DAY_SHORT[day.dayOfWeek]}
-          </StyledAbbrPill>
-          {isToday && (
-            <StyledTodayLabel>
-              {strings.trainingPlan.todayLabel}
-            </StyledTodayLabel>
-          )}
-        </StyledAbbrCol>
+        {editing ? (
+          <StyledArrowCol>
+            <StyledArrowBtn type="button" onClick={onMoveUp} disabled={isFirst} aria-label="Mover para cima">
+              <ChevronUp size={16} strokeWidth={2.5} />
+            </StyledArrowBtn>
+            <StyledArrowBtn type="button" onClick={onMoveDown} disabled={isLast} aria-label="Mover para baixo">
+              <ChevronDown size={16} strokeWidth={2.5} />
+            </StyledArrowBtn>
+          </StyledArrowCol>
+        ) : (
+          <StyledAbbrCol>
+            <StyledAbbrPill $isToday={isToday}>{DAY_SHORT[day.dayOfWeek]}</StyledAbbrPill>
+            {isToday && <StyledTodayLabel>{strings.trainingPlan.todayLabel}</StyledTodayLabel>}
+          </StyledAbbrCol>
+        )}
 
         <StyledContent>
           <StyledNameRow>
             <StyledDayName>{DAY_LABEL[day.dayOfWeek]}</StyledDayName>
-            {isToday && (
-              <StyledTodayBadge>
-                {strings.trainingPlan.todayBadge}
-              </StyledTodayBadge>
-            )}
+            {isToday && <StyledTodayBadge>{strings.trainingPlan.todayBadge}</StyledTodayBadge>}
           </StyledNameRow>
           {isTraining && uniqueMuscles.length > 0 && (
             <StyledChipsRow>
@@ -101,42 +103,33 @@ export default function DayCard({
           </StyledMeta>
         </StyledContent>
 
-        <StyledControls>
-          <StyledToggle
-            type="button"
-            onClick={() => onToggle(day.dayOfWeek, day.status)}
-            disabled={isUpdating}
-            aria-checked={isTraining}
-            aria-label={
-              isTraining
-                ? strings.trainingPlan.toggleToRest
-                : strings.trainingPlan.toggleToTraining
-            }
-          >
-            <StyledToggleThumb $on={isTraining} />
-          </StyledToggle>
-          <StyledTypeBadge $training={isTraining}>
-            {isTraining
-              ? strings.trainingPlan.dayTraining
-              : strings.trainingPlan.dayRest}
-          </StyledTypeBadge>
-          {isTraining && (
-            <StyledChevronBtn
-              onClick={() => onNavigate(day.dayOfWeek)}
-              aria-label={strings.common.ariaViewExercises}
+        {!editing && (
+          <StyledControls>
+            <StyledToggle
+              type="button"
+              onClick={() => onToggle(day.dayOfWeek, day.status)}
               disabled={isUpdating}
+              aria-checked={isTraining}
+              aria-label={isTraining ? strings.trainingPlan.toggleToRest : strings.trainingPlan.toggleToTraining}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+              <StyledToggleThumb $on={isTraining} />
+            </StyledToggle>
+            <StyledTypeBadge $training={isTraining}>
+              {isTraining ? strings.trainingPlan.dayTraining : strings.trainingPlan.dayRest}
+            </StyledTypeBadge>
+            {isTraining && (
+              <StyledChevronBtn
+                onClick={() => onNavigate(day.dayOfWeek)}
+                aria-label={strings.common.ariaViewExercises}
+                disabled={isUpdating}
               >
-                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-              </svg>
-            </StyledChevronBtn>
-          )}
-        </StyledControls>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+                </svg>
+              </StyledChevronBtn>
+            )}
+          </StyledControls>
+        )}
       </StyledCardRow>
     </StyledDayCard>
   );

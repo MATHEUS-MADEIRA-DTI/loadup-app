@@ -193,12 +193,6 @@ export const StyledExerciseSeries = styled.span`
   text-align: right;
 `;
 
-export const StyledAlertsSection = styled.div`
-  position: relative;
-  z-index: 1;
-  margin-top: 24px;
-`;
-
 export const StyledBottomBar = styled.div`
   position: fixed;
   bottom: 6%;

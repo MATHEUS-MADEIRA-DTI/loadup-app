@@ -60,3 +60,54 @@ export const StyledErrorText = styled.p`
   color: ${({ theme }) => theme.colors.error};
   text-align: center;
 `;
+
+export const StyledEditBar = styled.div<{ $visible: boolean }>`
+  position: fixed;
+  bottom: 65px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 28px 16px 16px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    ${({ theme }) => theme.colors.background} 45%
+  );
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: translateY(${({ $visible }) => ($visible ? "0" : "60px")});
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+`;
+
+export const StyledEditHint = styled.p`
+  flex: 1;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  line-height: 1.5;
+`;
+
+export const StyledConcluirBtn = styled.button`
+  height: 46px;
+  padding: 0 20px;
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.onPrimary};
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: ${({ theme }) => theme.shadows.primary};
+`;

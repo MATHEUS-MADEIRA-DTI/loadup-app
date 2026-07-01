@@ -80,6 +80,8 @@ export default function SessionView({
     name: string;
     muscleGroup: string;
     isNewExercise: boolean;
+    seriesTypeLabel: string;
+    lastWeight: number | null;
   } | null>(null);
   const [repRangeAlert, setRepRangeAlert] = useState<RepRangeAlert | null>(null);
   const [endOfSessionAlerts, setEndOfSessionAlerts] = useState<RepRangeAlert[]>([]);
@@ -244,12 +246,19 @@ export default function SessionView({
       const hasMoreSeries = currentSeriesIndex < exercise.series.length - 1;
 
       if (hasMoreSeries) {
+        const nextSeriesIdx = currentSeriesIndex + 1;
+        const nextSeries = exercise.series[nextSeriesIdx];
         setCurrentSeriesIndex((prev) => prev + 1);
         if (restTime > 0) {
+          const logged = sessionData?.records?.find(
+            (r) => r.exerciseName === exercise.name && r.seriesOrder === nextSeriesIdx + 1,
+          );
           setNextExercisePreview({
             name: exercise.name,
             muscleGroup: exercise.muscleGroup,
             isNewExercise: false,
+            seriesTypeLabel: SERIES_TYPE_LABEL[nextSeries.type],
+            lastWeight: logged?.weight ?? nextSeries.suggestedWeight ?? null,
           });
           setRestDuration(restTime);
           setShowRestTimer(true);
@@ -259,13 +268,19 @@ export default function SessionView({
 
       if (currentExerciseIndex < exercises.length - 1) {
         const nextEx = exercises[currentExerciseIndex + 1];
+        const nextSeries = nextEx.series[0];
         setCurrentExerciseIndex((prev) => prev + 1);
         setCurrentSeriesIndex(0);
         if (restTime > 0) {
+          const logged = sessionData?.records?.find(
+            (r) => r.exerciseName === nextEx.name && r.seriesOrder === 1,
+          );
           setNextExercisePreview({
             name: nextEx.name,
             muscleGroup: nextEx.muscleGroup,
             isNewExercise: true,
+            seriesTypeLabel: SERIES_TYPE_LABEL[nextSeries.type],
+            lastWeight: logged?.weight ?? nextSeries?.suggestedWeight ?? null,
           });
           setRestDuration(restTime);
           setShowRestTimer(true);
@@ -275,7 +290,7 @@ export default function SessionView({
 
       handleConclude();
     },
-    [currentExerciseIndex, currentSeriesIndex, exercises, handleConclude],
+    [currentExerciseIndex, currentSeriesIndex, exercises, sessionData, handleConclude],
   );
 
   const handleSeriesConclude = async () => {
