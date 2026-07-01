@@ -1,7 +1,7 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 
 export interface ShareCardExercise {
   name: string;
@@ -15,381 +15,344 @@ export interface WorkoutShareCardProps {
   stats: { kg: number; series: number; exercises: number; duration: string };
   topExercises: ShareCardExercise[];
   photoUrl?: string | null;
+  muscleGroups?: string[];
 }
+
+/* ─── Design tokens (standalone palette, independent of app theme) ─── */
+const ACCENT = "#F43F5E";
+const ACCENT_SOFT = "rgba(244,63,94,0.14)";
+const BG = "#07070B";
+const MUTED = "#6B7280";
+const TEXT = "#F8FAFC";
 
 const WorkoutShareCard = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
   function WorkoutShareCard(
-    { dayName, date, stats, topExercises, photoUrl },
+    { dayName, date, stats, topExercises, photoUrl, muscleGroups = [] },
     ref,
   ) {
-    const theme = useTheme();
-    const primary = theme.colors.primary;
-    const primaryDark = theme.colors.primaryDark;
+    const visibleGroups = muscleGroups.slice(0, 3);
+    const extraGroups = muscleGroups.length - visibleGroups.length;
 
     return (
-      <CardRoot ref={ref}>
-        {/* ambient glow */}
-        <GlowOrb
-          style={{
-            background: `radial-gradient(circle, ${primary}30 0%, transparent 70%)`,
-          }}
-        />
+      <Root ref={ref}>
+        {/* Background: photo or gradient fallback */}
+        {photoUrl ? (
+          <BgPhoto src={photoUrl} alt="" />
+        ) : (
+          <BgGradient />
+        )}
+        {/* Overlay wash: red top → dark bottom */}
+        <Wash $hasPhoto={!!photoUrl} />
 
-        {/* header */}
-        <CardHeader>
-          <AppRow>
-            <AppName style={{ color: primary }}>LOADUP</AppName>
-            <DoneBadge>CONCLUÍDO</DoneBadge>
-          </AppRow>
-        </CardHeader>
+        <ContentCol>
+          <TopBar>
+            <Wordmark>LOADUP</Wordmark>
+            <DoneBadge>✓ CONCLUÍDO</DoneBadge>
+          </TopBar>
 
-        {/* photo or gradient hero */}
-        <HeroArea
-          $hasPhoto={!!photoUrl}
-          style={
-            photoUrl
-              ? {
-                  backgroundImage: `url(${photoUrl})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }
-              : {
-                  background: `linear-gradient(160deg, ${primaryDark}55 0%, ${primary}25 50%, transparent 100%)`,
-                }
-          }
-        >
-          {photoUrl ? (
-            <HeroOverlay
-              style={{
-                background: `linear-gradient(to top, #020617 0%, #020617aa 30%, transparent 70%)`,
-              }}
-            />
-          ) : (
-            <HeroPattern />
-          )}
-          <HeroText>
-            <HeroDayName>{dayName}</HeroDayName>
-            <HeroDate>{date}</HeroDate>
-          </HeroText>
-        </HeroArea>
+          {/* All content pushed to bottom */}
+          <BottomStack>
+            <DayName>{dayName}</DayName>
+            <DateText>{date}</DateText>
 
-        {/* stats */}
-        <StatsRow>
-          <StatItem>
-            <StatValue>{stats.duration}</StatValue>
-            <StatLabel>DURAÇÃO</StatLabel>
-          </StatItem>
-          <StatSep />
-          <StatItem>
-            <StatValue>{stats.series}</StatValue>
-            <StatLabel>SÉRIES</StatLabel>
-          </StatItem>
-          <StatSep />
-          <StatItem>
-            <StatValue>{stats.exercises}</StatValue>
-            <StatLabel>EXERCÍCIOS</StatLabel>
-          </StatItem>
-        </StatsRow>
+            {/* Glassmorphism stats card */}
+            <GlassCard>
+              <GlassStat>
+                <GlassVal>{stats.duration}</GlassVal>
+                <GlassLbl>DURAÇÃO</GlassLbl>
+              </GlassStat>
+              <GlassSep />
+              <GlassStat>
+                <GlassVal>{stats.series}</GlassVal>
+                <GlassLbl>SÉRIES</GlassLbl>
+              </GlassStat>
+              <GlassSep />
+              <GlassStat>
+                <GlassVal>{stats.exercises}</GlassVal>
+                <GlassLbl>EXERC.</GlassLbl>
+              </GlassStat>
+            </GlassCard>
 
-        {/* exercises */}
-        <ExSection>
-          <ExSectionLabel>EXERCÍCIOS</ExSectionLabel>
-          {topExercises.slice(0, 4).map((ex, i) => (
-            <React.Fragment key={i}>
-              <ExRow>
-                <ExIdx style={{ color: primary }}>
-                  {String(i + 1).padStart(2, "0")}
-                </ExIdx>
-                <ExName>{ex.name}</ExName>
-                <ExBest>
-                  {ex.bestWeight}
-                  <ExBestUnit>kg</ExBestUnit>
-                  {" × "}
-                  {ex.bestReps}
-                </ExBest>
-              </ExRow>
-              {i < Math.min(topExercises.length, 4) - 1 && <ExDivider />}
-            </React.Fragment>
-          ))}
-          {topExercises.length > 4 && (
-            <OverflowHint>+{topExercises.length - 3} exercícios</OverflowHint>
-          )}
-        </ExSection>
+            {/* Top 3 sets */}
+            <SetsLabel>TOP 3 · MELHORES SETS</SetsLabel>
+            <SetsList>
+              {topExercises.slice(0, 3).map((ex, i) => (
+                <SetRow key={i}>
+                  <SetRank>{String(i + 1).padStart(2, "0")}</SetRank>
+                  <SetName>{ex.name}</SetName>
+                  <SetWeight>
+                    <SetKg>{ex.bestWeight}</SetKg>
+                    <SetUnit>KG × {ex.bestReps}</SetUnit>
+                  </SetWeight>
+                </SetRow>
+              ))}
+            </SetsList>
 
-        {/* footer */}
-        <CardFooter>
-          <FooterBrand style={{ color: primary }}>LOADUP</FooterBrand>
-        </CardFooter>
-      </CardRoot>
+            {/* Muscle group chips */}
+            {visibleGroups.length > 0 && (
+              <ChipsRow>
+                {visibleGroups.map((g, i) => (
+                  <Chip key={g} $accent={i === 0}>{g}</Chip>
+                ))}
+                {extraGroups > 0 && <ChipMore>+{extraGroups}</ChipMore>}
+              </ChipsRow>
+            )}
+
+            <FooterRow>
+              <FooterTag>@loadup.app</FooterTag>
+              <Wordmark>LOADUP</Wordmark>
+            </FooterRow>
+          </BottomStack>
+        </ContentCol>
+      </Root>
     );
   },
 );
 
 export default WorkoutShareCard;
 
-/* ─── Styles (hardcoded dark for consistent sharing) ─── */
+/* ─── Styles ─── */
 
-const BG = "#020617";
-const SURFACE = "#0F172A";
-const BORDER = "#1E293B";
-const TEXT = "#F8FAFC";
-const MUTED = "#64748B";
-const MUTED2 = "#94A3B8";
-
-const CARD_H = 640;
-
-const CardRoot = styled.div`
+const Root = styled.div`
   position: relative;
   width: 360px;
-  height: ${CARD_H}px;
+  height: 640px;
   background: ${BG};
   border-radius: 24px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 `;
 
-const GlowOrb = styled.div`
+const BgPhoto = styled.img`
   position: absolute;
-  top: -80px;
-  right: -80px;
-  width: 280px;
-  height: 280px;
-  pointer-events: none;
-  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.9) contrast(1.05);
 `;
 
-const CardHeader = styled.div`
+const BgGradient = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(244, 63, 94, 0.28) 0%,
+    rgba(7, 7, 11, 0.6) 50%,
+    ${BG} 100%
+  );
+`;
+
+const Wash = styled.div<{ $hasPhoto: boolean }>`
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: ${({ $hasPhoto }) =>
+    $hasPhoto
+      ? `linear-gradient(180deg, rgba(244,63,94,0.55) 0%, rgba(15,15,20,0.15) 35%, rgba(7,7,11,0.9) 70%, ${BG} 100%)`
+      : `linear-gradient(180deg, rgba(244,63,94,0.20) 0%, transparent 55%)`};
+`;
+
+const ContentCol = styled.div`
   position: relative;
   z-index: 1;
-  padding: 20px 20px 0;
+  height: 100%;
+  padding: 24px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 `;
 
-const AppRow = styled.div`
+const TopBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
 `;
 
-const AppName = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 22px;
-  letter-spacing: 0.08em;
-  line-height: 1;
-`;
-
-const DoneBadge = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #22c55e;
+const Wordmark = styled.span`
   font-family: var(--font-barlow), sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: ${ACCENT};
+`;
+
+const DoneBadge = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 900;
   font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
+  color: #4ade80;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 `;
 
-const DoneDot = styled.div`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #22c55e;
-`;
-
-const HeroArea = styled.div<{ $hasPhoto: boolean }>`
-  position: relative;
-  z-index: 1;
-  height: 190px;
-  flex-shrink: 0;
-  margin: 14px 20px 0;
-  border-radius: 16px;
-  overflow: hidden;
+const BottomStack = styled.div`
+  margin-top: auto;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  background: ${SURFACE};
-  background-size: cover;
-  background-position: center;
 `;
 
-const HeroOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-`;
-
-const HeroPattern = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.08;
-  background-image: repeating-linear-gradient(
-    45deg,
-    #ffffff 0px,
-    #ffffff 1px,
-    transparent 1px,
-    transparent 20px
-  );
-`;
-
-const HeroText = styled.div`
-  position: relative;
-  z-index: 1;
-  padding: 16px;
-`;
-
-const HeroDayName = styled.div`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 36px;
-  color: ${TEXT};
-  line-height: 1;
-  letter-spacing: 0.02em;
-`;
-
-const HeroDate = styled.div`
-  font-family: var(--font-inter), sans-serif;
-  font-size: 12px;
-  color: rgba(248, 250, 252, 0.7);
-  margin-top: 2px;
-`;
-
-const StatsRow = styled.div`
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  margin: 14px 20px 0;
-  padding: 14px 0;
-  border-top: 1px solid ${BORDER};
-  border-bottom: 1px solid ${BORDER};
-`;
-
-const StatItem = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-`;
-
-const StatSep = styled.div`
-  width: 1px;
-  height: 32px;
-  background: ${BORDER};
-`;
-
-const StatValue = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 28px;
-  color: ${TEXT};
-  line-height: 1;
-`;
-
-const StatLabel = styled.span`
+const DayName = styled.h1`
   font-family: var(--font-barlow), sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: ${MUTED};
+  font-weight: 900;
+  font-size: 54px;
+  color: ${TEXT};
+  line-height: 0.88;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  letter-spacing: -0.01em;
 `;
 
-const ExSection = styled.div`
-  position: relative;
-  z-index: 1;
-  margin: 14px 20px 0;
-  flex: 1;
-  min-height: 0;
-`;
-
-const ExSectionLabel = styled.span`
-  font-family: var(--font-barlow), sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: ${MUTED};
-  margin-bottom: 8px;
-`;
-
-const ExRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 16px 0;
-`;
-
-const ExDivider = styled.div``;
-
-const OverflowHint = styled.div`
-  font-family: var(--font-inter), sans-serif;
-  font-size: 11px;
-  color: ${MUTED};
-  padding: 6px 0 2px;
-`;
-
-const ExIdx = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 18px;
-  line-height: 1.2 !important;
-  width: 24px;
-  flex-shrink: 0;
-`;
-
-const ExBest = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 16px;
-  color: ${MUTED2};
-  flex-shrink: 0;
-  line-height: 1.2 !important;
-`;
-
-const ExName = styled.div`
+const DateText = styled.div`
   font-family: var(--font-inter), sans-serif;
   font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 6px;
+`;
+
+const GlassCard = styled.div`
+  display: flex;
+  align-items: center;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  background: rgba(7, 7, 11, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+`;
+
+const GlassStat = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+`;
+
+const GlassSep = styled.div`
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.10);
+  flex-shrink: 0;
+`;
+
+const GlassVal = styled.span`
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 26px;
+  color: ${TEXT};
+  line-height: 1;
+`;
+
+const GlassLbl = styled.span`
+  font-family: var(--font-barlow), sans-serif;
   font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: ${MUTED};
+  text-transform: uppercase;
+`;
+
+const SetsLabel = styled.div`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  margin-top: 16px;
+  margin-bottom: 10px;
+`;
+
+const SetsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SetRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+`;
+
+const SetRank = styled.span`
+  font-family: var(--font-bebas), sans-serif;
+  color: ${ACCENT};
+  font-size: 17px;
+  min-width: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+`;
+
+const SetName = styled.span`
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  font-size: 12px;
   color: ${TEXT};
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4 !important;
-  padding-bottom: 2px;
 `;
 
-const ExBestUnit = styled.span`
-  font-size: 11px;
-  font-family: var(--font-inter), sans-serif;
-  font-weight: 500;
+const SetWeight = styled.span`
+  font-family: var(--font-bebas), sans-serif;
+  font-size: 17px;
+  line-height: 1;
+  flex-shrink: 0;
 `;
 
-const CardFooter = styled.div`
-  position: relative;
-  z-index: 1;
+const SetKg = styled.span`
+  color: ${ACCENT};
+`;
+
+const SetUnit = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: ${MUTED};
+  margin-left: 2px;
+`;
+
+const ChipsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+`;
+
+const Chip = styled.span<{ $accent?: boolean }>`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: ${TEXT};
+  padding: 3px 8px;
+  border: 1px solid
+    ${({ $accent }) => ($accent ? ACCENT : "rgba(255,255,255,0.14)")};
+  border-radius: 999px;
+  background: ${({ $accent }) => ($accent ? ACCENT_SOFT : "transparent")};
+`;
+
+const ChipMore = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: ${MUTED};
+`;
+
+const FooterRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
-  margin: 14px 20px 20px;
-  padding-top: 12px;
-  border-top: 1px solid ${BORDER};
-`;
-
-const FooterBrand = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 16px;
-  letter-spacing: 0.1em;
+  margin-top: 16px;
 `;
 
 const FooterTag = styled.span`
   font-family: var(--font-inter), sans-serif;
-  font-size: 11px;
-  color: ${MUTED};
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
 `;

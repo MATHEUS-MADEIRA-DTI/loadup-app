@@ -5,30 +5,43 @@ import { useEffect, useRef, useState } from "react";
 import { formatMMSS } from "@/lib/formatMMSS";
 import { useAppTheme } from "@/styles/ThemeProvider";
 
+import { useRestAlerts } from "../../context/RestAlertsContext";
 import {
   StyledClockSvg,
   StyledClockWrapper,
   StyledDigitalTime,
+  StyledNextExerciseCard,
+  StyledNextExerciseMuscle,
+  StyledNextExerciseName,
+  StyledNextLabel,
   StyledRestLabel,
   StyledRestOverlay,
   StyledSkipRestBtn,
 } from "./styles";
 
+interface NextExercisePreview {
+  name: string;
+  muscleGroup: string;
+  isNewExercise: boolean;
+}
+
 interface RestTimerOverlayProps {
   visible: boolean;
   restDuration: number;
   onDismiss: () => void;
+  nextExercise?: NextExercisePreview | null;
 }
 
 export default function RestTimerOverlay({
   visible,
   restDuration,
   onDismiss,
+  nextExercise,
 }: RestTimerOverlayProps) {
   const { theme } = useAppTheme();
+  const { playRestEndAlert } = useRestAlerts();
   const [timeLeft, setTimeLeft] = useState(restDuration);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!visible) return;
@@ -52,33 +65,7 @@ export default function RestTimerOverlay({
 
       if (remaining <= 0) {
         clearInterval(interval);
-
-        if (!audioRef.current) {
-          audioRef.current = new Audio(
-            "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA" +
-              "EAAQARAAIAIgAAABZAAAIAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2" +
-              "YyFxaM0O3jlVIlDA+Z7vXupF4fEBCt8v79s20tEhK29v//tHEvFxfG/f///8" +
-              "SAAB"
-          );
-        }
-        audioRef.current.play().catch(() => {});
-
-        if ("Notification" in window) {
-          const fire = () =>
-            new Notification("Descanso encerrado!", {
-              body: "Hora de voltar ao treino 💪",
-              icon: "/icon-192x192.png",
-            });
-
-          if (Notification.permission === "granted") {
-            fire();
-          } else if (Notification.permission === "default") {
-            Notification.requestPermission().then((permission) => {
-              if (permission === "granted") fire();
-            });
-          }
-        }
-
+        playRestEndAlert();
         onDismiss();
       }
     }, 500);
@@ -89,7 +76,7 @@ export default function RestTimerOverlay({
         wakeLockRef.current = null;
       });
     };
-  }, [visible, restDuration, onDismiss]);
+  }, [visible, restDuration, onDismiss, playRestEndAlert]);
 
   if (!visible) return null;
 
@@ -152,6 +139,16 @@ export default function RestTimerOverlay({
       <StyledSkipRestBtn type="button" onClick={onDismiss}>
         Pular descanso
       </StyledSkipRestBtn>
+
+      {nextExercise && (
+        <StyledNextExerciseCard>
+          <StyledNextLabel>
+            {nextExercise.isNewExercise ? "Próximo exercício" : "Próxima série"}
+          </StyledNextLabel>
+          <StyledNextExerciseName>{nextExercise.name}</StyledNextExerciseName>
+          <StyledNextExerciseMuscle>{nextExercise.muscleGroup}</StyledNextExerciseMuscle>
+        </StyledNextExerciseCard>
+      )}
     </StyledRestOverlay>
   );
 }

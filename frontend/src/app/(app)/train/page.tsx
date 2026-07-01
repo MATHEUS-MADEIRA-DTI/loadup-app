@@ -10,10 +10,19 @@ import { DayOfWeek } from "@/types";
 
 import SessionView from "./components/SessionView";
 import WorkoutIntro from "./components/WorkoutIntro";
+import { RestAlertsProvider } from "./context/RestAlertsContext";
 import { StyledDayCardSkeleton, StyledPage } from "./styles";
 import { type AppView, todayDayOfWeek } from "./utils";
 
 export default function TrainPage() {
+  return (
+    <RestAlertsProvider>
+      <TrainPageContent />
+    </RestAlertsProvider>
+  );
+}
+
+function TrainPageContent() {
   const router = useRouter();
   const [view, setView] = useState<AppView>("tabs");
   const [sessionDay, setSessionDay] = useState<DayOfWeek | null>(null);
@@ -67,6 +76,7 @@ export default function TrainPage() {
         sheetDay={todaySheetDay}
         onBack={() => router.push("/")}
         onStart={() => {
+          localStorage.setItem("workout_started_at", String(Date.now()));
           setSessionDay(todayDow);
           setView("session");
         }}

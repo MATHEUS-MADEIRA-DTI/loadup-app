@@ -5,7 +5,9 @@ import MuscleChip from "@/components/MuscleChip";
 import { strings } from "@/constants/strings";
 import { DayOfWeek, TrainingDay } from "@/types";
 import { DAY_FULL } from "../../utils";
+import ActivateAlertsButton from "../ActivateAlertsButton";
 import {
+  StyledAlertsSection,
   StyledBackButton,
   StyledBackLink,
   StyledStatIcon,
@@ -114,6 +116,10 @@ export default function WorkoutIntro({
           ))}
         </StyledExerciseList>
       </StyledExerciseSection>
+
+      <StyledAlertsSection>
+        <ActivateAlertsButton />
+      </StyledAlertsSection>
 
       <StyledBottomBar>
         <StyledStartBtn onClick={onStart}>

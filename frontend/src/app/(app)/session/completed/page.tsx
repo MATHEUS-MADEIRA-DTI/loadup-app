@@ -65,9 +65,18 @@ export default function CompletedWorkoutPage() {
 
     let duration = "—";
     if (sessionData.createdAt && sessionData.completedAt) {
-      const diffMs =
-        new Date(sessionData.completedAt).getTime() -
-        new Date(sessionData.createdAt).getTime();
+      const completedMs = new Date(sessionData.completedAt).getTime();
+      const createdMs = new Date(sessionData.createdAt).getTime();
+
+      const stored = typeof window !== "undefined"
+        ? localStorage.getItem("workout_started_at")
+        : null;
+      const storedMs = stored ? parseInt(stored, 10) : 0;
+      // Use stored start time only if it falls between createdAt and completedAt
+      const startMs =
+        storedMs > createdMs && storedMs < completedMs ? storedMs : createdMs;
+
+      const diffMs = completedMs - startMs;
       const diffMins = Math.round(diffMs / 60000);
       if (diffMins < 1) duration = "<1min";
       else if (diffMins < 60) duration = `${diffMins}min`;
@@ -103,19 +112,34 @@ export default function CompletedWorkoutPage() {
   const [showShare, setShowShare] = useState(false);
 
   const topExercises = useMemo<ShareCardExercise[]>(() => {
-    return groupedExercises.slice(0, 5).map((ex) => {
-      const working = ex.records.filter((r) => r.seriesType === "working");
-      const pool = working.length > 0 ? working : ex.records;
-      const best = pool.reduce(
-        (b, r) => (r.weight > b.weight ? r : b),
-        pool[0],
-      );
-      return {
-        name: ex.name,
-        bestWeight: best.weight,
-        bestReps: best.repsCompleted,
-      };
-    });
+    return groupedExercises
+      .map((ex) => {
+        const working = ex.records.filter((r) => r.seriesType === "working");
+        const pool = working.length > 0 ? working : ex.records;
+        const best = pool.reduce(
+          (b, r) => (r.weight > b.weight ? r : b),
+          pool[0],
+        );
+        return {
+          name: ex.name,
+          bestWeight: best.weight,
+          bestReps: best.repsCompleted,
+        };
+      })
+      .sort((a, b) => b.bestWeight - a.bestWeight)
+      .slice(0, 5);
+  }, [groupedExercises]);
+
+  const muscleGroups = useMemo<string[]>(() => {
+    const seen = new Set<string>();
+    const groups: string[] = [];
+    for (const ex of groupedExercises) {
+      if (ex.muscle && !seen.has(ex.muscle)) {
+        seen.add(ex.muscle);
+        groups.push(ex.muscle.toUpperCase());
+      }
+    }
+    return groups;
   }, [groupedExercises]);
 
   const isLoading = session.isLoading || sheet.isLoading;
@@ -261,6 +285,7 @@ export default function CompletedWorkoutPage() {
           date={today}
           stats={stats}
           topExercises={topExercises}
+          muscleGroups={muscleGroups}
           onClose={() => setShowShare(false)}
         />
       )}

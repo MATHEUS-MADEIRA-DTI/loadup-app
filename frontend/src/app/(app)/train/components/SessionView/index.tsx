@@ -76,6 +76,11 @@ export default function SessionView({
   const [currentSeriesIndex, setCurrentSeriesIndex] = useState(0);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restDuration, setRestDuration] = useState(0);
+  const [nextExercisePreview, setNextExercisePreview] = useState<{
+    name: string;
+    muscleGroup: string;
+    isNewExercise: boolean;
+  } | null>(null);
   const [repRangeAlert, setRepRangeAlert] = useState<RepRangeAlert | null>(null);
   const [endOfSessionAlerts, setEndOfSessionAlerts] = useState<RepRangeAlert[]>([]);
   const [suggestedWeightAlert, setSuggestedWeightAlert] = useState<{
@@ -189,6 +194,7 @@ export default function SessionView({
 
   const handleDismissRest = useCallback(() => {
     setShowRestTimer(false);
+    setNextExercisePreview(null);
   }, []);
 
   const handleRepRangeAlert = useCallback(
@@ -240,6 +246,11 @@ export default function SessionView({
       if (hasMoreSeries) {
         setCurrentSeriesIndex((prev) => prev + 1);
         if (restTime > 0) {
+          setNextExercisePreview({
+            name: exercise.name,
+            muscleGroup: exercise.muscleGroup,
+            isNewExercise: false,
+          });
           setRestDuration(restTime);
           setShowRestTimer(true);
         }
@@ -247,9 +258,15 @@ export default function SessionView({
       }
 
       if (currentExerciseIndex < exercises.length - 1) {
+        const nextEx = exercises[currentExerciseIndex + 1];
         setCurrentExerciseIndex((prev) => prev + 1);
         setCurrentSeriesIndex(0);
         if (restTime > 0) {
+          setNextExercisePreview({
+            name: nextEx.name,
+            muscleGroup: nextEx.muscleGroup,
+            isNewExercise: true,
+          });
           setRestDuration(restTime);
           setShowRestTimer(true);
         }
@@ -468,6 +485,7 @@ export default function SessionView({
               visible={showRestTimer}
               restDuration={restDuration}
               onDismiss={handleDismissRest}
+              nextExercise={nextExercisePreview}
             />
           )}
 

@@ -11,10 +11,10 @@ import CardMinimal from "./templates/CardMinimal";
 import CardStats from "./templates/CardStats";
 
 const TEMPLATES = [
-  { id: "classic" as const, label: "Clássico", Component: WorkoutShareCard },
-  { id: "bold" as const, label: "Impacto", Component: CardBold },
-  { id: "minimal" as const, label: "Minimal", Component: CardMinimal },
-  { id: "stats" as const, label: "Estatísticas", Component: CardStats },
+  { id: "stats" as const, label: "Duração", Component: CardStats },
+  { id: "minimal" as const, label: "Manifesto", Component: CardMinimal },
+  { id: "classic" as const, label: "Full-Bleed", Component: WorkoutShareCard },
+  { id: "bold" as const, label: "Polaroid", Component: CardBold },
 ];
 
 type TemplateId = (typeof TEMPLATES)[number]["id"];
@@ -28,12 +28,13 @@ export default function ShareSheet({
   date,
   stats,
   topExercises,
+  muscleGroups,
   onClose,
 }: ShareSheetProps) {
   const theme = useTheme();
   const [mounted, setMounted] = useState(false);
   const [selectedTemplate, setSelectedTemplate] =
-    useState<TemplateId>("classic");
+    useState<TemplateId>("stats");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -162,6 +163,7 @@ export default function ShareSheet({
     stats,
     topExercises,
     photoUrl,
+    muscleGroups,
   };
 
   const ActiveTemplate = TEMPLATES.find(

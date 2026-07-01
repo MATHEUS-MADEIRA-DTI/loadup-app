@@ -1,103 +1,96 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 
 import { WorkoutShareCardProps } from "../WorkoutShareCard";
 
+/* ─── Design tokens ─── */
+const ACCENT = "#F43F5E";
+const ACCENT_SOFT = "rgba(244,63,94,0.14)";
+const BG = "#07070B";
+const MUTED = "#6B7280";
+const TEXT = "#F8FAFC";
+
 const CardStats = forwardRef<HTMLDivElement, WorkoutShareCardProps>(
-  function CardStats({ dayName, date, stats, topExercises }, ref) {
-    const theme = useTheme();
-    const primary = theme.colors.primary;
-    const primaryDark = theme.colors.primaryDark;
+  function CardStats(
+    { dayName, date, stats, topExercises, muscleGroups = [] },
+    ref,
+  ) {
+    const dayShort = dayName.split("-")[0].trim();
+    const visibleGroups = muscleGroups.slice(0, 3);
+    const extraGroups = muscleGroups.length - visibleGroups.length;
+    const kgFormatted = Math.round(stats.kg).toLocaleString("pt-BR");
 
     return (
       <Root ref={ref}>
-        {/* Subtle bg glow */}
-        <BgGlow
-          style={{
-            background: `radial-gradient(ellipse at 50% 0%, ${primary}22 0%, transparent 65%)`,
-          }}
-        />
-
+        <RadialGlow />
         <Content>
-          {/* Header */}
-          <Header>
-            <AppName style={{ color: primary }}>LOADUP</AppName>
-            <HeaderRight>
-              <DayChip>{dayName.split("-")[0].trim()}</DayChip>
-            </HeaderRight>
-          </Header>
+          {/* Top bar */}
+          <TopBar>
+            <Wordmark>LOADUP</Wordmark>
+            <DatePill>
+              {dayShort} · {date.toUpperCase()}
+            </DatePill>
+          </TopBar>
 
-          {/* Hero duration */}
+          {/* Hero duration with gradient text */}
           <HeroBlock>
             <HeroLabel>DURAÇÃO DO TREINO</HeroLabel>
-            <HeroVal
-              style={{
-                background: `linear-gradient(135deg, #ffffff 0%, ${primary} 100%)`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {stats.duration}
-            </HeroVal>
+            <HeroVal>{stats.duration}</HeroVal>
           </HeroBlock>
 
-          {/* Secondary stats */}
-          <SecRow>
-            <SecCard
-              style={{
-                borderColor: `${primary}30`,
-                background: `${primary}0D`,
-              }}
-            >
-              <SecVal>{stats.series}</SecVal>
-              <SecLbl>SÉRIES</SecLbl>
-            </SecCard>
-            <SecCard
-              style={{
-                borderColor: `${primary}30`,
-                background: `${primary}0D`,
-              }}
-            >
-              <SecVal>{stats.exercises}</SecVal>
-              <SecLbl>EXERCÍCIOS</SecLbl>
-            </SecCard>
-          </SecRow>
+          <Rule />
 
-          {/* Divider */}
-          <Divider />
+          {/* Stats inline row */}
+          <StatsRow>
+            <StatCell>
+              <StatVal>{stats.series}</StatVal>
+              <StatLbl>SÉRIES</StatLbl>
+            </StatCell>
+            <StatSep />
+            <StatCell>
+              <StatVal>{stats.exercises}</StatVal>
+              <StatLbl>EXERCÍCIOS</StatLbl>
+            </StatCell>
+            <StatSep />
+            <StatCell>
+              <StatVal>{kgFormatted}</StatVal>
+              <StatLbl>KG TOTAIS</StatLbl>
+            </StatCell>
+          </StatsRow>
 
-          {/* Exercise list */}
-          <ExLabel>MELHORES SETS</ExLabel>
-          <ExList>
-            {topExercises.slice(0, 4).map((ex, i) => {
-              const isLast = i === Math.min(topExercises.length, 4) - 1;
-              return (
-                <React.Fragment key={i}>
-                  <ExRow>
-                    <ExNum style={{ color: primary }}>
-                      {String(i + 1).padStart(2, "0")}
-                    </ExNum>
-                    <ExName>{ex.name}</ExName>
-                    <ExBest>
-                      <span style={{ color: primary }}>{ex.bestWeight}</span>
-                      <ExBestUnit>kg × {ex.bestReps}</ExBestUnit>
-                    </ExBest>
-                  </ExRow>
-                  {!isLast && <ExDivider />}
-                </React.Fragment>
-              );
-            })}
-            {topExercises.length > 4 && (
-              <OverflowHint>+{topExercises.length - 3} exercícios</OverflowHint>
-            )}
-          </ExList>
+          <Rule />
+
+          {/* Top sets header + muscle chips */}
+          <SetsHeader>
+            <SectionLabel>MELHORES SETS</SectionLabel>
+            <ChipsRow>
+              {visibleGroups.map((g, i) => (
+                <Chip key={g} $accent={i === 0}>{g}</Chip>
+              ))}
+              {extraGroups > 0 && <ChipMore>+{extraGroups}</ChipMore>}
+            </ChipsRow>
+          </SetsHeader>
+
+          {/* Top 5 sets */}
+          <SetsList>
+            {topExercises.slice(0, 5).map((ex, i) => (
+              <SetRow key={i}>
+                <SetRank>{String(i + 1).padStart(2, "0")}</SetRank>
+                <SetName>{ex.name}</SetName>
+                <SetWeight>
+                  <SetKg>{ex.bestWeight}</SetKg>
+                  <SetUnit>KG × {ex.bestReps}</SetUnit>
+                </SetWeight>
+              </SetRow>
+            ))}
+          </SetsList>
 
           {/* Footer */}
           <Footer>
-            <FooterDate>{date}</FooterDate>
-            <FooterBrand style={{ color: primary }}>LOADUP</FooterBrand>
+            <FooterTag>@loadup.app</FooterTag>
+            <Wordmark>LOADUP</Wordmark>
           </Footer>
         </Content>
       </Root>
@@ -109,12 +102,6 @@ export default CardStats;
 
 /* ─── Styles ─── */
 
-const BG = "#020617";
-const BORDER = "#1E293B";
-const TEXT = "#F8FAFC";
-const MUTED = "#64748B";
-const MUTED2 = "#94A3B8";
-
 const Root = styled.div`
   position: relative;
   width: 360px;
@@ -124,163 +111,191 @@ const Root = styled.div`
   overflow: hidden;
 `;
 
-const BgGlow = styled.div`
+const RadialGlow = styled.div`
   position: absolute;
+  inset-x: 0;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  height: 55%;
   pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(244, 63, 94, 0.22) 0%,
+    rgba(244, 63, 94, 0.06) 40%,
+    transparent 70%
+  );
 `;
 
 const Content = styled.div`
   position: relative;
   z-index: 1;
   height: 100%;
-  padding: 24px 20px 20px;
+  padding: 24px 24px 20px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 `;
 
-const Header = styled.div`
+const TopBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
 `;
 
-const AppName = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 20px;
-  letter-spacing: 0.1em;
-`;
-
-const HeaderRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const DayChip = styled.span`
+const Wordmark = styled.span`
   font-family: var(--font-barlow), sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: ${ACCENT};
+`;
+
+const DatePill = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
   font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: ${MUTED2};
-  padding: 3px 8px;
+  color: ${TEXT};
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  border: 1px solid ${BORDER};
 `;
 
 const HeroBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-top: 24px;
   text-align: center;
-  flex-shrink: 0;
-  padding: 8px 0 20px;
 `;
 
-const HeroLabel = styled.span`
+const HeroLabel = styled.div`
   font-family: var(--font-barlow), sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.22em;
   color: ${MUTED};
-  margin-bottom: 8px;
+  text-transform: uppercase;
 `;
 
-const HeroVal = styled.span`
+const HeroVal = styled.div`
   font-family: var(--font-bebas), sans-serif;
-  font-size: 64px;
+  font-size: 86px;
   line-height: 0.9;
-  letter-spacing: -0.01em;
-  display: block;
+  margin-top: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, ${ACCENT} 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `;
 
-const SecRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+const Rule = styled.div`
+  height: 1px;
+  background: rgba(255, 255, 255, 0.10);
+  margin: 16px 0;
   flex-shrink: 0;
-  margin-bottom: 16px;
 `;
 
-const SecCard = styled.div`
+const StatsRow = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 14px 10px;
-  border-radius: 16px;
-  border: 1px solid;
 `;
 
-const SecVal = styled.span`
+const StatCell = styled.div`
+  flex: 1;
+  text-align: center;
+`;
+
+const StatSep = styled.div`
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.10);
+  flex-shrink: 0;
+`;
+
+const StatVal = styled.div`
   font-family: var(--font-bebas), sans-serif;
-  font-size: 32px;
+  font-size: 26px;
   color: ${TEXT};
   line-height: 1;
 `;
 
-const SecLbl = styled.span`
+const StatLbl = styled.div`
   font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
   font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.12em;
   color: ${MUTED};
-`;
-
-const Divider = styled.div`
-  height: 1px;
-  background: ${BORDER};
-  margin-bottom: 16px;
-`;
-
-const ExLabel = styled.span`
-  font-family: var(--font-barlow), sans-serif;
-  font-size: 10px;
-  font-weight: 700;
+  margin-top: 5px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: ${MUTED};
+`;
+
+const SetsHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
-const ExList = styled.div`
+const SectionLabel = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: ${MUTED};
+  text-transform: uppercase;
+`;
+
+const ChipsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const Chip = styled.span<{ $accent?: boolean }>`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: ${TEXT};
+  padding: 2px 7px;
+  border: 1px solid
+    ${({ $accent }) => ($accent ? ACCENT : "rgba(255,255,255,0.14)")};
+  border-radius: 999px;
+  background: ${({ $accent }) => ($accent ? ACCENT_SOFT : "transparent")};
+`;
+
+const ChipMore = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: ${MUTED};
+`;
+
+const SetsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
   flex: 1;
   min-height: 0;
 `;
 
-const ExRow = styled.div`
+const SetRow = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 0;
+  align-items: baseline;
+  gap: 8px;
 `;
 
-const ExDivider = styled.div`
-  height: 1px;
-  background: ${BORDER};
-  flex-shrink: 0;
-`;
-
-const ExNum = styled.span`
+const SetRank = styled.span`
   font-family: var(--font-bebas), sans-serif;
-  font-size: 16px;
-  width: 22px;
-  flex-shrink: 0;
+  color: ${ACCENT};
+  font-size: 18px;
+  min-width: 22px;
   line-height: 1;
+  flex-shrink: 0;
 `;
 
-const ExName = styled.div`
+const SetName = styled.span`
   font-family: var(--font-inter), sans-serif;
-  font-size: 12px;
   font-weight: 600;
+  font-size: 12px;
   color: ${TEXT};
   flex: 1;
   min-width: 0;
@@ -289,43 +304,35 @@ const ExName = styled.div`
   white-space: nowrap;
 `;
 
-const ExBest = styled.span`
+const SetWeight = styled.span`
   font-family: var(--font-bebas), sans-serif;
-  font-size: 16px;
+  font-size: 18px;
+  line-height: 1;
   flex-shrink: 0;
 `;
 
-const ExBestUnit = styled.span`
-  font-family: var(--font-inter), sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  color: ${MUTED2};
+const SetKg = styled.span`
+  color: ${ACCENT};
+`;
+
+const SetUnit = styled.span`
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: ${MUTED};
+  margin-left: 2px;
 `;
 
 const Footer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid ${BORDER};
 `;
 
-const FooterDate = styled.span`
+const FooterTag = styled.span`
   font-family: var(--font-inter), sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   color: ${MUTED};
-`;
-
-const FooterBrand = styled.span`
-  font-family: var(--font-bebas), sans-serif;
-  font-size: 16px;
-  letter-spacing: 0.1em;
-`;
-
-const OverflowHint = styled.div`
-  font-family: var(--font-inter), sans-serif;
-  font-size: 11px;
-  color: ${MUTED};
-  padding: 6px 0 2px;
 `;

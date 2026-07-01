@@ -65,3 +65,46 @@ export const StyledSkipRestBtn = styled.button`
     transform: translateY(-1px);
   }
 `;
+
+export const StyledNextExerciseCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 24px;
+  border-radius: ${({ theme }) => theme.borderRadius.inner};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  width: 100%;
+  max-width: 280px;
+  text-align: center;
+`;
+
+export const StyledNextLabel = styled.p`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  letter-spacing: 0.15em;
+  margin: 0;
+`;
+
+export const StyledNextExerciseName = styled.p`
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 22px;
+  color: ${({ theme }) => theme.colors.onSurface};
+  margin: 0;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+`;
+
+export const StyledNextExerciseMuscle = styled.p`
+  font-family: "Barlow Condensed", Inter, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.primary};
+  letter-spacing: 0.1em;
+  margin: 0;
+`;
