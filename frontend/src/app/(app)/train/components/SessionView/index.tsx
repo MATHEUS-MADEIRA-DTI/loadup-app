@@ -158,6 +158,14 @@ export default function SessionView({
   startSessionRef.current = startSession.mutate;
   const pauseSessionRef = useRef(pauseSession.mutate);
   pauseSessionRef.current = pauseSession.mutate;
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  const acquireWakeLock = useCallback(async () => {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+    } catch {}
+  }, []);
 
   // Only count time while the user is actually on this screen: start the
   // clock when it mounts (or when leaving read-only), pause it on unmount,
@@ -167,21 +175,28 @@ export default function SessionView({
     if (!sessionId || isReadOnly) return;
 
     startSessionRef.current();
+    void acquireWakeLock();
 
     const handleVisibility = () => {
       if (document.hidden) {
         pauseSessionRef.current();
+        wakeLockRef.current = null;
       } else {
         startSessionRef.current();
+        void acquireWakeLock();
       }
     };
+
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
       pauseSessionRef.current();
+      wakeLockRef.current?.release().then(() => {
+        wakeLockRef.current = null;
+      });
     };
-  }, [sessionData?._id, isReadOnly]);
+  }, [sessionData?._id, isReadOnly, acquireWakeLock]);
 
   const isLoading =
     session.isLoading ||

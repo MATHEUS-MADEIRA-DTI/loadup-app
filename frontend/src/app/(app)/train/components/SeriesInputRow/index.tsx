@@ -160,17 +160,20 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
         });
       }
 
-      addRecord.mutate(payload, {
-        onSuccess: (data) => {
-          if (data.repRangeAlert && onRepRangeAlert) {
-            onRepRangeAlert(data.repRangeAlert, safeWeight);
-          }
-        },
-        onError: () => {
-          toast.error("Erro ao registrar. Tente novamente.");
-        },
+      return new Promise((resolve) => {
+        addRecord.mutate(payload, {
+          onSuccess: (data) => {
+            if (data.repRangeAlert && onRepRangeAlert) {
+              onRepRangeAlert(data.repRangeAlert, safeWeight);
+            }
+            resolve(true);
+          },
+          onError: () => {
+            toast.error("Erro ao registrar. Tente novamente.");
+            resolve(false);
+          },
+        });
       });
-      return Promise.resolve(true);
     }, [
       isBusy,
       isReadOnly,

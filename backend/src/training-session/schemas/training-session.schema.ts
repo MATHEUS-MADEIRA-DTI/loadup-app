@@ -24,6 +24,9 @@ export class TrainingSession {
   @Prop()
   completedAt?: Date;
 
+  @Prop()
+  startedAt?: Date;
+
   @Prop({ default: 0 })
   activeSeconds: number;
 

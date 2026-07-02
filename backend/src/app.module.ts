@@ -14,6 +14,7 @@ import { PlateauModule } from './plateau/plateau.module';
 import { databaseConfig } from './config/database.config';
 import { FriendshipModule } from './friendship/friendship.module';
 import { NotificationModule } from './notification/notification.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { NotificationModule } from './notification/notification.module';
     PlateauModule,
     FriendshipModule,
     NotificationModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

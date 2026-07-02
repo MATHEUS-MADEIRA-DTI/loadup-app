@@ -316,6 +316,9 @@ export class TrainingSessionService {
     if (session.status !== 'active') {
       session.status = 'active';
       session.lastResumedAt = new Date();
+      if (!session.startedAt) {
+        session.startedAt = new Date();
+      }
       await session.save();
     }
     return session;
@@ -337,10 +340,20 @@ export class TrainingSessionService {
     status: 'completed' | 'skipped',
   ): Promise<{ session: TrainingSessionDocument; repRangeAlerts: RepRangeAlert[] }> {
     const session = await this.getTrainingSession(userId, sessionId);
-    this.accumulateActiveTime(session);
+
+    if (status === 'skipped' || !session.startedAt) {
+      this.accumulateActiveTime(session);
+    }
+
     session.status = status;
+
     if (status === 'completed') {
       session.completedAt = new Date();
+      if (session.startedAt) {
+        session.activeSeconds = Math.floor(
+          (session.completedAt.getTime() - session.startedAt.getTime()) / 1000,
+        );
+      }
     }
     const saved = await session.save();
 
