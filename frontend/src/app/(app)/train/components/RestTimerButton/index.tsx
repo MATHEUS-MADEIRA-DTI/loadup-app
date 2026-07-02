@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { formatMMSS } from "@/lib/formatMMSS";
+import { pushNotificationService } from "@/services/pushNotificationService";
 import { useAppTheme } from "@/styles/ThemeProvider";
 
 import { useRestAlerts } from "../../context/RestAlertsContext";
@@ -47,6 +49,7 @@ export default function RestTimerOverlay({
   const { playRestEndAlert } = useRestAlerts();
   const [timeLeft, setTimeLeft] = useState(restDuration);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const subscriptionRef = usePushNotifications();
 
   useEffect(() => {
     if (!visible) return;
@@ -63,6 +66,20 @@ export default function RestTimerOverlay({
       }
     };
     acquireWakeLock();
+
+    const subscription = subscriptionRef.current;
+    if (subscription) {
+      const json = subscription.toJSON();
+      if (json.endpoint && json.keys?.p256dh && json.keys?.auth) {
+        void pushNotificationService.schedulePush(
+          {
+            endpoint: json.endpoint,
+            keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+          },
+          restDuration,
+        );
+      }
+    }
 
     const interval = setInterval(() => {
       const remaining = Math.round((targetTime - Date.now()) / 1000);
