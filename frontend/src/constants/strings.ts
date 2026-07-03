@@ -232,6 +232,8 @@ export const strings = {
     improvement: (pct: number) => `+${pct.toFixed(1)}%`,
     seriesUnit: (n: number) => `${n} série${n !== 1 ? "s" : ""}`,
     days: (n: number) => `${n} dia${n !== 1 ? "s" : ""}`,
+    weeklyHistoryTitle: "Histórico Semanal",
+    moreExercises: (n: number) => `+${n} mais`,
   },
 
   nav: {
@@ -261,6 +263,10 @@ export const strings = {
     ariaEditExercise: "Editar exercício",
     ariaDeleteExercise: "Excluir exercício",
     ariaEditSet: "Editar série",
+    ariaDeleteSet: "Excluir série",
+    ariaEditRecords: "Editar séries registradas",
+    ariaConfirmEdit: "Confirmar edição",
+    ariaCancelEdit: "Cancelar edição",
     ariaRemoveSet: "Remover série",
     ariaGoBack: "Voltar",
   },

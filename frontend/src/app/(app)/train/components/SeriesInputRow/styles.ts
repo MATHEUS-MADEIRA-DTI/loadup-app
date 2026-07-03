@@ -303,3 +303,18 @@ export const StyledInputField = styled.div`
   gap: 6px;
   flex: 1;
 `;
+
+export const StyledSeriesMetaLabel = styled.div<{
+  $bg: string;
+}>`
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.onSurfaceMuted};
+  margin-bottom: 8px;
+`;

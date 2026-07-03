@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, MinusCircle } from "lucide-react";
 
 import { toast } from "sonner";
@@ -16,11 +17,13 @@ import {
 import MuscleChip from "@/components/MuscleChip";
 import { DayOfWeek, RepRangeAlert, SeriesType, TrainingDay } from "@/types";
 import { trainingSheetService } from "@/services/trainingSheetService";
+import { NextExercisePreview, useRestTimer } from "@/context/RestTimerContext";
 import RepRangeAlertSheet from "../RepRangeAlertSheet";
 
 import { DAY_FULL, todayIso } from "../../utils";
 import RestTimerOverlay from "../RestTimerButton";
 import SeriesInputRow, { SeriesInputRowHandle } from "../SeriesInputRow";
+import SessionEditDrawer from "../SessionEditDrawer";
 
 import {
   StyledActiveSessionLayout,
@@ -40,6 +43,7 @@ import {
   StyledExerciseNum,
   StyledExerciseSection,
   StyledExerciseSkeleton,
+  StyledMenuBtn,
   StyledProgressBadge,
   StyledSeriesList,
   StyledSeriesProgressDot,
@@ -70,21 +74,24 @@ export default function SessionView({
   sheetDay,
   onBack,
 }: SessionViewProps) {
+  const router = useRouter();
   const session = useTodaySession();
   const createSession = useCreateSession();
   const [createAttempted, setCreateAttempted] = useState(false);
+  const {
+    isActive: contextIsActive,
+    nextExercise: contextNextExercise,
+    startRestTimer,
+    stopRestTimer,
+  } = useRestTimer();
 
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSeriesIndex, setCurrentSeriesIndex] = useState(0);
+  const [showEditDrawer, setShowEditDrawer] = useState(false);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restDuration, setRestDuration] = useState(0);
-  const [nextExercisePreview, setNextExercisePreview] = useState<{
-    name: string;
-    muscleGroup: string;
-    isNewExercise: boolean;
-    seriesTypeLabel: string;
-    lastWeight: number | null;
-  } | null>(null);
+  const [nextExercisePreview, setNextExercisePreview] =
+    useState<NextExercisePreview | null>(null);
   const [repRangeAlert, setRepRangeAlert] = useState<RepRangeAlert | null>(null);
   const [endOfSessionAlerts, setEndOfSessionAlerts] = useState<RepRangeAlert[]>([]);
   const [suggestedWeightAlert, setSuggestedWeightAlert] = useState<{
@@ -198,6 +205,16 @@ export default function SessionView({
     };
   }, [sessionData?._id, isReadOnly, acquireWakeLock]);
 
+  // Restaura o overlay de descanso se o contexto já tinha um timer ativo
+  // (usuário voltou de outra tela, ex.: minimizou e navegou de volta).
+  useEffect(() => {
+    if (contextIsActive && contextNextExercise) {
+      setNextExercisePreview(contextNextExercise);
+      setShowRestTimer(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // somente no mount
+
   const isLoading =
     session.isLoading ||
     (session.isError && !createAttempted) ||
@@ -226,6 +243,16 @@ export default function SessionView({
     );
   }, [sessionData, currentExercise, currentSeriesIndex]);
 
+  const previousSeriesWeight = useMemo(() => {
+    if (!sessionData || !currentExercise || currentSeriesIndex === 0) return null;
+    const prevRecord = sessionData.records?.find(
+      (r) =>
+        r.exerciseName === currentExercise.name &&
+        r.seriesOrder === currentSeriesIndex,
+    );
+    return prevRecord?.weight ?? null;
+  }, [sessionData, currentExercise, currentSeriesIndex]);
+
   const handleConclude = useCallback(() => {
     completeSession.mutate(
       { status: "completed" },
@@ -245,7 +272,8 @@ export default function SessionView({
   const handleDismissRest = useCallback(() => {
     setShowRestTimer(false);
     setNextExercisePreview(null);
-  }, []);
+    stopRestTimer();
+  }, [stopRestTimer]);
 
   const handleRepRangeAlert = useCallback(
     (alert: RepRangeAlert, weight: number) => {
@@ -301,15 +329,19 @@ export default function SessionView({
           const logged = sessionData?.records?.find(
             (r) => r.exerciseName === exercise.name && r.seriesOrder === nextSeriesIdx + 1,
           );
-          setNextExercisePreview({
+          const preview: NextExercisePreview = {
             name: exercise.name,
             muscleGroup: exercise.muscleGroup,
             isNewExercise: false,
             seriesTypeLabel: SERIES_TYPE_LABEL[nextSeries.type],
             lastWeight: logged?.weight ?? nextSeries.suggestedWeight ?? null,
-          });
+            repsMin: nextSeries.repsMin ?? null,
+            repsMax: nextSeries.repsMax ?? null,
+          };
+          setNextExercisePreview(preview);
           setRestDuration(restTime);
           setShowRestTimer(true);
+          startRestTimer(restTime, preview);
         }
         return;
       }
@@ -323,22 +355,33 @@ export default function SessionView({
           const logged = sessionData?.records?.find(
             (r) => r.exerciseName === nextEx.name && r.seriesOrder === 1,
           );
-          setNextExercisePreview({
+          const preview: NextExercisePreview = {
             name: nextEx.name,
             muscleGroup: nextEx.muscleGroup,
             isNewExercise: true,
             seriesTypeLabel: SERIES_TYPE_LABEL[nextSeries.type],
             lastWeight: logged?.weight ?? nextSeries?.suggestedWeight ?? null,
-          });
+            repsMin: nextSeries?.repsMin ?? null,
+            repsMax: nextSeries?.repsMax ?? null,
+          };
+          setNextExercisePreview(preview);
           setRestDuration(restTime);
           setShowRestTimer(true);
+          startRestTimer(restTime, preview);
         }
         return;
       }
 
       handleConclude();
     },
-    [currentExerciseIndex, currentSeriesIndex, exercises, sessionData, handleConclude],
+    [
+      currentExerciseIndex,
+      currentSeriesIndex,
+      exercises,
+      sessionData,
+      handleConclude,
+      startRestTimer,
+    ],
   );
 
   const handleSeriesConclude = async () => {
@@ -430,6 +473,7 @@ export default function SessionView({
             isReadOnly={false}
             inputsOnly
             onRepRangeAlert={handleRepRangeAlert}
+            previousWeight={previousSeriesWeight}
           />
         </StyledExerciseFocus>
 
@@ -466,6 +510,16 @@ export default function SessionView({
             <StyledProgressBadge>
               {strings.workout.progressCounter(loggedCount, totalSeries)}
             </StyledProgressBadge>
+          )}
+          {!isReadOnly && (
+            <StyledMenuBtn
+              onClick={() => setShowEditDrawer(true)}
+              aria-label={strings.common.ariaEditRecords}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+              </svg>
+            </StyledMenuBtn>
           )}
         </StyledSessionTopRow>
         {isReadOnly && (
@@ -548,6 +602,7 @@ export default function SessionView({
               visible={showRestTimer}
               restDuration={restDuration}
               onDismiss={handleDismissRest}
+              onMinimize={() => router.push("/home")}
               nextExercise={nextExercisePreview}
             />
           )}
@@ -558,6 +613,15 @@ export default function SessionView({
               currentWeight={seriesInputRef.current?.getWeight() ?? 0}
               onConfirm={(w) => { void handleAlertConfirm(w); }}
               onDismiss={handleAlertDismiss}
+            />
+          )}
+
+          {showEditDrawer && sessionData && (
+            <SessionEditDrawer
+              open={showEditDrawer}
+              onClose={() => setShowEditDrawer(false)}
+              session={sessionData}
+              exercises={exercises}
             />
           )}
         </>

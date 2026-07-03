@@ -30,6 +30,7 @@ import { authService } from "@/services/authService";
 import { userService } from "@/services/userService";
 
 import ProgressionChart from "./components/ProgressionChart";
+import WeeklyHistory from "./components/WeeklyHistory";
 import {
   StyledBody,
   StyledCard,
@@ -484,6 +485,8 @@ export default function ProgressPage() {
                     </ResponsiveContainer>
                   </StyledCard>
                 )}
+
+                <WeeklyHistory />
 
                 <StyledCard>
                   <StyledSectionHeader>

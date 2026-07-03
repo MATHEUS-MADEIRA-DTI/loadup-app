@@ -11,19 +11,10 @@ import { DayOfWeek } from "@/types";
 import RestAlertsModal from "./components/RestAlertsModal";
 import SessionView from "./components/SessionView";
 import WorkoutIntro from "./components/WorkoutIntro";
-import { RestAlertsProvider } from "./context/RestAlertsContext";
 import { StyledDayCardSkeleton, StyledPage } from "./styles";
 import { type AppView, todayDayOfWeek } from "./utils";
 
 export default function TrainPage() {
-  return (
-    <RestAlertsProvider>
-      <TrainPageContent />
-    </RestAlertsProvider>
-  );
-}
-
-function TrainPageContent() {
   const router = useRouter();
   const [view, setView] = useState<AppView>("tabs");
   const [sessionDay, setSessionDay] = useState<DayOfWeek | null>(null);
@@ -43,27 +34,16 @@ function TrainPageContent() {
   }, [todaySession.data, router]);
 
   useEffect(() => {
-    if (
-      sheet.data &&
-      todaySheetDay?.status === "training" &&
-      view === "tabs" &&
-      todaySession.data?.status === "active"
-    ) {
+    if (!sheet.data || todaySheetDay?.status !== "training" || view !== "tabs") return;
+
+    const status = todaySession.data?.status;
+    if (status === "active" || status === "partial") {
       setSessionDay(todayDow);
       setView("session");
-    }
-  }, [sheet.data, todaySheetDay, todaySession.data, view, todayDow]);
-
-  useEffect(() => {
-    if (
-      sheet.data &&
-      todaySheetDay?.status === "training" &&
-      view === "tabs" &&
-      (!todaySession.data?.status || todaySession.data?.status === "partial")
-    ) {
+    } else if (!status) {
       setView("intro");
     }
-  }, [sheet.data, todaySheetDay, todaySession.data, view]);
+  }, [sheet.data, todaySheetDay, todaySession.data, view, todayDow]);
 
   useEffect(() => {
     if (view === "tabs" && sheet.data && todaySheetDay?.status !== "training") {

@@ -6,36 +6,42 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { formatMMSS } from "@/lib/formatMMSS";
 import { pushNotificationService } from "@/services/pushNotificationService";
 import { useAppTheme } from "@/styles/ThemeProvider";
+import { NextExercisePreview, useRestTimer } from "@/context/RestTimerContext";
 
 import { useRestAlerts } from "../../context/RestAlertsContext";
 import {
   StyledClockSvg,
   StyledClockWrapper,
   StyledDigitalTime,
-  StyledNextExerciseCard,
-  StyledNextExerciseMuscle,
-  StyledNextExerciseName,
-  StyledNextLabel,
-  StyledNextSeriesRow,
-  StyledNextSeriesTypeBadge,
-  StyledNextWeight,
+  StyledHandleBar,
+  StyledHandleButton,
+  StyledNextCard,
+  StyledNextCardAccentBar,
+  StyledNextCardChips,
+  StyledNextCardContent,
+  StyledNextCardCta,
+  StyledNextCardHeader,
+  StyledNextCardLabel,
+  StyledNextCardMuscleChip,
+  StyledNextCardName,
+  StyledNextCardStat,
+  StyledNextCardStatLabel,
+  StyledNextCardStats,
+  StyledNextCardStatUnit,
+  StyledNextCardStatValue,
+  StyledNextCardTypeChip,
   StyledRestLabel,
   StyledRestOverlay,
   StyledSkipRestBtn,
 } from "./styles";
 
-interface NextExercisePreview {
-  name: string;
-  muscleGroup: string;
-  isNewExercise: boolean;
-  seriesTypeLabel: string;
-  lastWeight: number | null;
-}
+const DRAG_DISMISS_THRESHOLD = 120;
 
 interface RestTimerOverlayProps {
   visible: boolean;
   restDuration: number;
   onDismiss: () => void;
+  onMinimize?: () => void;
   nextExercise?: NextExercisePreview | null;
 }
 
@@ -43,26 +49,59 @@ export default function RestTimerOverlay({
   visible,
   restDuration,
   onDismiss,
+  onMinimize,
   nextExercise,
 }: RestTimerOverlayProps) {
   const { theme } = useAppTheme();
   const { playRestEndAlert } = useRestAlerts();
-  const [timeLeft, setTimeLeft] = useState(restDuration);
+  const { isActive, timeLeft, restDuration: ctxDuration, startRestTimer } = useRestTimer();
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const subscriptionRef = usePushNotifications();
+  const dragStartYRef = useRef<number | null>(null);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragStart = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!onMinimize) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragStartYRef.current = e.clientY;
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (dragStartYRef.current === null) return;
+    setDragY(Math.max(0, e.clientY - dragStartYRef.current));
+  };
+
+  const handleDragEnd = () => {
+    if (dragStartYRef.current === null) return;
+    dragStartYRef.current = null;
+    setIsDragging(false);
+    if (dragY > DRAG_DISMISS_THRESHOLD) {
+      onMinimize?.();
+    }
+    setDragY(0);
+  };
 
   useEffect(() => {
     if (!visible) return;
 
-    const targetTime = Date.now() + restDuration * 1000;
-    setTimeLeft(restDuration);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
 
     const acquireWakeLock = async () => {
       if ("wakeLock" in navigator) {
         try {
           wakeLockRef.current = await navigator.wakeLock.request("screen");
-        } catch {
-        }
+        } catch {}
       }
     };
     acquireWakeLock();
@@ -81,36 +120,64 @@ export default function RestTimerOverlay({
       }
     }
 
-    const interval = setInterval(() => {
-      const remaining = Math.round((targetTime - Date.now()) / 1000);
-      setTimeLeft(remaining);
-
-      if (remaining <= 0) {
-        clearInterval(interval);
-        playRestEndAlert();
-        onDismiss();
-      }
-    }, 500);
-
     return () => {
-      clearInterval(interval);
       wakeLockRef.current?.release().then(() => {
         wakeLockRef.current = null;
       });
     };
-  }, [visible, restDuration, onDismiss, playRestEndAlert]);
+  }, [visible, restDuration]);
+
+  // Effect 1: inicia o timer no contexto — apenas se ainda não estiver ativo
+  // (caso de restauração: usuário voltou à rota /train com timer em andamento)
+  useEffect(() => {
+    if (!visible || restDuration <= 0) return;
+    if (isActive) return; // contexto já tem o timer rodando, não reiniciar
+    startRestTimer(restDuration, nextExercise ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, restDuration]); // deps intencionalmente limitadas
+
+  // Effect 2: escuta o evento global e dispensa o overlay
+  useEffect(() => {
+    const handleEnd = () => {
+      if (!visible) return; // widget cuida se overlay não está visível
+      playRestEndAlert();
+      onDismiss();
+    };
+    window.addEventListener("rest-timer-end", handleEnd);
+    return () => window.removeEventListener("rest-timer-end", handleEnd);
+  }, [visible, playRestEndAlert, onDismiss]);
 
   if (!visible) return null;
 
   const radius = 110;
   const circumference = 2 * Math.PI * radius;
-  const progress = restDuration > 0 ? Math.max(0, timeLeft / restDuration) : 0;
+  const progress = ctxDuration > 0 ? Math.max(0, timeLeft / ctxDuration) : 0;
   const dashOffset = circumference * (1 - progress);
   const handAngle = 360 * progress;
 
   return (
-    <StyledRestOverlay role="dialog" aria-label="Tempo de descanso">
-      <StyledRestLabel>DESCANSO</StyledRestLabel>
+    <StyledRestOverlay
+      role="dialog"
+      aria-label="Tempo de descanso"
+      style={{
+        transform: dragY ? `translateY(${dragY}px)` : undefined,
+        transition: isDragging
+          ? "none"
+          : "transform 250ms cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+    >
+      {onMinimize && (
+        <StyledHandleButton
+          type="button"
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+          aria-label="Arraste para minimizar"
+        >
+          <StyledHandleBar />
+        </StyledHandleButton>
+      )}
 
       <StyledClockWrapper>
         <StyledClockSvg viewBox="0 0 240 240" aria-hidden="true">
@@ -158,24 +225,63 @@ export default function RestTimerOverlay({
         {formatMMSS(Math.max(0, timeLeft))}
       </StyledDigitalTime>
 
-      <StyledSkipRestBtn type="button" onClick={onDismiss}>
-        Pular descanso
-      </StyledSkipRestBtn>
+      {!nextExercise && (
+        <StyledSkipRestBtn type="button" onClick={onDismiss}>
+          Pular descanso
+        </StyledSkipRestBtn>
+      )}
 
       {nextExercise && (
-        <StyledNextExerciseCard>
-          <StyledNextLabel>
-            {nextExercise.isNewExercise ? "Próximo exercício" : "Próxima série"}
-          </StyledNextLabel>
-          <StyledNextExerciseName>{nextExercise.name}</StyledNextExerciseName>
-          <StyledNextExerciseMuscle>{nextExercise.muscleGroup}</StyledNextExerciseMuscle>
-          <StyledNextSeriesRow>
-            <StyledNextSeriesTypeBadge>{nextExercise.seriesTypeLabel}</StyledNextSeriesTypeBadge>
-            {nextExercise.lastWeight != null && (
-              <StyledNextWeight>{nextExercise.lastWeight} kg</StyledNextWeight>
-            )}
-          </StyledNextSeriesRow>
-        </StyledNextExerciseCard>
+        <StyledNextCard>
+          <StyledNextCardAccentBar />
+          <StyledNextCardContent>
+            <StyledNextCardHeader>
+              <StyledNextCardLabel>
+                {nextExercise.isNewExercise
+                  ? "Próximo exercício"
+                  : "Próxima série"}
+              </StyledNextCardLabel>
+            </StyledNextCardHeader>
+
+            <StyledNextCardName>{nextExercise.name}</StyledNextCardName>
+
+            <StyledNextCardChips>
+              <StyledNextCardMuscleChip>
+                {nextExercise.muscleGroup}
+              </StyledNextCardMuscleChip>
+              <StyledNextCardTypeChip>
+                {nextExercise.seriesTypeLabel}
+              </StyledNextCardTypeChip>
+            </StyledNextCardChips>
+
+            <StyledNextCardStats>
+              {nextExercise.lastWeight != null && (
+                <StyledNextCardStat>
+                  <StyledNextCardStatLabel>Peso</StyledNextCardStatLabel>
+                  <StyledNextCardStatValue>
+                    {nextExercise.lastWeight}
+                    <StyledNextCardStatUnit>KG</StyledNextCardStatUnit>
+                  </StyledNextCardStatValue>
+                </StyledNextCardStat>
+              )}
+              {nextExercise.repsMin != null && (
+                <StyledNextCardStat>
+                  <StyledNextCardStatLabel>Reps</StyledNextCardStatLabel>
+                  <StyledNextCardStatValue>
+                    {nextExercise.repsMin === nextExercise.repsMax
+                      ? nextExercise.repsMin
+                      : `${nextExercise.repsMin} - ${nextExercise.repsMax}`}
+                    <StyledNextCardStatUnit></StyledNextCardStatUnit>
+                  </StyledNextCardStatValue>
+                </StyledNextCardStat>
+              )}
+            </StyledNextCardStats>
+
+            <StyledNextCardCta type="button" onClick={onDismiss}>
+              Começar agora
+            </StyledNextCardCta>
+          </StyledNextCardContent>
+        </StyledNextCard>
       )}
     </StyledRestOverlay>
   );

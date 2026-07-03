@@ -3,6 +3,7 @@
 import { ArrowLeft, Clock3, Dumbbell, ListChecks } from "lucide-react";
 import MuscleChip from "@/components/MuscleChip";
 import { strings } from "@/constants/strings";
+import { useTodaySession } from "@/hooks/useSession";
 import { DayOfWeek, TrainingDay } from "@/types";
 import { DAY_FULL } from "../../utils";
 import {
@@ -53,6 +54,10 @@ export default function WorkoutIntro({
     new Set(exercises.map((exercise) => exercise.muscleGroup)),
   ).slice(0, 4);
   const estimatedMinutes = Math.max(5, Math.ceil(totalSeries * 1.5));
+
+  const session = useTodaySession();
+  const isResuming =
+    session.data?.status === "active" || session.data?.status === "partial";
 
   return (
     <StyledWorkoutIntro>
@@ -117,7 +122,7 @@ export default function WorkoutIntro({
 
       <StyledBottomBar>
         <StyledStartBtn onClick={onStart}>
-          {strings.home.startWorkoutShort.toUpperCase()}
+          {isResuming ? "CONTINUAR" : strings.home.startWorkoutShort.toUpperCase()}
         </StyledStartBtn>
       </StyledBottomBar>
     </StyledWorkoutIntro>

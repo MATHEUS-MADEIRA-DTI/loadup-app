@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { strings } from "@/constants/strings";
 import { useProgressionChart } from "@/hooks/useProgression";
 import { useAddRecord, useUpdateRecord } from "@/hooks/useSession";
-import { Exercise, LoggedSet, Series } from "@/types";
+import { Exercise, LoggedSet, Series, SeriesType } from "@/types";
 
 import { SERIES_ABBR, SERIES_COLOR } from "../../utils";
 
@@ -41,11 +41,18 @@ import {
   StyledSeriesDots,
   StyledSeriesGoal,
   StyledSeriesInputsRow,
+  StyledSeriesMetaLabel,
   StyledSeriesName,
   StyledSeriesRow,
   StyledSeriesTopRow,
   StyledSeriesTypeBadge,
 } from "./styles";
+
+const SERIES_TYPE_LABEL: Record<SeriesType, string> = {
+  working: "TRABALHO",
+  "warm-up": "AQUECIMENTO",
+  adjustment: "ADAPTAÇÃO",
+};
 
 export interface SeriesInputRowHandle {
   check: () => Promise<boolean>;
@@ -61,7 +68,11 @@ interface SeriesInputRowProps {
   loggedSet: LoggedSet | undefined;
   isReadOnly: boolean;
   inputsOnly?: boolean;
-  onRepRangeAlert?: (alert: import("@/types").RepRangeAlert, weight: number) => void;
+  onRepRangeAlert?: (
+    alert: import("@/types").RepRangeAlert,
+    weight: number,
+  ) => void;
+  previousWeight?: number | null;
 }
 
 function formatNumber(value: number) {
@@ -79,6 +90,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       isReadOnly,
       inputsOnly = false,
       onRepRangeAlert,
+      previousWeight,
     },
     ref,
   ) {
@@ -91,6 +103,11 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
 
     useEffect(() => {
       if (!weightInitialized.current) {
+        if (previousWeight != null && previousWeight > 0) {
+          setWeight(String(previousWeight));
+          weightInitialized.current = true;
+          return;
+        }
         if (series.suggestedWeight && series.suggestedWeight > 0) {
           setWeight(String(series.suggestedWeight));
           weightInitialized.current = true;
@@ -104,8 +121,10 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
           }
         }
       }
-    }, [chart.data, series.suggestedWeight]);
-    const [reps, setReps] = useState<string>(String(series.repsMax ?? series.repsMin ?? 10));
+    }, [chart.data, series.suggestedWeight, previousWeight]);
+    const [reps, setReps] = useState<string>(
+      String(series.repsMax ?? series.repsMin ?? 10),
+    );
     const [rest, setRest] = useState<string>(String(series.restTime ?? "0"));
     const [numpadTarget, setNumpadTarget] = useState<"weight" | "rest" | null>(
       null,
@@ -225,121 +244,139 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
             <StyledSeriesGoal>
               {series.repsMin === series.repsMax
                 ? strings.workout.goalLabel(series.repsMin)
-                : strings.workout.goalRangeLabel(series.repsMin, series.repsMax)}
+                : strings.workout.goalRangeLabel(
+                    series.repsMin,
+                    series.repsMax,
+                  )}
             </StyledSeriesGoal>
           </StyledSeriesTopRow>
         )}
 
         {showInputs ? (
-          <StyledSeriesInputsRow>
-            <StyledCounterCard>
-              <StyledCardTopRow>
-                <StyledCardLabel>{strings.workout.weightShort}</StyledCardLabel>
-                {!isReadOnly && (
-                  <StyledNumPadTrigger
-                    type="button"
-                    aria-label="Digitar peso"
-                    onClick={() => setNumpadTarget("weight")}
-                  >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
+          <>
+            {inputsOnly && (
+              <StyledSeriesMetaLabel $bg={color.bg}>
+                {SERIES_TYPE_LABEL[series.type]}
+                {" · "}
+                {series.repsMin === series.repsMax
+                  ? `${series.repsMin} reps`
+                  : `${series.repsMin}–${series.repsMax} reps`}
+              </StyledSeriesMetaLabel>
+            )}
+            <StyledSeriesInputsRow>
+              <StyledCounterCard>
+                <StyledCardTopRow>
+                  <StyledCardLabel>
+                    {strings.workout.weightShort}
+                  </StyledCardLabel>
+                  {!isReadOnly && (
+                    <StyledNumPadTrigger
+                      type="button"
+                      aria-label="Digitar peso"
+                      onClick={() => setNumpadTarget("weight")}
                     >
-                      <path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 3h2v2h-2V6zm0 4h2v2h-2v-2zM8 6h2v2H8V6zm0 4h2v2H8v-2zm-2 8H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V8h2v2zm0-4H4V6h2v2zm10 12H8v-2h8v2zm2-4h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V6h2v2zm2 12h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2zm0-4h-2V6h2v2z" />
-                    </svg>
-                  </StyledNumPadTrigger>
-                )}
-              </StyledCardTopRow>
-              <StyledCardValue>
-                {formatNumber(parseFloat(weight) || 0.5)}
-              </StyledCardValue>
-              <StyledCardControls>
-                <StyledControlBtn
-                  type="button"
-                  onClick={() => setWeight(adjustValue(weight, -0.5, 0.5))}
-                  disabled={isReadOnly}
-                >
-                  -
-                </StyledControlBtn>
-                <StyledControlBtn
-                  type="button"
-                  $filled
-                  onClick={() => setWeight(adjustValue(weight, 0.5, 0.5))}
-                  disabled={isReadOnly}
-                >
-                  +
-                </StyledControlBtn>
-              </StyledCardControls>
-            </StyledCounterCard>
-
-            <StyledCounterCard>
-              <StyledCardLabel>{strings.workout.repsShort}</StyledCardLabel>
-              <StyledCardValue>
-                {formatNumber(parseFloat(reps) || series.repsMax || series.repsMin || 0)}
-              </StyledCardValue>
-              <StyledCardControls>
-                <StyledControlBtn
-                  type="button"
-                  onClick={() => setReps(adjustValue(reps, -1, 0))}
-                  disabled={isReadOnly}
-                >
-                  -
-                </StyledControlBtn>
-                <StyledControlBtn
-                  type="button"
-                  $filled
-                  onClick={() => setReps(adjustValue(reps, 1, 0))}
-                  disabled={isReadOnly}
-                >
-                  +
-                </StyledControlBtn>
-              </StyledCardControls>
-            </StyledCounterCard>
-
-            <StyledCounterCard>
-              <StyledCardTopRow>
-                <StyledCardLabel>{strings.workout.restShort}</StyledCardLabel>
-                {!isReadOnly && (
-                  <StyledNumPadTrigger
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 3h2v2h-2V6zm0 4h2v2h-2v-2zM8 6h2v2H8V6zm0 4h2v2H8v-2zm-2 8H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V8h2v2zm0-4H4V6h2v2zm10 12H8v-2h8v2zm2-4h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V6h2v2zm2 12h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2zm0-4h-2V6h2v2z" />
+                      </svg>
+                    </StyledNumPadTrigger>
+                  )}
+                </StyledCardTopRow>
+                <StyledCardValue>
+                  {formatNumber(parseFloat(weight) || 0.5)}
+                </StyledCardValue>
+                <StyledCardControls>
+                  <StyledControlBtn
                     type="button"
-                    aria-label="Digitar descanso"
-                    onClick={() => setNumpadTarget("rest")}
+                    onClick={() => setWeight(adjustValue(weight, -0.5, 0.5))}
+                    disabled={isReadOnly}
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
+                    -
+                  </StyledControlBtn>
+                  <StyledControlBtn
+                    type="button"
+                    $filled
+                    onClick={() => setWeight(adjustValue(weight, 0.5, 0.5))}
+                    disabled={isReadOnly}
+                  >
+                    +
+                  </StyledControlBtn>
+                </StyledCardControls>
+              </StyledCounterCard>
+
+              <StyledCounterCard>
+                <StyledCardLabel>{strings.workout.repsShort}</StyledCardLabel>
+                <StyledCardValue>
+                  {formatNumber(
+                    parseFloat(reps) || series.repsMax || series.repsMin || 0,
+                  )}
+                </StyledCardValue>
+                <StyledCardControls>
+                  <StyledControlBtn
+                    type="button"
+                    onClick={() => setReps(adjustValue(reps, -1, 0))}
+                    disabled={isReadOnly}
+                  >
+                    -
+                  </StyledControlBtn>
+                  <StyledControlBtn
+                    type="button"
+                    $filled
+                    onClick={() => setReps(adjustValue(reps, 1, 0))}
+                    disabled={isReadOnly}
+                  >
+                    +
+                  </StyledControlBtn>
+                </StyledCardControls>
+              </StyledCounterCard>
+
+              <StyledCounterCard>
+                <StyledCardTopRow>
+                  <StyledCardLabel>{strings.workout.restShort}</StyledCardLabel>
+                  {!isReadOnly && (
+                    <StyledNumPadTrigger
+                      type="button"
+                      aria-label="Digitar descanso"
+                      onClick={() => setNumpadTarget("rest")}
                     >
-                      <path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 3h2v2h-2V6zm0 4h2v2h-2v-2zM8 6h2v2H8V6zm0 4h2v2H8v-2zm-2 8H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V8h2v2zm0-4H4V6h2v2zm10 12H8v-2h8v2zm2-4h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V6h2v2zm2 12h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2zm0-4h-2V6h2v2z" />
-                    </svg>
-                  </StyledNumPadTrigger>
-                )}
-              </StyledCardTopRow>
-              <StyledCardValue>
-                {formatNumber(parseFloat(rest) || series.restTime || 0)}
-              </StyledCardValue>
-              <StyledCardControls>
-                <StyledControlBtn
-                  type="button"
-                  onClick={() => setRest(adjustValue(rest, -5, 0))}
-                  disabled={isReadOnly}
-                >
-                  -
-                </StyledControlBtn>
-                <StyledControlBtn
-                  type="button"
-                  $filled
-                  onClick={() => setRest(adjustValue(rest, 5, 0))}
-                  disabled={isReadOnly}
-                >
-                  +
-                </StyledControlBtn>
-              </StyledCardControls>
-            </StyledCounterCard>
-          </StyledSeriesInputsRow>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 3h2v2h-2V6zm0 4h2v2h-2v-2zM8 6h2v2H8V6zm0 4h2v2H8v-2zm-2 8H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V8h2v2zm0-4H4V6h2v2zm10 12H8v-2h8v2zm2-4h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V6h2v2zm2 12h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2zm0-4h-2V6h2v2z" />
+                      </svg>
+                    </StyledNumPadTrigger>
+                  )}
+                </StyledCardTopRow>
+                <StyledCardValue>
+                  {formatNumber(parseFloat(rest) || series.restTime || 0)}
+                </StyledCardValue>
+                <StyledCardControls>
+                  <StyledControlBtn
+                    type="button"
+                    onClick={() => setRest(adjustValue(rest, -5, 0))}
+                    disabled={isReadOnly}
+                  >
+                    -
+                  </StyledControlBtn>
+                  <StyledControlBtn
+                    type="button"
+                    $filled
+                    onClick={() => setRest(adjustValue(rest, 5, 0))}
+                    disabled={isReadOnly}
+                  >
+                    +
+                  </StyledControlBtn>
+                </StyledCardControls>
+              </StyledCounterCard>
+            </StyledSeriesInputsRow>
+          </>
         ) : (
           <StyledLoggedSummary>
             <div>

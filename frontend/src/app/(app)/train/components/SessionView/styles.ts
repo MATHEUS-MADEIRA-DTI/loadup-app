@@ -54,6 +54,33 @@ export const StyledBackBtn = styled.button`
   }
 `;
 
+export const StyledMenuBtn = styled.button`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.outlineVariant};
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.onSurface};
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surfaceElevated};
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+`;
+
 export const StyledProgressBadge = styled.span`
   display: inline-flex;
   align-items: center;

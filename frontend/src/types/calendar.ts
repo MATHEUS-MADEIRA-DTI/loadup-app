@@ -51,6 +51,7 @@ export interface DayDetails {
   recordedSession: {
     _id: string;
     status: string;
+    activeSeconds: number;
     records: DayRecord[];
   } | null;
 }
