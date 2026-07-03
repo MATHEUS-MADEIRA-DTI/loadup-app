@@ -163,6 +163,7 @@ export class CalendarService {
         ? {
             _id: session._id.toString(),
             status: session.status,
+            activeSeconds: session.activeSeconds,
             records: session.records.map((record) => ({
               exerciseName: record.exerciseName,
               seriesType: record.seriesType,
