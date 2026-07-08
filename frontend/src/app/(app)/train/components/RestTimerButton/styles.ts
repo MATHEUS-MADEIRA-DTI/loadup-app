@@ -13,6 +13,7 @@ export const StyledRestOverlay = styled.div`
   align-items: center;
   gap: 32px;
   padding-top: 8px;
+  padding-bottom: 24px;
   overflow-y: auto;
   overscroll-behavior: contain;
 `;
@@ -51,13 +52,14 @@ export const StyledClockWrapper = styled.div`
 `;
 
 export const StyledClockSvg = styled.svg`
-  width: 100%;
-  height: 400px;
+  width: min(240px, 55vw);
+  aspect-ratio: 1;
+  height: auto;
 `;
 
 export const StyledDigitalTime = styled.p`
   font-family: "Bebas Neue", Inter, sans-serif;
-  font-size: 4rem;
+  font-size: 3rem;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.onSurface};
   letter-spacing: 0.05em;
@@ -101,7 +103,7 @@ const CARD_PAD_Y = "clamp(14px, 4vw, 16px)";
 export const StyledNextCard = styled.div`
   position: relative;
   width: 100%;
-  max-width: min(400px, calc(100% - 32px));
+  max-width: min(300px, calc(100% - 32px));
   border-radius: ${CARD_RADIUS};
   overflow: hidden;
   background: linear-gradient(
@@ -111,7 +113,6 @@ export const StyledNextCard = styled.div`
   );
   border: 1px solid ${({ theme }) => theme.colors.primary}59;
   box-shadow: 0 20px 60px -20px ${({ theme }) => theme.colors.primary}59;
-  margin-top: 50px;
 `;
 
 export const StyledNextCardAccentBar = styled.div`

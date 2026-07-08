@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, MinusCircle } from "lucide-react";
 
 import { toast } from "sonner";
@@ -15,9 +16,11 @@ import {
   useTodaySession,
 } from "@/hooks/useSession";
 import MuscleChip from "@/components/MuscleChip";
-import { DayOfWeek, RepRangeAlert, SeriesType, TrainingDay } from "@/types";
+import { DayOfWeek, RepRangeAlert, Series, SeriesType, TrainingDay } from "@/types";
 import { trainingSheetService } from "@/services/trainingSheetService";
+import { progressionService } from "@/services/progressionService";
 import { NextExercisePreview, useRestTimer } from "@/context/RestTimerContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import RepRangeAlertSheet from "../RepRangeAlertSheet";
 
 import { DAY_FULL, todayIso } from "../../utils";
@@ -75,9 +78,11 @@ export default function SessionView({
   onBack,
 }: SessionViewProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const session = useTodaySession();
   const createSession = useCreateSession();
   const [createAttempted, setCreateAttempted] = useState(false);
+  const pushSubscription = usePushNotifications();
   const {
     isActive: contextIsActive,
     nextExercise: contextNextExercise,
@@ -289,11 +294,16 @@ export default function SessionView({
 
       const exercise = exercises.find((ex) => ex.name === alert.exerciseName);
       if (exercise) {
-        const workingSeries = exercise.series.filter((s) => s.type === "working");
+        const workingSeriesOrders = exercise.series
+          .map((s, idx) => ({ type: s.type, seriesOrder: idx + 1 }))
+          .filter((s) => s.type === "working");
         await trainingSheetService.bulkUpdateSuggestedWeight(
           dayOfWeek,
           exercise._id,
-          workingSeries.map((_, idx) => ({ seriesOrder: idx + 1, suggestedWeight: newWeight })),
+          workingSeriesOrders.map(({ seriesOrder }) => ({
+            seriesOrder,
+            suggestedWeight: newWeight,
+          })),
         );
       }
 
@@ -314,8 +324,29 @@ export default function SessionView({
     }
   }, [repRangeAlert]);
 
+  const resolveLastWeight = useCallback(
+    async (exerciseName: string, series: Series | undefined, loggedWeight?: number) => {
+      if (loggedWeight != null) return loggedWeight;
+      if (series?.suggestedWeight && series.suggestedWeight > 0) {
+        return series.suggestedWeight;
+      }
+      if (!series) return null;
+      try {
+        const chart = await queryClient.fetchQuery({
+          queryKey: ["progression", "chart", exerciseName, series.type],
+          queryFn: () => progressionService.getChart(exerciseName, series.type),
+        });
+        const last = chart.chartData[chart.chartData.length - 1];
+        return last?.weight && last.weight > 0 ? last.weight : null;
+      } catch {
+        return null;
+      }
+    },
+    [queryClient],
+  );
+
   const advanceAfterSeries = useCallback(
-    (restTime: number) => {
+    async (restTime: number) => {
       const exercise = exercises[currentExerciseIndex];
       if (!exercise) return;
 
@@ -329,12 +360,13 @@ export default function SessionView({
           const logged = sessionData?.records?.find(
             (r) => r.exerciseName === exercise.name && r.seriesOrder === nextSeriesIdx + 1,
           );
+          const lastWeight = await resolveLastWeight(exercise.name, nextSeries, logged?.weight);
           const preview: NextExercisePreview = {
             name: exercise.name,
             muscleGroup: exercise.muscleGroup,
             isNewExercise: false,
             seriesTypeLabel: SERIES_TYPE_LABEL[nextSeries.type],
-            lastWeight: logged?.weight ?? nextSeries.suggestedWeight ?? null,
+            lastWeight,
             repsMin: nextSeries.repsMin ?? null,
             repsMax: nextSeries.repsMax ?? null,
           };
@@ -355,12 +387,13 @@ export default function SessionView({
           const logged = sessionData?.records?.find(
             (r) => r.exerciseName === nextEx.name && r.seriesOrder === 1,
           );
+          const lastWeight = await resolveLastWeight(nextEx.name, nextSeries, logged?.weight);
           const preview: NextExercisePreview = {
             name: nextEx.name,
             muscleGroup: nextEx.muscleGroup,
             isNewExercise: true,
             seriesTypeLabel: SERIES_TYPE_LABEL[nextSeries.type],
-            lastWeight: logged?.weight ?? nextSeries?.suggestedWeight ?? null,
+            lastWeight,
             repsMin: nextSeries?.repsMin ?? null,
             repsMax: nextSeries?.repsMax ?? null,
           };
@@ -381,6 +414,7 @@ export default function SessionView({
       sessionData,
       handleConclude,
       startRestTimer,
+      resolveLastWeight,
     ],
   );
 
@@ -389,13 +423,13 @@ export default function SessionView({
     const ok = await seriesInputRef.current.check();
     if (!ok) return;
     const restTime = seriesInputRef.current.getRestTime();
-    advanceAfterSeries(restTime);
+    void advanceAfterSeries(restTime);
   };
 
   const handleSeriesSkip = () => {
     const restTime =
       seriesInputRef.current?.getRestTime() ?? currentSeries?.restTime ?? 0;
-    advanceAfterSeries(restTime);
+    void advanceAfterSeries(restTime);
   };
 
   const renderReadOnlyBody = () => (
@@ -474,6 +508,7 @@ export default function SessionView({
             inputsOnly
             onRepRangeAlert={handleRepRangeAlert}
             previousWeight={previousSeriesWeight}
+            dayOfWeek={dayOfWeek}
           />
         </StyledExerciseFocus>
 
@@ -604,6 +639,7 @@ export default function SessionView({
               onDismiss={handleDismissRest}
               onMinimize={() => router.push("/home")}
               nextExercise={nextExercisePreview}
+              subscription={pushSubscription}
             />
           )}
 

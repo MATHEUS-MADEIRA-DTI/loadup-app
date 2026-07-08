@@ -30,6 +30,8 @@ export interface Series {
   repsMax: number;
   restTime?: number;
   suggestedWeight?: number | null;
+  suggestedReps?: number | null;
+  suggestedRestTime?: number | null;
 }
 
 export interface Exercise {

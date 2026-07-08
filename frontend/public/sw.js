@@ -20,6 +20,17 @@ self.addEventListener('push', (event) => {
   );
 });
 
+self.addEventListener('pushsubscriptionchange', (event) => {
+  const oldSubscription = event.oldSubscription;
+  if (!oldSubscription) return;
+
+  event.waitUntil(
+    self.registration.pushManager
+      .subscribe(oldSubscription.options)
+      .catch(() => {}),
+  );
+});
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(

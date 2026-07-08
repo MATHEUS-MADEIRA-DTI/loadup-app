@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { formatMMSS } from "@/lib/formatMMSS";
 import { pushNotificationService } from "@/services/pushNotificationService";
 import { useAppTheme } from "@/styles/ThemeProvider";
@@ -43,6 +42,7 @@ interface RestTimerOverlayProps {
   onDismiss: () => void;
   onMinimize?: () => void;
   nextExercise?: NextExercisePreview | null;
+  subscription: PushSubscription | null;
 }
 
 export default function RestTimerOverlay({
@@ -51,12 +51,12 @@ export default function RestTimerOverlay({
   onDismiss,
   onMinimize,
   nextExercise,
+  subscription,
 }: RestTimerOverlayProps) {
   const { theme } = useAppTheme();
   const { playRestEndAlert } = useRestAlerts();
   const { isActive, timeLeft, restDuration: ctxDuration, startRestTimer } = useRestTimer();
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const subscriptionRef = usePushNotifications();
   const dragStartYRef = useRef<number | null>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -106,7 +106,6 @@ export default function RestTimerOverlay({
     };
     acquireWakeLock();
 
-    const subscription = subscriptionRef.current;
     if (subscription) {
       const json = subscription.toJSON();
       if (json.endpoint && json.keys?.p256dh && json.keys?.auth) {
@@ -125,7 +124,7 @@ export default function RestTimerOverlay({
         wakeLockRef.current = null;
       });
     };
-  }, [visible, restDuration]);
+  }, [visible, restDuration, subscription]);
 
   // Effect 1: inicia o timer no contexto — apenas se ainda não estiver ativo
   // (caso de restauração: usuário voltou à rota /train com timer em andamento)

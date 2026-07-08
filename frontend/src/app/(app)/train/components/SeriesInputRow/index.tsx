@@ -14,7 +14,8 @@ import { toast } from "sonner";
 import { strings } from "@/constants/strings";
 import { useProgressionChart } from "@/hooks/useProgression";
 import { useAddRecord, useUpdateRecord } from "@/hooks/useSession";
-import { Exercise, LoggedSet, Series, SeriesType } from "@/types";
+import { trainingSheetService } from "@/services/trainingSheetService";
+import { DayOfWeek, Exercise, LoggedSet, Series, SeriesType } from "@/types";
 
 import { SERIES_ABBR, SERIES_COLOR } from "../../utils";
 
@@ -73,6 +74,7 @@ interface SeriesInputRowProps {
     weight: number,
   ) => void;
   previousWeight?: number | null;
+  dayOfWeek?: DayOfWeek;
 }
 
 function formatNumber(value: number) {
@@ -91,6 +93,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       inputsOnly = false,
       onRepRangeAlert,
       previousWeight,
+      dayOfWeek,
     },
     ref,
   ) {
@@ -103,11 +106,6 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
 
     useEffect(() => {
       if (!weightInitialized.current) {
-        if (previousWeight != null && previousWeight > 0) {
-          setWeight(String(previousWeight));
-          weightInitialized.current = true;
-          return;
-        }
         if (series.suggestedWeight && series.suggestedWeight > 0) {
           setWeight(String(series.suggestedWeight));
           weightInitialized.current = true;
@@ -118,14 +116,49 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
           if (last?.weight && last.weight > 0) {
             setWeight(String(last.weight));
             weightInitialized.current = true;
+            return;
           }
+        }
+        if (previousWeight != null && previousWeight > 0) {
+          setWeight(String(previousWeight));
+          weightInitialized.current = true;
         }
       }
     }, [chart.data, series.suggestedWeight, previousWeight]);
+
+    const repsInitialized = useRef(false);
     const [reps, setReps] = useState<string>(
       String(series.repsMax ?? series.repsMin ?? 10),
     );
+
+    useEffect(() => {
+      if (!repsInitialized.current) {
+        if (series.suggestedReps && series.suggestedReps > 0) {
+          setReps(String(series.suggestedReps));
+          repsInitialized.current = true;
+          return;
+        }
+        if (chart.data?.chartData.length) {
+          const last = chart.data.chartData[chart.data.chartData.length - 1];
+          if (last?.reps && last.reps > 0) {
+            setReps(String(last.reps));
+            repsInitialized.current = true;
+          }
+        }
+      }
+    }, [chart.data, series.suggestedReps]);
+
+    const restInitialized = useRef(false);
     const [rest, setRest] = useState<string>(String(series.restTime ?? "0"));
+
+    useEffect(() => {
+      if (!restInitialized.current) {
+        if (series.suggestedRestTime && series.suggestedRestTime > 0) {
+          setRest(String(series.suggestedRestTime));
+          restInitialized.current = true;
+        }
+      }
+    }, [series.suggestedRestTime]);
     const [numpadTarget, setNumpadTarget] = useState<"weight" | "rest" | null>(
       null,
     );
@@ -139,6 +172,20 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       const nextValue = Math.max(min, parsed + delta);
       return String(nextValue);
     };
+
+    const persistSeriesSuggestions = useCallback(
+      (values: { weight: number; reps: number; restTime: number }) => {
+        if (!dayOfWeek) return;
+        trainingSheetService
+          .updateSeriesSuggestions(dayOfWeek, exercise._id, seriesIndex + 1, {
+            suggestedWeight: values.weight,
+            suggestedReps: values.reps,
+            suggestedRestTime: values.restTime,
+          })
+          .catch(() => {});
+      },
+      [dayOfWeek, exercise._id, seriesIndex],
+    );
 
     const handleCheck = useCallback((): Promise<boolean> => {
       if (isBusy || isReadOnly) return Promise.resolve(false);
@@ -168,6 +215,11 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
             {
               onSuccess: () => {
                 setIsEditing(false);
+                persistSeriesSuggestions({
+                  weight: safeWeight,
+                  reps: safeReps,
+                  restTime: safeRest,
+                });
                 resolve(true);
               },
               onError: () => {
@@ -185,6 +237,11 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
             if (data.repRangeAlert && onRepRangeAlert) {
               onRepRangeAlert(data.repRangeAlert, safeWeight);
             }
+            persistSeriesSuggestions({
+              weight: safeWeight,
+              reps: safeReps,
+              restTime: safeRest,
+            });
             resolve(true);
           },
           onError: () => {
@@ -207,6 +264,7 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       updateRecord,
       addRecord,
       onRepRangeAlert,
+      persistSeriesSuggestions,
     ]);
 
     useImperativeHandle(

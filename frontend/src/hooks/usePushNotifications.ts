@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -12,7 +12,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 export function usePushNotifications() {
-  const subscriptionRef = useRef<PushSubscription | null>(null);
+  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -32,12 +32,13 @@ export function usePushNotifications() {
         if (!vapidKey) return;
 
         const existing = await reg.pushManager.getSubscription();
-        subscriptionRef.current =
+        const sub =
           existing ??
           (await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
           }));
+        setSubscription(sub);
       } catch (err) {
         console.warn("Push setup failed:", err);
       }
@@ -46,5 +47,5 @@ export function usePushNotifications() {
     void setup();
   }, []);
 
-  return subscriptionRef;
+  return subscription;
 }

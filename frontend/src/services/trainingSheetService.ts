@@ -92,4 +92,20 @@ export const trainingSheetService = {
       { updates },
     );
   },
+
+  updateSeriesSuggestions(
+    dayOfWeek: string,
+    exerciseId: string,
+    seriesOrder: number,
+    suggestions: {
+      suggestedWeight?: number | null;
+      suggestedReps?: number | null;
+      suggestedRestTime?: number | null;
+    },
+  ): Promise<unknown> {
+    return apiClient.patch(
+      `/training-sheet/days/${dayOfWeek}/exercises/${exerciseId}/series/${seriesOrder}/suggestions`,
+      suggestions,
+    );
+  },
 };

@@ -11,6 +11,15 @@ const nextConfig = {
       "@sparticuz/chromium-min",
     ],
   },
+  async rewrites() {
+    if (!process.env.BACKEND_PROXY_TARGET) return [];
+    return [
+      {
+        source: "/backend-api/:path*",
+        destination: `${process.env.BACKEND_PROXY_TARGET}/:path*`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
