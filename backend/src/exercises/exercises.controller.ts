@@ -108,4 +108,26 @@ export class ExercisesController {
       body.suggestedWeight,
     );
   }
+
+  @Patch(':exerciseId/series/:seriesOrder/suggestions')
+  async updateSeriesSuggestions(
+    @CurrentUser('id') userId: string,
+    @Param('dayOfWeek') dayOfWeek: string,
+    @Param('exerciseId') exerciseId: string,
+    @Param('seriesOrder') seriesOrder: string,
+    @Body()
+    body: {
+      suggestedWeight?: number | null;
+      suggestedReps?: number | null;
+      suggestedRestTime?: number | null;
+    },
+  ) {
+    return this.exercisesService.updateSeriesSuggestions(
+      userId,
+      dayOfWeek.toLowerCase(),
+      exerciseId,
+      Number(seriesOrder),
+      body,
+    );
+  }
 }

@@ -172,6 +172,44 @@ export class ExercisesService {
     return exercise;
   }
 
+  async updateSeriesSuggestions(
+    userId: string,
+    dayOfWeek: string,
+    exerciseId: string,
+    seriesOrder: number,
+    suggestions: {
+      suggestedWeight?: number | null;
+      suggestedReps?: number | null;
+      suggestedRestTime?: number | null;
+    },
+  ) {
+    const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
+    if (!sheet) {
+      throw new NotFoundException('Training sheet not found');
+    }
+    const day = this.getDay(sheet, dayOfWeek);
+    const exercise = day.exercises.find((ex) => ex._id === exerciseId);
+    if (!exercise) {
+      throw new NotFoundException('Exercise not found');
+    }
+    const series = exercise.series.find((s: any) => s.order === seriesOrder);
+    if (!series) {
+      throw new NotFoundException('Series not found');
+    }
+    if (suggestions.suggestedWeight !== undefined) {
+      (series as any).suggestedWeight = suggestions.suggestedWeight ?? undefined;
+    }
+    if (suggestions.suggestedReps !== undefined) {
+      (series as any).suggestedReps = suggestions.suggestedReps ?? undefined;
+    }
+    if (suggestions.suggestedRestTime !== undefined) {
+      (series as any).suggestedRestTime = suggestions.suggestedRestTime ?? undefined;
+    }
+    sheet.markModified('days');
+    await sheet.save();
+    return exercise;
+  }
+
   async reorderExercisesInDay(userId: string, dayOfWeek: string, orderedIds: string[]) {
     const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
     if (!sheet) {

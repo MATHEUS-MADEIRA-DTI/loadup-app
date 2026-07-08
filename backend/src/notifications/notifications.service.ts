@@ -25,10 +25,23 @@ export class NotificationsService implements OnModuleInit {
       title: 'Descanso encerrado!',
       body: 'Hora de voltar ao treino 💪',
     });
+    this.logger.log(
+      `Scheduling push for ${subscription.endpoint} in ${delaySeconds}s`,
+    );
     setTimeout(() => {
+      this.logger.log(`Sending push now to ${subscription.endpoint}`);
       webpush
         .sendNotification(subscription, payload)
-        .catch((err) => this.logger.warn('Push failed', err));
+        .then((res) =>
+          this.logger.log(
+            `Push sent OK to ${subscription.endpoint} — status ${res.statusCode}`,
+          ),
+        )
+        .catch((err) =>
+          this.logger.warn(
+            `Push FAILED for ${subscription.endpoint} — status ${err?.statusCode}, body: ${err?.body}`,
+          ),
+        );
     }, delaySeconds * 1000);
   }
 }

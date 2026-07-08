@@ -26,6 +26,12 @@ export class Series {
 
   @Prop({ required: false, min: 0, max: 500 })
   suggestedWeight?: number;
+
+  @Prop({ required: false, min: 0, max: 1000 })
+  suggestedReps?: number;
+
+  @Prop({ required: false, min: 0, max: 600 })
+  suggestedRestTime?: number;
 }
 
 export const SeriesSchema = SchemaFactory.createForClass(Series);
