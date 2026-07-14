@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TrainingSession, TrainingSessionDocument } from './schemas/training-session.schema';
+import { SessionRecord } from './schemas/session-record.schema';
 import {
   TrainingSheet,
   TrainingSheetDocument,
@@ -29,6 +30,7 @@ export interface SessionCompletedEvent {
   userId: string;
   sessionId: string;
   dayOfWeek: string;
+  records: SessionRecord[];
 }
 
 @Injectable()
@@ -341,19 +343,12 @@ export class TrainingSessionService {
   ): Promise<{ session: TrainingSessionDocument; repRangeAlerts: RepRangeAlert[] }> {
     const session = await this.getTrainingSession(userId, sessionId);
 
-    if (status === 'skipped' || !session.startedAt) {
-      this.accumulateActiveTime(session);
-    }
+    this.accumulateActiveTime(session);
 
     session.status = status;
 
     if (status === 'completed') {
       session.completedAt = new Date();
-      if (session.startedAt) {
-        session.activeSeconds = Math.floor(
-          (session.completedAt.getTime() - session.startedAt.getTime()) / 1000,
-        );
-      }
     }
     const saved = await session.save();
 
@@ -364,6 +359,7 @@ export class TrainingSessionService {
         userId,
         sessionId,
         dayOfWeek: session.dayOfWeek,
+        records: saved.records,
       } satisfies SessionCompletedEvent);
     }
 

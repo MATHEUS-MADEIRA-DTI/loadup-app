@@ -207,7 +207,7 @@ export class ProgressionService {
     const normalizedName = this.normalizeLabel(exerciseName);
     const sessions = await this.trainingSessionModel
       .find({ userId: toObjectId(userId), status: 'completed' })
-      .sort({ date: 1 })
+      .sort({ date: -1 })
       .limit(limit)
       .exec();
     const chartData = sessions

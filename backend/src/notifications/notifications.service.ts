@@ -5,6 +5,9 @@ import * as webpush from 'web-push';
 @Injectable()
 export class NotificationsService implements OnModuleInit {
   private readonly logger = new Logger(NotificationsService.name);
+  // Chaveado pelo endpoint da subscription — no máximo um push de fim de
+  // descanso pendente por dispositivo, então dá pra cancelar por essa chave.
+  private readonly pending = new Map<string, NodeJS.Timeout>();
 
   constructor(private readonly config: ConfigService) {}
 
@@ -25,10 +28,12 @@ export class NotificationsService implements OnModuleInit {
       title: 'Descanso encerrado!',
       body: 'Hora de voltar ao treino 💪',
     });
+    this.cancelPush(subscription.endpoint);
     this.logger.log(
       `Scheduling push for ${subscription.endpoint} in ${delaySeconds}s`,
     );
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
+      this.pending.delete(subscription.endpoint);
       this.logger.log(`Sending push now to ${subscription.endpoint}`);
       webpush
         .sendNotification(subscription, payload)
@@ -43,5 +48,14 @@ export class NotificationsService implements OnModuleInit {
           ),
         );
     }, delaySeconds * 1000);
+    this.pending.set(subscription.endpoint, timeout);
+  }
+
+  cancelPush(endpoint: string): void {
+    const timeout = this.pending.get(endpoint);
+    if (!timeout) return;
+    clearTimeout(timeout);
+    this.pending.delete(endpoint);
+    this.logger.log(`Cancelled pending push for ${endpoint}`);
   }
 }

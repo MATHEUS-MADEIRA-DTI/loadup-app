@@ -210,6 +210,47 @@ export class ExercisesService {
     return exercise;
   }
 
+  /**
+   * Sincroniza suggestedWeight/suggestedReps/suggestedRestTime de cada série
+   * com o que foi de fato registrado na sessão mais recente concluída,
+   * casando por exerciseName + seriesOrder. É a fonte de verdade final —
+   * roda depois de terminar o treino, então sobrescreve qualquer sugestão
+   * intermediária (ex.: ajuste de RepRangeAlert em séries ainda não feitas).
+   */
+  async syncSuggestionsFromSession(
+    userId: string,
+    dayOfWeek: string,
+    records: Array<{
+      exerciseName: string;
+      seriesOrder: number;
+      weight: number;
+      repsCompleted: number;
+      restTime: number;
+    }>,
+  ) {
+    if (!records.length) return;
+    const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
+    if (!sheet) return;
+    const day = sheet.days.find((d) => d.dayOfWeek === dayOfWeek);
+    if (!day) return;
+
+    const normalize = (label: string) => label.trim().toLowerCase();
+
+    for (const record of records) {
+      const exercise = day.exercises.find(
+        (ex) => normalize(ex.name) === normalize(record.exerciseName),
+      );
+      if (!exercise) continue;
+      const series = exercise.series.find((s: any) => s.order === record.seriesOrder);
+      if (!series) continue;
+      (series as any).suggestedWeight = record.weight;
+      (series as any).suggestedReps = record.repsCompleted;
+      (series as any).suggestedRestTime = record.restTime;
+    }
+    sheet.markModified('days');
+    await sheet.save();
+  }
+
   async reorderExercisesInDay(userId: string, dayOfWeek: string, orderedIds: string[]) {
     const sheet = await this.trainingSheetModel.findOne({ userId: toObjectId(userId) }).exec();
     if (!sheet) {

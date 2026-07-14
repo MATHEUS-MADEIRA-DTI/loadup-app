@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
+import { CancelPushDto } from './dto/cancel-push.dto';
 import { SchedulePushDto } from './dto/schedule-push.dto';
 import { NotificationsService } from './notifications.service';
 
@@ -17,5 +18,11 @@ export class NotificationsController {
   schedule(@Body() dto: SchedulePushDto) {
     this.svc.schedulePush(dto.subscription, dto.delaySeconds);
     return { scheduled: true };
+  }
+
+  @Post('cancel')
+  cancel(@Body() dto: CancelPushDto) {
+    this.svc.cancelPush(dto.endpoint);
+    return { cancelled: true };
   }
 }
