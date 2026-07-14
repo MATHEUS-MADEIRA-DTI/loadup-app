@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import PageTransition from "@/components/PageTransition";
 import { useTodaySession } from "@/hooks/useSession";
 import { useTrainingSheet } from "@/hooks/useTrainingSheet";
-import { DayOfWeek } from "@/types";
 
 import RestAlertsModal from "./components/RestAlertsModal";
 import SessionView from "./components/SessionView";
@@ -17,7 +16,6 @@ import { type AppView, todayDayOfWeek } from "./utils";
 export default function TrainPage() {
   const router = useRouter();
   const [view, setView] = useState<AppView>("tabs");
-  const [sessionDay, setSessionDay] = useState<DayOfWeek | null>(null);
 
   const sheet = useTrainingSheet();
   const todaySession = useTodaySession();
@@ -34,16 +32,15 @@ export default function TrainPage() {
   }, [todaySession.data, router]);
 
   useEffect(() => {
-    if (!sheet.data || todaySheetDay?.status !== "training" || view !== "tabs") return;
+    if (!sheet.data || todaySheetDay?.status !== "training") return;
 
     const status = todaySession.data?.status;
-    if (status === "active" || status === "partial") {
-      setSessionDay(todayDow);
+    if (status === "active") {
       setView("session");
-    } else if (!status) {
+    } else if (status === "partial") {
       setView("intro");
     }
-  }, [sheet.data, todaySheetDay, todaySession.data, view, todayDow]);
+  }, [sheet.data, todaySheetDay, todaySession.data]);
 
   useEffect(() => {
     if (view === "tabs" && sheet.data && todaySheetDay?.status !== "training") {
@@ -51,13 +48,12 @@ export default function TrainPage() {
     }
   }, [view, sheet.data, todaySheetDay?.status, router]);
 
-  if (view === "session" && sessionDay) {
-    const sheetDay = sheet.data?.days.find((d) => d.dayOfWeek === sessionDay);
+  if (view === "session") {
     return (
       <>
         <SessionView
-          dayOfWeek={sessionDay}
-          sheetDay={sheetDay}
+          dayOfWeek={todayDow}
+          sheetDay={todaySheetDay}
           onBack={() => router.push("/training-plan")}
         />
         <RestAlertsModal />
@@ -72,10 +68,7 @@ export default function TrainPage() {
           dayOfWeek={todayDow}
           sheetDay={todaySheetDay}
           onBack={() => router.push("/")}
-          onStart={() => {
-            setSessionDay(todayDow);
-            setView("session");
-          }}
+          onStart={() => setView("session")}
         />
         <RestAlertsModal />
       </>

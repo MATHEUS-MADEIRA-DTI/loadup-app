@@ -20,6 +20,20 @@ export function useTodaySession() {
   });
 }
 
+/**
+ * Leitura passiva do cache da sessão de hoje — não dispara fetch/criação
+ * própria (`enabled: false`), só reage a atualizações feitas por outros
+ * lugares que já chamam `useTodaySession()`. Para uso em componentes globais
+ * (ex.: widgets de layout) que não devem, por si só, criar uma sessão do dia.
+ */
+export function useTodaySessionCache() {
+  return useQuery({
+    queryKey: TODAY_KEY,
+    queryFn: () => sessionService.getTodaySession(),
+    enabled: false,
+  });
+}
+
 export function useCreateSession() {
   const qc = useQueryClient();
   return useMutation({

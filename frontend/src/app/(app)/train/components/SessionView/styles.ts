@@ -39,9 +39,7 @@ export const StyledBackBtn = styled.button`
   color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   flex-shrink: 0;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.primaryContainer};
@@ -66,9 +64,7 @@ export const StyledMenuBtn = styled.button`
   color: ${({ theme }) => theme.colors.onSurface};
   cursor: pointer;
   flex-shrink: 0;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.surfaceElevated};
@@ -231,7 +227,7 @@ export const StyledEmptyText = styled.p`
 
 export const StyledSessionBottomBar = styled.div`
   position: fixed;
-  bottom: 80px;
+  bottom: 12%;
   left: 0;
   right: 0;
   display: flex;
@@ -255,9 +251,7 @@ export const StyledSkipBtn = styled.button`
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease;
   &:hover:not(:disabled) {
     background: ${({ theme }) => theme.colors.surface};
     transform: translateY(-1px);
@@ -285,9 +279,7 @@ export const StyledConcludeBtn = styled.button`
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
-  transition:
-    transform 150ms ease,
-    opacity 150ms ease;
+  transition: transform 150ms ease, opacity 150ms ease;
   &:hover:not(:disabled) {
     transform: translateY(-1px);
   }
@@ -511,10 +503,7 @@ export const StyledSeriesProgressDot = styled.span<{
   height: ${({ $current }) => ($current ? "10px" : "8px")};
   border-radius: 50%;
   flex-shrink: 0;
-  transition:
-    width 150ms ease,
-    height 150ms ease,
-    background 150ms ease,
+  transition: width 150ms ease, height 150ms ease, background 150ms ease,
     border-color 150ms ease;
   background: ${({ theme, $completed, $current }) =>
     $completed || $current ? theme.colors.primary : "transparent"};
@@ -581,9 +570,7 @@ export const StyledSkipRestBtn = styled.button`
   font-size: 14px;
   font-weight: 400;
   cursor: pointer;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.surface};

@@ -31,6 +31,7 @@ export interface TrainingSession {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  startedAt?: string;
   activeSeconds: number;
   lastResumedAt?: string | null;
 }

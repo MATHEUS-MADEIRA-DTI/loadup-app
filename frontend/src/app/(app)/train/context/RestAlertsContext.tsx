@@ -147,13 +147,6 @@ export function RestAlertsProvider({ children }: { children: ReactNode }) {
 
   const playRestEndAlert = useCallback(() => {
     audioRef.current?.play().catch(() => {});
-
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("Descanso encerrado!", {
-        body: "Hora de voltar ao treino 💪",
-        icon: "/icon-192x192.png",
-      });
-    }
   }, []);
 
   const value = useMemo(

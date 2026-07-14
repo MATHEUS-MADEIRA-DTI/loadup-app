@@ -10,10 +10,6 @@ export const StyledRestOverlay = styled.div`
   border-radius: 28px 28px 0 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 32px;
-  padding-top: 8px;
-  padding-bottom: 24px;
   overflow-y: auto;
   overscroll-behavior: contain;
 `;
@@ -25,8 +21,8 @@ export const StyledHandleButton = styled.button`
   align-self: stretch;
   flex-shrink: 0;
   width: 100%;
-  padding: 14px 0 34px;
-  margin-bottom: -32px;
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+  padding-bottom: 20px;
   border: none;
   background: transparent;
   cursor: grab;
@@ -35,6 +31,17 @@ export const StyledHandleButton = styled.button`
   &:active {
     cursor: grabbing;
   }
+`;
+
+export const StyledOverlayBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
 `;
 
 export const StyledHandleBar = styled.span`
@@ -86,9 +93,7 @@ export const StyledSkipRestBtn = styled.button`
   font-size: 14px;
   font-weight: 400;
   cursor: pointer;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
+  transition: background 150ms ease, transform 150ms ease;
 
   &:hover {
     background: ${({ theme }) => theme.colors.surface};

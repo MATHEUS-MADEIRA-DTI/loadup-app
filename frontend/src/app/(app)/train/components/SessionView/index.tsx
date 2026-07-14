@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, MinusCircle } from "lucide-react";
+import { CheckCircle2, MinusCircle, Pause } from "lucide-react";
 
 import { toast } from "sonner";
 
@@ -20,7 +20,7 @@ import { DayOfWeek, RepRangeAlert, Series, SeriesType, TrainingDay } from "@/typ
 import { trainingSheetService } from "@/services/trainingSheetService";
 import { progressionService } from "@/services/progressionService";
 import { NextExercisePreview, useRestTimer } from "@/context/RestTimerContext";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { resolveDisplayValue } from "@/lib/resolveDisplayValue";
 import RepRangeAlertSheet from "../RepRangeAlertSheet";
 
 import { DAY_FULL, todayIso } from "../../utils";
@@ -82,7 +82,6 @@ export default function SessionView({
   const session = useTodaySession();
   const createSession = useCreateSession();
   const [createAttempted, setCreateAttempted] = useState(false);
-  const pushSubscription = usePushNotifications();
   const {
     isActive: contextIsActive,
     nextExercise: contextNextExercise,
@@ -97,6 +96,10 @@ export default function SessionView({
   const [restDuration, setRestDuration] = useState(0);
   const [nextExercisePreview, setNextExercisePreview] =
     useState<NextExercisePreview | null>(null);
+  // Peso já resolvido (mesma lógica do card de próximo exercício) para a
+  // série que vai ficar ativa a seguir — evita que o input recalcule do zero
+  // e possivelmente divirja do que o card acabou de mostrar durante o descanso.
+  const [resolvedNextWeight, setResolvedNextWeight] = useState<number | null>(null);
   const [repRangeAlert, setRepRangeAlert] = useState<RepRangeAlert | null>(null);
   const [endOfSessionAlerts, setEndOfSessionAlerts] = useState<RepRangeAlert[]>([]);
   const [suggestedWeightAlert, setSuggestedWeightAlert] = useState<{
@@ -168,8 +171,6 @@ export default function SessionView({
   const pauseSession = usePauseSession(sessionData?._id ?? "");
   const startSessionRef = useRef(startSession.mutate);
   startSessionRef.current = startSession.mutate;
-  const pauseSessionRef = useRef(pauseSession.mutate);
-  pauseSessionRef.current = pauseSession.mutate;
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const acquireWakeLock = useCallback(async () => {
@@ -179,9 +180,10 @@ export default function SessionView({
     } catch {}
   }, []);
 
-  // Only count time while the user is actually on this screen: start the
-  // clock when it mounts (or when leaving read-only), pause it on unmount,
-  // navigation away, or when the tab/app is backgrounded.
+  // A duração do treino conta do início até a conclusão (ou pausa manual via
+  // botão) — não depende mais de aba/tela visível. Aqui só marcamos o início
+  // (uma vez) e cuidamos do wake lock, que o SO libera sozinho em background
+  // e precisa ser readquirido ao voltar.
   useEffect(() => {
     const sessionId = sessionData?._id;
     if (!sessionId || isReadOnly) return;
@@ -190,11 +192,7 @@ export default function SessionView({
     void acquireWakeLock();
 
     const handleVisibility = () => {
-      if (document.hidden) {
-        pauseSessionRef.current();
-        wakeLockRef.current = null;
-      } else {
-        startSessionRef.current();
+      if (!document.hidden) {
         void acquireWakeLock();
       }
     };
@@ -203,7 +201,6 @@ export default function SessionView({
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
-      pauseSessionRef.current();
       wakeLockRef.current?.release().then(() => {
         wakeLockRef.current = null;
       });
@@ -248,15 +245,20 @@ export default function SessionView({
     );
   }, [sessionData, currentExercise, currentSeriesIndex]);
 
-  const previousSeriesWeight = useMemo(() => {
+  const previousSeriesRecord = useMemo(() => {
     if (!sessionData || !currentExercise || currentSeriesIndex === 0) return null;
-    const prevRecord = sessionData.records?.find(
-      (r) =>
-        r.exerciseName === currentExercise.name &&
-        r.seriesOrder === currentSeriesIndex,
+    return (
+      sessionData.records?.find(
+        (r) =>
+          r.exerciseName === currentExercise.name &&
+          r.seriesOrder === currentSeriesIndex,
+      ) ?? null
     );
-    return prevRecord?.weight ?? null;
   }, [sessionData, currentExercise, currentSeriesIndex]);
+
+  const previousSeriesWeight = previousSeriesRecord?.weight ?? null;
+  const previousSeriesReps = previousSeriesRecord?.repsCompleted ?? null;
+  const previousSeriesRestTime = previousSeriesRecord?.restTime ?? null;
 
   const handleConclude = useCallback(() => {
     completeSession.mutate(
@@ -325,22 +327,30 @@ export default function SessionView({
   }, [repRangeAlert]);
 
   const resolveLastWeight = useCallback(
-    async (exerciseName: string, series: Series | undefined, loggedWeight?: number) => {
-      if (loggedWeight != null) return loggedWeight;
-      if (series?.suggestedWeight && series.suggestedWeight > 0) {
-        return series.suggestedWeight;
-      }
-      if (!series) return null;
+    async (
+      exerciseName: string,
+      series: Series | undefined,
+      loggedWeight?: number,
+      previousWeight?: number | null,
+    ) => {
+      const earlyResolved = resolveDisplayValue({
+        logged: loggedWeight,
+        suggested: series?.suggestedWeight,
+      });
+      if (earlyResolved != null || !series) return earlyResolved;
+
+      let chartLastWeight: number | null = null;
       try {
         const chart = await queryClient.fetchQuery({
           queryKey: ["progression", "chart", exerciseName, series.type],
           queryFn: () => progressionService.getChart(exerciseName, series.type),
         });
-        const last = chart.chartData[chart.chartData.length - 1];
-        return last?.weight && last.weight > 0 ? last.weight : null;
+        chartLastWeight = chart.chartData[chart.chartData.length - 1]?.weight ?? null;
       } catch {
-        return null;
+        chartLastWeight = null;
       }
+
+      return resolveDisplayValue({ chartLast: chartLastWeight, previousInSession: previousWeight });
     },
     [queryClient],
   );
@@ -349,6 +359,8 @@ export default function SessionView({
     async (restTime: number) => {
       const exercise = exercises[currentExerciseIndex];
       if (!exercise) return;
+
+      setResolvedNextWeight(null);
 
       const hasMoreSeries = currentSeriesIndex < exercise.series.length - 1;
 
@@ -360,7 +372,15 @@ export default function SessionView({
           const logged = sessionData?.records?.find(
             (r) => r.exerciseName === exercise.name && r.seriesOrder === nextSeriesIdx + 1,
           );
-          const lastWeight = await resolveLastWeight(exercise.name, nextSeries, logged?.weight);
+          const previousSeriesRecord = sessionData?.records?.find(
+            (r) => r.exerciseName === exercise.name && r.seriesOrder === currentSeriesIndex + 1,
+          );
+          const lastWeight = await resolveLastWeight(
+            exercise.name,
+            nextSeries,
+            logged?.weight,
+            previousSeriesRecord?.weight ?? null,
+          );
           const preview: NextExercisePreview = {
             name: exercise.name,
             muscleGroup: exercise.muscleGroup,
@@ -371,6 +391,7 @@ export default function SessionView({
             repsMax: nextSeries.repsMax ?? null,
           };
           setNextExercisePreview(preview);
+          setResolvedNextWeight(lastWeight);
           setRestDuration(restTime);
           setShowRestTimer(true);
           startRestTimer(restTime, preview);
@@ -398,6 +419,7 @@ export default function SessionView({
             repsMax: nextSeries?.repsMax ?? null,
           };
           setNextExercisePreview(preview);
+          setResolvedNextWeight(lastWeight);
           setRestDuration(restTime);
           setShowRestTimer(true);
           startRestTimer(restTime, preview);
@@ -507,7 +529,10 @@ export default function SessionView({
             isReadOnly={false}
             inputsOnly
             onRepRangeAlert={handleRepRangeAlert}
+            resolvedWeight={resolvedNextWeight}
             previousWeight={previousSeriesWeight}
+            previousReps={previousSeriesReps}
+            previousRestTime={previousSeriesRestTime}
             dayOfWeek={dayOfWeek}
           />
         </StyledExerciseFocus>
@@ -545,6 +570,15 @@ export default function SessionView({
             <StyledProgressBadge>
               {strings.workout.progressCounter(loggedCount, totalSeries)}
             </StyledProgressBadge>
+          )}
+          {!isReadOnly && (
+            <StyledMenuBtn
+              onClick={() => pauseSession.mutate()}
+              disabled={pauseSession.isPending}
+              aria-label="Pausar treino"
+            >
+              <Pause size={20} />
+            </StyledMenuBtn>
           )}
           {!isReadOnly && (
             <StyledMenuBtn
@@ -639,7 +673,6 @@ export default function SessionView({
               onDismiss={handleDismissRest}
               onMinimize={() => router.push("/home")}
               nextExercise={nextExercisePreview}
-              subscription={pushSubscription}
             />
           )}
 

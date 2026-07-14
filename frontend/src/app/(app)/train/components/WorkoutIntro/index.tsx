@@ -56,8 +56,7 @@ export default function WorkoutIntro({
   const estimatedMinutes = Math.max(5, Math.ceil(totalSeries * 1.5));
 
   const session = useTodaySession();
-  const isResuming =
-    session.data?.status === "active" || session.data?.status === "partial";
+  const isResuming = !!session.data?.startedAt;
 
   return (
     <StyledWorkoutIntro>

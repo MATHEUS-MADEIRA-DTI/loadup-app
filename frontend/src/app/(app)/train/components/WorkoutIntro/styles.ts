@@ -60,9 +60,7 @@ export const StyledBackButton = styled.button`
   place-items: center;
   cursor: pointer;
   font-family: inherit;
-  transition:
-    transform 180ms ease,
-    background 180ms ease;
+  transition: transform 180ms ease, background 180ms ease;
 
   &:hover {
     transform: translateY(-1px);
@@ -81,7 +79,7 @@ export const StyledHero = styled.section`
 
 export const StyledDayName = styled.h1`
   font-family: "Barlow Condensed", Inter, sans-serif;
-  font-size: 5rem;
+  font-size: 4rem;
   line-height: 0.9;
   font-weight: 900;
   text-transform: uppercase;
@@ -195,7 +193,7 @@ export const StyledExerciseSeries = styled.span`
 
 export const StyledBottomBar = styled.div`
   position: fixed;
-  bottom: 6%;
+  bottom: 10%;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
@@ -236,9 +234,7 @@ export const StyledStartBtn = styled.button`
   letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
-  transition:
-    transform 180ms ease,
-    opacity 180ms ease;
+  transition: transform 180ms ease, opacity 180ms ease;
 
   &:hover {
     transform: translateY(-1px);

@@ -15,4 +15,10 @@ export const pushNotificationService = {
       delaySeconds,
     });
   },
+
+  cancelPush(endpoint: string): Promise<{ cancelled: boolean }> {
+    return apiClient.post<{ cancelled: boolean }>("/notifications/cancel", {
+      endpoint,
+    });
+  },
 };

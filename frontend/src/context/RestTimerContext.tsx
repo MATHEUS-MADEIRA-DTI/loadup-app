@@ -7,8 +7,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { pushNotificationService } from "@/services/pushNotificationService";
 
 export interface NextExercisePreview {
   name: string;
@@ -37,6 +41,37 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
   const [restDuration, setRestDuration] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [nextExercise, setNextExercise] = useState<NextExercisePreview | null>(null);
+  const subscription = usePushNotifications();
+  const pushScheduledForRef = useRef<number | null>(null);
+
+  // Agenda o push assim que houver um ciclo ativo E a subscription estiver
+  // disponível — o que pode acontecer bem depois do startRestTimer, já que o
+  // registro do service worker/subscribe é assíncrono e pode ficar suspenso
+  // enquanto o app está em background. O delay é sempre recalculado a partir
+  // de targetTime (não da duração original), então funciona corretamente não
+  // importa quando a subscription resolver. pushScheduledForRef é chaveado
+  // pelo targetTime do ciclo atual, então sobrevive a remounts do overlay
+  // (RestTimerProvider vive no layout, acima de toda a navegação) sem
+  // agendar o mesmo push duas vezes.
+  useEffect(() => {
+    if (!isActive || !targetTime || !subscription) return;
+    if (pushScheduledForRef.current === targetTime) return;
+
+    const json = subscription.toJSON();
+    if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return;
+
+    const delaySeconds = Math.round((targetTime - Date.now()) / 1000);
+    if (delaySeconds <= 0) return;
+
+    pushScheduledForRef.current = targetTime;
+    void pushNotificationService.schedulePush(
+      {
+        endpoint: json.endpoint,
+        keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+      },
+      delaySeconds,
+    );
+  }, [isActive, targetTime, subscription]);
 
   useEffect(() => {
     if (!isActive || !targetTime) return;
@@ -70,11 +105,24 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
   );
 
   const stopRestTimer = useCallback(() => {
+    // Se o descanso ainda estava rodando (isActive), quem chamou foi um
+    // dismiss manual (ex.: "Começar agora"/"Pular descanso") antes do fim
+    // natural — cancela o push já agendado pra não sobrar notificação
+    // "atrasada" pra um descanso que o usuário já encerrou por conta própria.
+    // Quando o fim é natural, o interval acima já zera isActive antes de
+    // chamar stopRestTimer, então esse cancelamento não roda à toa.
+    if (isActive && targetTime && subscription && pushScheduledForRef.current === targetTime) {
+      const json = subscription.toJSON();
+      if (json.endpoint) {
+        void pushNotificationService.cancelPush(json.endpoint);
+      }
+      pushScheduledForRef.current = null;
+    }
     setIsActive(false);
     setTargetTime(null);
     setTimeLeft(0);
     setNextExercise(null);
-  }, []);
+  }, [isActive, targetTime, subscription]);
 
   const value = useMemo(
     () => ({ isActive, timeLeft, restDuration, nextExercise, startRestTimer, stopRestTimer }),

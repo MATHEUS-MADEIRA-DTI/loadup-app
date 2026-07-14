@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { strings } from "@/constants/strings";
 import { useProgressionChart } from "@/hooks/useProgression";
 import { useAddRecord, useUpdateRecord } from "@/hooks/useSession";
+import { resolveDisplayValue } from "@/lib/resolveDisplayValue";
 import { trainingSheetService } from "@/services/trainingSheetService";
 import { DayOfWeek, Exercise, LoggedSet, Series, SeriesType } from "@/types";
 
@@ -73,7 +74,10 @@ interface SeriesInputRowProps {
     alert: import("@/types").RepRangeAlert,
     weight: number,
   ) => void;
+  resolvedWeight?: number | null;
   previousWeight?: number | null;
+  previousReps?: number | null;
+  previousRestTime?: number | null;
   dayOfWeek?: DayOfWeek;
 }
 
@@ -92,7 +96,10 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
       isReadOnly,
       inputsOnly = false,
       onRepRangeAlert,
+      resolvedWeight,
       previousWeight,
+      previousReps,
+      previousRestTime,
       dayOfWeek,
     },
     ref,
@@ -105,26 +112,20 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
     const [weight, setWeight] = useState<string>("0.5");
 
     useEffect(() => {
-      if (!weightInitialized.current) {
-        if (series.suggestedWeight && series.suggestedWeight > 0) {
-          setWeight(String(series.suggestedWeight));
-          weightInitialized.current = true;
-          return;
-        }
-        if (chart.data?.chartData.length) {
-          const last = chart.data.chartData[chart.data.chartData.length - 1];
-          if (last?.weight && last.weight > 0) {
-            setWeight(String(last.weight));
-            weightInitialized.current = true;
-            return;
-          }
-        }
-        if (previousWeight != null && previousWeight > 0) {
-          setWeight(String(previousWeight));
-          weightInitialized.current = true;
-        }
+      if (weightInitialized.current) return;
+      const chartLast =
+        chart.data?.chartData[chart.data.chartData.length - 1]?.weight ?? null;
+      const resolved = resolveDisplayValue({
+        logged: resolvedWeight,
+        suggested: series.suggestedWeight,
+        chartLast,
+        previousInSession: previousWeight,
+      });
+      if (resolved != null) {
+        setWeight(String(resolved));
+        weightInitialized.current = true;
       }
-    }, [chart.data, series.suggestedWeight, previousWeight]);
+    }, [chart.data, series.suggestedWeight, previousWeight, resolvedWeight]);
 
     const repsInitialized = useRef(false);
     const [reps, setReps] = useState<string>(
@@ -132,33 +133,36 @@ const SeriesInputRow = forwardRef<SeriesInputRowHandle, SeriesInputRowProps>(
     );
 
     useEffect(() => {
-      if (!repsInitialized.current) {
-        if (series.suggestedReps && series.suggestedReps > 0) {
-          setReps(String(series.suggestedReps));
-          repsInitialized.current = true;
-          return;
-        }
-        if (chart.data?.chartData.length) {
-          const last = chart.data.chartData[chart.data.chartData.length - 1];
-          if (last?.reps && last.reps > 0) {
-            setReps(String(last.reps));
-            repsInitialized.current = true;
-          }
-        }
+      if (repsInitialized.current) return;
+      const chartLast =
+        chart.data?.chartData[chart.data.chartData.length - 1]?.reps ?? null;
+      const resolved = resolveDisplayValue({
+        suggested: series.suggestedReps,
+        chartLast,
+        previousInSession: previousReps,
+      });
+      if (resolved != null) {
+        setReps(String(resolved));
+        repsInitialized.current = true;
       }
-    }, [chart.data, series.suggestedReps]);
+    }, [chart.data, series.suggestedReps, previousReps]);
 
     const restInitialized = useRef(false);
     const [rest, setRest] = useState<string>(String(series.restTime ?? "0"));
 
     useEffect(() => {
-      if (!restInitialized.current) {
-        if (series.suggestedRestTime && series.suggestedRestTime > 0) {
-          setRest(String(series.suggestedRestTime));
-          restInitialized.current = true;
-        }
+      if (restInitialized.current) return;
+      // Sem dado de restTime no gráfico de progressão — só suggestedRestTime
+      // (sincronizado ao concluir o treino) e o fallback da sessão atual.
+      const resolved = resolveDisplayValue({
+        suggested: series.suggestedRestTime,
+        previousInSession: previousRestTime,
+      });
+      if (resolved != null) {
+        setRest(String(resolved));
+        restInitialized.current = true;
       }
-    }, [series.suggestedRestTime]);
+    }, [series.suggestedRestTime, previousRestTime]);
     const [numpadTarget, setNumpadTarget] = useState<"weight" | "rest" | null>(
       null,
     );

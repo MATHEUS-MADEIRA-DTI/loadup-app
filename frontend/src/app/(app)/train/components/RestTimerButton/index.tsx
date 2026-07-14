@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { formatMMSS } from "@/lib/formatMMSS";
-import { pushNotificationService } from "@/services/pushNotificationService";
 import { useAppTheme } from "@/styles/ThemeProvider";
 import { NextExercisePreview, useRestTimer } from "@/context/RestTimerContext";
 
@@ -29,6 +28,7 @@ import {
   StyledNextCardStatUnit,
   StyledNextCardStatValue,
   StyledNextCardTypeChip,
+  StyledOverlayBody,
   StyledRestLabel,
   StyledRestOverlay,
   StyledSkipRestBtn,
@@ -42,7 +42,6 @@ interface RestTimerOverlayProps {
   onDismiss: () => void;
   onMinimize?: () => void;
   nextExercise?: NextExercisePreview | null;
-  subscription: PushSubscription | null;
 }
 
 export default function RestTimerOverlay({
@@ -51,11 +50,15 @@ export default function RestTimerOverlay({
   onDismiss,
   onMinimize,
   nextExercise,
-  subscription,
 }: RestTimerOverlayProps) {
   const { theme } = useAppTheme();
   const { playRestEndAlert } = useRestAlerts();
-  const { isActive, timeLeft, restDuration: ctxDuration, startRestTimer } = useRestTimer();
+  const {
+    isActive,
+    timeLeft,
+    restDuration: ctxDuration,
+    startRestTimer,
+  } = useRestTimer();
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const dragStartYRef = useRef<number | null>(null);
   const [dragY, setDragY] = useState(0);
@@ -106,25 +109,12 @@ export default function RestTimerOverlay({
     };
     acquireWakeLock();
 
-    if (subscription) {
-      const json = subscription.toJSON();
-      if (json.endpoint && json.keys?.p256dh && json.keys?.auth) {
-        void pushNotificationService.schedulePush(
-          {
-            endpoint: json.endpoint,
-            keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
-          },
-          restDuration,
-        );
-      }
-    }
-
     return () => {
       wakeLockRef.current?.release().then(() => {
         wakeLockRef.current = null;
       });
     };
-  }, [visible, restDuration, subscription]);
+  }, [visible]);
 
   // Effect 1: inicia o timer no contexto — apenas se ainda não estiver ativo
   // (caso de restauração: usuário voltou à rota /train com timer em andamento)
@@ -178,110 +168,112 @@ export default function RestTimerOverlay({
         </StyledHandleButton>
       )}
 
-      <StyledClockWrapper>
-        <StyledClockSvg viewBox="0 0 240 240" aria-hidden="true">
-          <circle
-            cx="120"
-            cy="120"
-            r={radius}
-            fill="none"
-            stroke={theme.colors.surface}
-            strokeWidth="3"
-          />
-          <circle
-            cx="120"
-            cy="120"
-            r={radius}
-            fill="none"
-            stroke={theme.colors.primary}
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-            transform="rotate(-90 120 120)"
-            style={{
-              transition: "stroke-dashoffset 1s linear",
-            }}
-          />
-          <line
-            x1="120"
-            y1="120"
-            x2="120"
-            y2="18"
-            stroke={theme.colors.primary}
-            strokeWidth="2"
-            strokeLinecap="round"
-            transform={`rotate(${handAngle} 120 120)`}
-            style={{
-              transition: "transform 1s linear",
-            }}
-          />
-          <circle cx="120" cy="120" r="4" fill={theme.colors.primary} />
-        </StyledClockSvg>
-      </StyledClockWrapper>
+      <StyledOverlayBody>
+        <StyledClockWrapper>
+          <StyledClockSvg viewBox="0 0 240 240" aria-hidden="true">
+            <circle
+              cx="120"
+              cy="120"
+              r={radius}
+              fill="none"
+              stroke={theme.colors.surface}
+              strokeWidth="3"
+            />
+            <circle
+              cx="120"
+              cy="120"
+              r={radius}
+              fill="none"
+              stroke={theme.colors.primary}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              transform="rotate(-90 120 120)"
+              style={{
+                transition: "stroke-dashoffset 1s linear",
+              }}
+            />
+            <line
+              x1="120"
+              y1="120"
+              x2="120"
+              y2="18"
+              stroke={theme.colors.primary}
+              strokeWidth="2"
+              strokeLinecap="round"
+              transform={`rotate(${handAngle} 120 120)`}
+              style={{
+                transition: "transform 1s linear",
+              }}
+            />
+            <circle cx="120" cy="120" r="4" fill={theme.colors.primary} />
+          </StyledClockSvg>
+        </StyledClockWrapper>
 
-      <StyledDigitalTime aria-live="polite">
-        {formatMMSS(Math.max(0, timeLeft))}
-      </StyledDigitalTime>
+        <StyledDigitalTime aria-live="polite">
+          {formatMMSS(Math.max(0, timeLeft))}
+        </StyledDigitalTime>
 
-      {!nextExercise && (
-        <StyledSkipRestBtn type="button" onClick={onDismiss}>
-          Pular descanso
-        </StyledSkipRestBtn>
-      )}
+        {!nextExercise && (
+          <StyledSkipRestBtn type="button" onClick={onDismiss}>
+            Pular descanso
+          </StyledSkipRestBtn>
+        )}
 
-      {nextExercise && (
-        <StyledNextCard>
-          <StyledNextCardAccentBar />
-          <StyledNextCardContent>
-            <StyledNextCardHeader>
-              <StyledNextCardLabel>
-                {nextExercise.isNewExercise
-                  ? "Próximo exercício"
-                  : "Próxima série"}
-              </StyledNextCardLabel>
-            </StyledNextCardHeader>
+        {nextExercise && (
+          <StyledNextCard>
+            <StyledNextCardAccentBar />
+            <StyledNextCardContent>
+              <StyledNextCardHeader>
+                <StyledNextCardLabel>
+                  {nextExercise.isNewExercise
+                    ? "Próximo exercício"
+                    : "Próxima série"}
+                </StyledNextCardLabel>
+              </StyledNextCardHeader>
 
-            <StyledNextCardName>{nextExercise.name}</StyledNextCardName>
+              <StyledNextCardName>{nextExercise.name}</StyledNextCardName>
 
-            <StyledNextCardChips>
-              <StyledNextCardMuscleChip>
-                {nextExercise.muscleGroup}
-              </StyledNextCardMuscleChip>
-              <StyledNextCardTypeChip>
-                {nextExercise.seriesTypeLabel}
-              </StyledNextCardTypeChip>
-            </StyledNextCardChips>
+              <StyledNextCardChips>
+                <StyledNextCardMuscleChip>
+                  {nextExercise.muscleGroup}
+                </StyledNextCardMuscleChip>
+                <StyledNextCardTypeChip>
+                  {nextExercise.seriesTypeLabel}
+                </StyledNextCardTypeChip>
+              </StyledNextCardChips>
 
-            <StyledNextCardStats>
-              {nextExercise.lastWeight != null && (
-                <StyledNextCardStat>
-                  <StyledNextCardStatLabel>Peso</StyledNextCardStatLabel>
-                  <StyledNextCardStatValue>
-                    {nextExercise.lastWeight}
-                    <StyledNextCardStatUnit>KG</StyledNextCardStatUnit>
-                  </StyledNextCardStatValue>
-                </StyledNextCardStat>
-              )}
-              {nextExercise.repsMin != null && (
-                <StyledNextCardStat>
-                  <StyledNextCardStatLabel>Reps</StyledNextCardStatLabel>
-                  <StyledNextCardStatValue>
-                    {nextExercise.repsMin === nextExercise.repsMax
-                      ? nextExercise.repsMin
-                      : `${nextExercise.repsMin} - ${nextExercise.repsMax}`}
-                    <StyledNextCardStatUnit></StyledNextCardStatUnit>
-                  </StyledNextCardStatValue>
-                </StyledNextCardStat>
-              )}
-            </StyledNextCardStats>
+              <StyledNextCardStats>
+                {nextExercise.lastWeight != null && (
+                  <StyledNextCardStat>
+                    <StyledNextCardStatLabel>Peso</StyledNextCardStatLabel>
+                    <StyledNextCardStatValue>
+                      {nextExercise.lastWeight}
+                      <StyledNextCardStatUnit>KG</StyledNextCardStatUnit>
+                    </StyledNextCardStatValue>
+                  </StyledNextCardStat>
+                )}
+                {nextExercise.repsMin != null && (
+                  <StyledNextCardStat>
+                    <StyledNextCardStatLabel>Reps</StyledNextCardStatLabel>
+                    <StyledNextCardStatValue>
+                      {nextExercise.repsMin === nextExercise.repsMax
+                        ? nextExercise.repsMin
+                        : `${nextExercise.repsMin} - ${nextExercise.repsMax}`}
+                      <StyledNextCardStatUnit></StyledNextCardStatUnit>
+                    </StyledNextCardStatValue>
+                  </StyledNextCardStat>
+                )}
+              </StyledNextCardStats>
 
-            <StyledNextCardCta type="button" onClick={onDismiss}>
-              Começar agora
-            </StyledNextCardCta>
-          </StyledNextCardContent>
-        </StyledNextCard>
-      )}
+              <StyledNextCardCta type="button" onClick={onDismiss}>
+                Começar agora
+              </StyledNextCardCta>
+            </StyledNextCardContent>
+          </StyledNextCard>
+        )}
+      </StyledOverlayBody>
     </StyledRestOverlay>
   );
 }

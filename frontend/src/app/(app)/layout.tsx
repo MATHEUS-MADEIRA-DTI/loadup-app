@@ -6,6 +6,7 @@ import styled from "styled-components";
 
 import BottomNavBar from "@/components/BottomNavBar";
 import RestTimerWidget from "@/components/RestTimerWidget";
+import WorkoutTimerWidget from "@/components/WorkoutTimerWidget";
 import ThemeToggle from "@/components/ThemeToggle";
 import { RestAlertsProvider } from "@/app/(app)/train/context/RestAlertsContext";
 import { RestTimerProvider } from "@/context/RestTimerContext";
@@ -33,6 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <StyledWrapper>
           <StyledContent>{children}</StyledContent>
           <RestTimerWidget />
+          <WorkoutTimerWidget />
           <StyledThemeToggleWrap></StyledThemeToggleWrap>
           <BottomNavBar />
           <Toaster
@@ -61,6 +63,7 @@ const StyledWrapper = styled.div`
 
 const StyledContent = styled.div`
   flex: 1;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
   padding-bottom: 80px;
 `;
 
